@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+.bun/
+
+# Build & Cache
+dist/
+.astro/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Logs & OS artifacts
+*.log
+.DS_Store
+__pycache__/
