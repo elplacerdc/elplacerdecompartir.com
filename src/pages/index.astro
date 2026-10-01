@@ -1,0 +1,227 @@
+---
+// Astro 5 SSR - El Placer de Compartir & The Corset Society Minimal Landing
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>El Placer de Compartir | Santuario de Libertad y Conexión</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --noir-abyssal: #050505;
+        --midnight-plum: #180a22;
+        --gold-imperial: #c5a059;
+        --gold-champagne: #ead397;
+        --ivory-silk: #f7f4ee;
+        --terracotta: #b84a39;
+        --smoke-charcoal: #141414;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background-color: var(--noir-abyssal);
+        color: var(--ivory-silk);
+        font-family: 'Montserrat', sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-image: radial-gradient(circle at 50% 20%, rgba(24, 10, 34, 0.8) 0%, rgba(5, 5, 5, 0.95) 70%);
+      }
+      header {
+        padding: 2.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(197, 160, 89, 0.15);
+      }
+      .brand-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--gold-imperial);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        background: rgba(46, 125, 50, 0.15);
+        color: #4caf50;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+      }
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        background: #4caf50;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #4caf50;
+      }
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+        text-align: center;
+      }
+      .hero-tagline {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.25rem, 5vw, 3.75rem);
+        font-weight: 600;
+        line-height: 1.15;
+        color: var(--ivory-silk);
+        margin-bottom: 1.5rem;
+      }
+      .hero-tagline span {
+        color: var(--gold-champagne);
+        font-style: italic;
+      }
+      .hero-desc {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        color: rgba(247, 244, 238, 0.8);
+        max-width: 680px;
+        margin: 0 auto 3rem;
+        font-weight: 300;
+      }
+      .grid-showcase {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3.5rem;
+        text-align: left;
+      }
+      .card {
+        background: rgba(20, 20, 20, 0.6);
+        border: 1px solid rgba(197, 160, 89, 0.2);
+        border-radius: 12px;
+        padding: 2rem;
+        backdrop-filter: blur(10px);
+        transition: transform 0.2s, border-color 0.2s;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(197, 160, 89, 0.5);
+      }
+      .card-sub {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--gold-imperial);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+      .card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        color: var(--ivory-silk);
+        margin-bottom: 0.75rem;
+      }
+      .card-desc {
+        font-size: 0.875rem;
+        color: rgba(247, 244, 238, 0.7);
+        line-height: 1.6;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 0.9rem 2rem;
+        border-radius: 6px;
+        font-weight: 500;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+      }
+      .btn-gold {
+        background: linear-gradient(135deg, var(--gold-imperial) 0%, #a4813f 100%);
+        color: #000;
+        font-weight: 600;
+        box-shadow: 0 4px 20px rgba(197, 160, 89, 0.25);
+      }
+      .btn-gold:hover {
+        filter: brightness(1.1);
+      }
+      .btn-outline {
+        border: 1px solid rgba(197, 160, 89, 0.3);
+        color: var(--gold-champagne);
+        background: transparent;
+      }
+      .btn-outline:hover {
+        background: rgba(197, 160, 89, 0.1);
+      }
+      footer {
+        padding: 2rem;
+        text-align: center;
+        border-top: 1px solid rgba(197, 160, 89, 0.1);
+        font-size: 0.8rem;
+        color: rgba(247, 244, 238, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand-title">El Placer de Compartir</div>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Zerops Mesh Activa
+      </div>
+    </header>
+
+    <main>
+      <h1 class="hero-tagline">
+        Santuario de libertad, erotismo y <span>conexión consciente</span>.
+      </h1>
+      <p class="hero-desc">
+        Dignificando el entretenimiento adulto de mente abierta en Bogotá y América Latina. Una comunidad libre de juicios, centrada en el confort femenino, la escucha activa y la cultura del consentimiento sacrosanto.
+      </p>
+
+      <div class="grid-showcase">
+        <div class="card">
+          <div class="card-sub">Línea Exclusiva</div>
+          <h2 class="card-title">The Corset Society</h2>
+          <p class="card-desc">
+            Sociedad privada de etiqueta rigurosa inspirada en la sastrería clásica, el fetichismo elegante y las veladas europeas. El acceso se concede, no se anuncia.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-sub">Comunidad & Escapes</div>
+          <h2 class="card-title">El Placer Comunidad</h2>
+          <p class="card-desc">
+            Encuentros relajados, pedagógicos, cine debate erótico, paseos a finca con piscina nudista y veladas de luna llena sin la presión de la genitalidad inmediata.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="/health" class="btn btn-gold">Verificar Salud de Plataforma (/health)</a>
+        <a href="https://wa.me/573194194785" target="_blank" class="btn btn-outline">WhatsApp Oficial (+57 319 419 4785)</a>
+      </div>
+    </main>
+
+    <footer>
+      &copy; 2026 El Placer de Compartir | Operado soberanamente sobre Zerops Incus LXC (Bun 1.3 SSR, PostgreSQL 18, Valkey, NATS, EvolutionGo & Listmonk)
+    </footer>
+  </body>
+</html>
