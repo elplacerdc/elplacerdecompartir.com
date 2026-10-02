@@ -1,0 +1,119 @@
+---
+// centro-cultural.astro - Landing Centro Cultural El Placer de Compartir
+import Layout from "../layouts/Layout.astro";
+import LeadForm from "../components/LeadForm.astro";
+---
+
+<Layout 
+  title="Centro Cultural El Placer de Compartir | Talleres, Arte Sensorial y Encuentros en Bogotá"
+  description="Nuevo espacio cultural en Bogotá dedicado a talleres de parejas, BDSM ético, masajes tántricos, nudismo consciente y dating auténtico."
+>
+  <div class="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-20">
+    <!-- Hero Section -->
+    <div class="text-center max-w-3xl mx-auto space-y-6 pt-10">
+      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#b84a39]/20 text-[#b84a39] border border-[#b84a39]/40">
+        Espacio Físico Multidisciplinario • Bogotá
+      </span>
+      <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-[#f7f4ee]">
+        Centro Cultural <br />
+        <span class="italic text-[#c5a059]">El Placer de Compartir</span>
+      </h1>
+      <p class="text-base sm:text-lg text-[#f7f4ee]/80 font-light leading-relaxed">
+        Un santuario arquitectónico diseñado para desmitificar el erotismo y celebrar el cuerpo sin tabúes comerciales ni mercantilización.
+      </p>
+    </div>
+
+    <!-- Promoción Destacada de Afiliados (3 Referidos = Entrada Gratis) -->
+    <div class="p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-[#180a22] via-[#2a1138] to-[#180a22] border-2 border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.25)] text-center space-y-4">
+      <div class="inline-block px-3 py-1 rounded bg-[#c5a059] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider">
+        Programa de Embajadores & Afiliados
+      </div>
+      <h2 class="font-serif text-2xl sm:text-4xl font-bold text-[#ead397]">
+        "Por cada 3 personas que refieras y paguen, tu entrada es 100% GRATIS"
+      </h2>
+      <p class="text-sm text-[#f7f4ee]/80 max-w-2xl mx-auto font-light">
+        Comparte tu enlace personalizado. Nuestro sistema almacena una cookie de 30 días y te acredita automáticamente un pase de cortesía ilimitado al acumular cada terceto de asistentes confirmados.
+      </p>
+      
+      <!-- Generador de Link de Afiliado Rápido -->
+      <div class="pt-4 max-w-md mx-auto">
+        <div class="flex gap-2">
+          <input 
+            type="text" 
+            id="affiliate-alias-input" 
+            placeholder="Escribe tu alias deseado" 
+            class="px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/40 text-sm text-[#f7f4ee] flex-1 focus:outline-none focus:border-[#c5a059]"
+          />
+          <button 
+            id="generate-link-btn" 
+            class="px-5 py-3 rounded-lg bg-[#c5a059] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] transition-all"
+          >
+            Crear Link
+          </button>
+        </div>
+        <div id="generated-link-container" class="hidden mt-3 p-3 rounded bg-[#050505]/80 border border-[#c5a059]/30 text-xs text-[#81c784] break-all"></div>
+      </div>
+    </div>
+
+    <!-- Actividades & Experiencias -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
+        <span class="text-2xl">🌿</span>
+        <h3 class="font-serif text-xl font-bold text-[#ead397]">Masajes & Tacto Consciente</h3>
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+          Talleres de masaje tántrico, desensibilización sensorial y desbloqueo emocional guiados por terapeutas certificados.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
+        <span class="text-2xl">⛓️</span>
+        <h3 class="font-serif text-xl font-bold text-[#ead397]">BDSM Ético & Shibari</h3>
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+          Cuerdas japonesas, dinámicas de poder acordadas, protocolos de seguridad SSC (Sano, Seguro y Consentido).
+        </p>
+      </div>
+
+      <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
+        <span class="text-2xl">✨</span>
+        <h3 class="font-serif text-xl font-bold text-[#ead397]">Nudismo Social & Conexión</h3>
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+          Espacio seguro de desnudamiento libre de connotaciones sexuales obligatorias. Normalización del cuerpo en su estado natural.
+        </p>
+      </div>
+    </div>
+
+    <!-- Filosofía SegiSw -->
+    <div class="p-8 rounded-2xl bg-[#050505] border border-[#c5a059]/30 space-y-4">
+      <h3 class="font-serif text-xl font-bold text-[#c5a059] uppercase tracking-wider">
+        Filosofía de la Dirección (@SegiSw)
+      </h3>
+      <p class="text-sm text-[#f7f4ee]/80 leading-relaxed font-light">
+        "En nuestro Centro Cultural no existen anfitrionas pagadas, 'ganchos' ni damas de compañía. Cada mujer que asiste lo hace por su propia voluntad, curiosidad y disfrute pleno. La elegancia reside en la reciprocidad absoluta."
+      </p>
+    </div>
+
+    <!-- Formulario para Aliados y Terapeutas -->
+    <div class="max-w-xl mx-auto">
+      <LeadForm 
+        title="Postulación para Aliados & Terapeutas"
+        subtitle="¿Eres masajista, facilitador de BDSM, sexólogo o artista? Déjanos tus datos para coordinar una alianza en nuestro Centro Cultural."
+      />
+    </div>
+  </div>
+
+  <script>
+    const aliasInput = document.getElementById("affiliate-alias-input") as HTMLInputElement;
+    const genBtn = document.getElementById("generate-link-btn") as HTMLButtonElement;
+    const linkContainer = document.getElementById("generated-link-container") as HTMLElement;
+
+    genBtn?.addEventListener("click", () => {
+      const alias = aliasInput.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      if (!alias) return;
+
+      const url = `https://elplacerdecompartir.com/r/${alias}`;
+      linkContainer.innerHTML = `Tu enlace de afiliado personal:<br/><strong class="text-[#c5a059]">${url}</strong><br/><span class="text-[10px] text-[#f7f4ee]/60">Copiado al portapapeles. Compártelo con tus amigos.</span>`;
+      linkContainer.classList.remove("hidden");
+      navigator.clipboard.writeText(url).catch(() => {});
+    });
+  </script>
+</Layout>

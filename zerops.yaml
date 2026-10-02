@@ -23,6 +23,40 @@ zerops:
         NATS_URL: ${nats_connectionString}
         EVOLUTION_URL: "http://evolution:8085"
         LISTMONK_URL: "http://listmonk:9000"
+        BIFROST_URL: "http://bifrost:8080/v1"
+        FREELLMAPI_URL: "http://freellmapi:3001/v1"
+      start: bun run ./dist/server/entry.mjs
+      healthCheck:
+        httpGet:
+          port: 3000
+          path: /health
+
+  - setup: webprod
+    build:
+      base: ubuntu/bun@1.3
+      buildCommands:
+        - bun install
+        - bun run build
+      deployFiles:
+        - .
+      cache:
+        - node_modules
+    run:
+      base: ubuntu/bun@1.3
+      ports:
+        - port: 3000
+          httpSupport: true
+      envVariables:
+        PORT: "3000"
+        HOST: "0.0.0.0"
+        NODE_ENV: "production"
+        DATABASE_URL: ${database_connectionString}
+        VALKEY_URL: ${valkey_connectionString}
+        NATS_URL: ${nats_connectionString}
+        EVOLUTION_URL: "http://evolution:8085"
+        LISTMONK_URL: "http://listmonk:9000"
+        BIFROST_URL: "http://bifrost:8080/v1"
+        FREELLMAPI_URL: "http://freellmapi:3001/v1"
       start: bun run ./dist/server/entry.mjs
       healthCheck:
         httpGet:

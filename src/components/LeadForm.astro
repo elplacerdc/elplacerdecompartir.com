@@ -1,0 +1,224 @@
+---
+// LeadForm.astro - Formulario con Perfilado Progresivo y Detección en Tiempo Real
+interface Props {
+  isVip?: boolean;
+  title?: string;
+  subtitle?: string;
+}
+
+const { 
+  isVip = false, 
+  title = "Acceso a la Comunidad", 
+  subtitle = "Regístrate para recibir convocatorias privadas, talleres y accesos exclusivos." 
+} = Astro.props;
+---
+
+<div class={`p-8 sm:p-10 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+  isVip 
+    ? "bg-[#0a0608]/90 border-[#c5a059]/40 shadow-[0_0_30px_rgba(197,160,89,0.15)]" 
+    : "bg-[#180a22]/70 border-[#c5a059]/20 shadow-[0_0_20px_rgba(24,10,34,0.3)]"
+}`}>
+  <!-- Decorative Ambient Glow -->
+  <div class={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none ${
+    isVip ? "bg-[#4a0e17]/20" : "bg-[#682d7e]/15"
+  }`}></div>
+
+  <div class="mb-8">
+    <h3 class={`text-2xl font-serif font-bold tracking-wide uppercase ${isVip ? "text-[#c5a059]" : "text-[#ead397]"}`}>
+      {title}
+    </h3>
+    <p class="text-sm text-[#f7f4ee]/70 mt-2 leading-relaxed">
+      {subtitle}
+    </p>
+  </div>
+
+  <!-- Realtime greeting badge -->
+  <div id="greeting-badge" class="hidden mb-6 p-3 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/30 text-xs text-[#81c784] flex items-center gap-2">
+    <span class="w-2 h-2 rounded-full bg-[#4caf50]"></span>
+    <span id="greeting-text"></span>
+  </div>
+
+  <form id="lead-form" class="space-y-5">
+    <input type="hidden" name="corset_vip" value={isVip ? "true" : "false"} />
+
+    <!-- WhatsApp Phone -->
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        WhatsApp / Teléfono <span class="text-[#b84a39]">*</span>
+      </label>
+      <input
+        type="tel"
+        name="whatsapp"
+        id="input-whatsapp"
+        required
+        placeholder="+57 310 000 0000"
+        class="w-full px-4 py-3 rounded-lg bg-[#050505]/70 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+      />
+    </div>
+
+    <!-- Email -->
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Correo Electrónico {isVip ? <span class="text-[#c5a059]">(Requerido para membresía VIP *)</span> : <span class="text-[#f7f4ee]/40">(Opcional)</span>}
+      </label>
+      <input
+        type="email"
+        name="email"
+        id="input-email"
+        required={isVip}
+        placeholder="ejemplo@correo.com"
+        class="w-full px-4 py-3 rounded-lg bg-[#050505]/70 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+      />
+    </div>
+
+    <!-- Alias / Nombre -->
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Alias o Nombre de Pila <span class="text-[#b84a39]">*</span>
+      </label>
+      <input
+        type="text"
+        name="alias_nombre"
+        id="input-alias"
+        required
+        placeholder="Tu alias o nombre discreto"
+        class="w-full px-4 py-3 rounded-lg bg-[#050505]/70 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+      />
+    </div>
+
+    <!-- Rol / Identidad -->
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Modalidad de Asistencia <span class="text-[#b84a39]">*</span>
+      </label>
+      <select
+        name="rol"
+        id="input-rol"
+        class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+        <option value="pareja">Pareja</option>
+        <option value="mujer_sola">Mujer Sola (Unicornio)</option>
+        <option value="hombre_solo">Hombre Solo (Single)</option>
+        <option value="otro">Otro / Explorador</option>
+      </select>
+    </div>
+
+    <!-- Ciudad -->
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Ciudad
+      </label>
+      <select
+        name="ciudad"
+        id="input-ciudad"
+        class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+        <option value="Bogotá">Bogotá</option>
+        <option value="Medellín">Medellín</option>
+        <option value="Otra">Otra ciudad</option>
+      </select>
+    </div>
+
+    <!-- Feedback Message -->
+    <div id="form-feedback" class="hidden text-sm p-3 rounded-lg"></div>
+
+    <button
+      type="submit"
+      id="submit-btn"
+      class={`w-full py-4 rounded-lg font-serif font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
+        isVip
+          ? "bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
+          : "bg-[#b84a39] text-[#f7f4ee] hover:bg-[#a03d2e] shadow-[0_0_15px_rgba(184,74,57,0.3)]"
+      }`}
+    >
+      {isVip ? "Solicitar Admisión VIP" : "Unirme al Círculo"}
+    </button>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById("lead-form") as HTMLFormElement;
+  const inputWhatsapp = document.getElementById("input-whatsapp") as HTMLInputElement;
+  const inputEmail = document.getElementById("input-email") as HTMLInputElement;
+  const inputAlias = document.getElementById("input-alias") as HTMLInputElement;
+  const inputRol = document.getElementById("input-rol") as HTMLSelectElement;
+  const inputCiudad = document.getElementById("input-ciudad") as HTMLSelectElement;
+  const greetingBadge = document.getElementById("greeting-badge") as HTMLElement;
+  const greetingText = document.getElementById("greeting-text") as HTMLElement;
+  const formFeedback = document.getElementById("form-feedback") as HTMLElement;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
+  let checking = false;
+
+  async function checkContact() {
+    const whatsapp = inputWhatsapp.value.trim();
+    const email = inputEmail.value.trim();
+
+    if ((!whatsapp && !email) || checking) return;
+    checking = true;
+
+    try {
+      const res = await fetch("/api/leads/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ whatsapp, email }),
+      });
+      const data = await res.json();
+
+      if (data.exists && data.lead) {
+        greetingText.textContent = `¡Hola de nuevo, ${data.lead.alias_nombre || "miembro"}! Reconocemos tu contacto. Actualiza o confirma tus datos.`;
+        greetingBadge.classList.remove("hidden");
+
+        if (!inputAlias.value && data.lead.alias_nombre) inputAlias.value = data.lead.alias_nombre;
+        if (!inputWhatsapp.value && data.lead.whatsapp) inputWhatsapp.value = data.lead.whatsapp;
+        if (!inputEmail.value && data.lead.email) inputEmail.value = data.lead.email;
+        if (data.lead.rol) inputRol.value = data.lead.rol;
+        if (data.lead.ciudad) inputCiudad.value = data.lead.ciudad;
+      }
+    } catch (e) {
+      console.error("Check contact error:", e);
+    } finally {
+      checking = false;
+    }
+  }
+
+  inputWhatsapp?.addEventListener("blur", checkContact);
+  inputEmail?.addEventListener("blur", checkContact);
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Procesando...";
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch("/api/leads/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          corset_vip: payload.corset_vip === "true",
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
+        formFeedback.textContent = "✨ ¡Registro confirmado exitosamente! Te hemos enviado los detalles a tus canales de contacto.";
+        formFeedback.classList.remove("hidden");
+        form.reset();
+      } else {
+        throw new Error(data.error || "Ocurrió un error al procesar.");
+      }
+    } catch (err: any) {
+      formFeedback.className = "text-sm p-4 rounded-lg bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350]";
+      formFeedback.textContent = err.message || "Error al conectar.";
+      formFeedback.classList.remove("hidden");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Completado";
+    }
+  });
+</script>

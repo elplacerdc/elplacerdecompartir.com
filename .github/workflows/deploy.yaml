@@ -1,0 +1,20 @@
+name: Deploy WebProd to Zerops
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Zerops Production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Zerops WebProd
+        uses: zeropsio/actions@v1.0.2
+        with:
+          access-token: ${{ secrets.ZEROPS_TOKEN }}
+          service-id: ${{ secrets.ZEROPS_PROD_SERVICE_ID }}

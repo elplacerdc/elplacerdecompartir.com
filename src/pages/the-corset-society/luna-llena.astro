@@ -1,0 +1,404 @@
+---
+// the-corset-society/luna-llena.astro - Landing Oficial Evento Noche de Luna Llena
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout 
+  title="Noche de Luna Llena | The Corset Society"
+  description="Máscarada exclusiva de Halloween en Bogotá. Esta noche el bosque despierta: hadas, elfos, duendes o espíritus nocturnos. Reserva de entradas y membresías."
+  isCorset={true}
+>
+  <div class="min-h-screen bg-[#050505] text-[#f7f4ee] font-serif selection:bg-[#c5a059] selection:text-[#050505] relative overflow-hidden">
+    <!-- Header Noir -->
+    <header class="py-6 px-6 sm:px-12 flex justify-between items-center border-b border-[#c5a059]/20 relative z-20">
+      <div class="flex items-center gap-3">
+        <a href="/the-corset-society" class="flex items-center gap-3 group">
+          <img src="/media/logo_corsetsociety_x.jpg" alt="Sigilo The Corset Society" class="w-10 h-10 rounded-full border border-[#c5a059] object-cover group-hover:scale-105 transition-transform" />
+          <span class="text-xs uppercase tracking-[0.3em] text-[#c5a059] font-bold">The Corset Society</span>
+        </a>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <a 
+          href="https://x.com/corsetsociety" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="text-xs tracking-widest uppercase text-[#ead397] hover:text-[#c5a059] transition-colors hidden sm:flex items-center gap-1.5"
+        >
+          <span>Canal X (@corsetsociety)</span>
+          <span>↗</span>
+        </a>
+        <a 
+          href="/the-corset-society" 
+          class="text-xs font-sans tracking-wider uppercase text-[#c5a059] border border-[#c5a059]/30 px-3 py-1.5 rounded-full hover:bg-[#c5a059]/10 transition-colors"
+        >
+          ← Retornar al Círculo
+        </a>
+      </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16 relative z-10">
+      <!-- Title & Lore -->
+      <section class="text-center space-y-6">
+        <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#c5a059]/40 bg-[#4a0e17]/30 text-xs tracking-[0.25em] uppercase text-[#ead397]">
+          <span>🌕</span> Convocatoria de Gala & Misterio <span>🌲</span>
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-[#f7f4ee] leading-tight">
+          Noche de Luna Llena <br />
+          <span class="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b]">
+            Máscarada en el Bosque
+          </span>
+        </h1>
+        <p class="max-w-2xl mx-auto text-base sm:text-lg font-sans font-light text-[#f7f4ee]/80 leading-relaxed">
+          Esta noche el bosque despierta… Las máscaras ocultan identidades, la luna revela deseos y cada invitado puede elegir en qué espíritu convertirse.
+        </p>
+        <p class="text-sm font-sans italic text-[#ead397]">
+          🧚‍♀️ ¿Hada, elfo, duende o una criatura salida de tu imaginación? Ven caracterizado y vive la experiencia.
+        </p>
+      </section>
+
+      <!-- Event Details Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 rounded-2xl bg-[#0a0608] border border-[#c5a059]/30 text-center text-xs font-sans">
+        <div class="p-3 border-r border-[#c5a059]/20">
+          <div class="text-[#c5a059] uppercase tracking-wider mb-1">Fecha</div>
+          <div class="text-[#f7f4ee] font-semibold">Sábado 31 Octubre 2026</div>
+        </div>
+        <div class="p-3 sm:border-r border-[#c5a059]/20">
+          <div class="text-[#c5a059] uppercase tracking-wider mb-1">Horario</div>
+          <div class="text-[#f7f4ee] font-semibold">8:00 P.M. — 4:00 A.M.</div>
+        </div>
+        <div class="p-3 border-r border-[#c5a059]/20">
+          <div class="text-[#c5a059] uppercase tracking-wider mb-1">Ubicación</div>
+          <div class="text-[#f7f4ee] font-semibold">Bogotá (24h antes por privado)</div>
+        </div>
+        <div class="p-3">
+          <div class="text-[#c5a059] uppercase tracking-wider mb-1">Dress Code</div>
+          <div class="text-[#f7f4ee] font-semibold">Máscara obligatoria / Noir Fantasy</div>
+        </div>
+      </div>
+
+      <!-- Flyers & Video Gallery -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div class="rounded-2xl overflow-hidden border border-[#c5a059]/40 shadow-[0_0_30px_rgba(197,160,89,0.15)] bg-[#0a0608]">
+          <img 
+            src="/media/corset-society/flyer_halloween_clean.jpg" 
+            alt="Flyer Oficial Noche de Luna Llena" 
+            class="w-full object-cover hover:scale-105 transition-transform duration-700"
+          />
+          <div class="p-3 text-center text-xs text-[#ead397] font-sans border-t border-[#c5a059]/20">
+            Flyer Oficial de Gala • Sábado 31 Octubre
+          </div>
+        </div>
+
+        <div class="space-y-6">
+          <div class="rounded-2xl overflow-hidden border border-[#c5a059]/40 shadow-[0_0_30px_rgba(197,160,89,0.15)] bg-[#0a0608]">
+            <img 
+              src="/media/corset-society/flyer_membresia_clean.jpg" 
+              alt="Membresía The Corset Society" 
+              class="w-full max-h-[380px] object-cover hover:scale-105 transition-transform duration-700"
+            />
+            <div class="p-3 text-center text-xs text-[#ead397] font-sans border-t border-[#c5a059]/20">
+              Credencial de Membresía de Honor
+            </div>
+          </div>
+
+          <!-- Atmosphere Video -->
+          <div class="rounded-2xl overflow-hidden border border-[#c5a059]/30 bg-[#0a0608]">
+            <video 
+              controls 
+              preload="metadata" 
+              poster="/media/society_hero_opt.jpg"
+              class="w-full aspect-video object-cover"
+            >
+              <source src="/media/corset-society/video_juan_kreiss.mp4" type="video/mp4" />
+            </video>
+            <div class="p-3 text-center text-xs text-[#c5a059] font-sans border-t border-[#c5a059]/20">
+              Atmósfera & Registro Cinematográfico
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing & Interactive Checkout Section -->
+      <section id="reservas" class="pt-8 space-y-8">
+        <div class="text-center space-y-3">
+          <span class="text-xs uppercase tracking-[0.25em] text-[#c5a059] font-bold">Inversión & Reserva</span>
+          <h2 class="text-3xl sm:text-4xl font-bold text-[#ead397]">Valores Oficiales de Cover</h2>
+          <p class="text-sm font-sans text-[#f7f4ee]/70 max-w-xl mx-auto">
+            Puedes realizar el <strong>Pago Total (100%)</strong> o asegurar tu cupo con la <strong>Separación del 40%</strong> y liquidar el excedente en el ingreso.
+          </p>
+        </div>
+
+        <!-- Cover Tier Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Pareja -->
+          <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
+            <div class="space-y-2">
+              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold">Pase Pareja ❤️</div>
+              <div class="text-3xl font-bold text-[#f7f4ee]">$100.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></div>
+              <p class="text-xs font-sans text-[#ead397]">O separa con solo <strong>$40.000 COP</strong> (40%)</p>
+              <ul class="text-xs font-sans text-[#f7f4ee]/70 space-y-1.5 pt-2">
+                <li>✓ Acceso para 2 personas</li>
+                <li>✓ Coctelería de bienvenida</li>
+                <li>✓ Acceso a todas las atmósferas</li>
+                <li>✓ Participación concurso de disfraces</li>
+              </ul>
+            </div>
+            <button 
+              type="button" 
+              onclick="selectTier('pareja')"
+              class="w-full py-2.5 rounded-full border border-[#c5a059] text-xs font-serif uppercase tracking-wider text-[#c5a059] hover:bg-[#c5a059] hover:text-[#050505] transition-all font-bold"
+            >
+              Seleccionar Pareja
+            </button>
+          </div>
+
+          <!-- Single -->
+          <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
+            <div class="space-y-2">
+              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold">Pase Single 🖤</div>
+              <div class="text-3xl font-bold text-[#f7f4ee]">$120.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></div>
+              <p class="text-xs font-sans text-[#ead397]">O separa con solo <strong>$48.000 COP</strong> (40%)</p>
+              <ul class="text-xs font-sans text-[#f7f4ee]/70 space-y-1.5 pt-2">
+                <li>✓ Acceso individual selecto</li>
+                <li>✓ Coctel de autor de bienvenida</li>
+                <li>✓ Admisión filtrada de caballeros</li>
+                <li>✓ Dinámicas y rituales de integración</li>
+              </ul>
+            </div>
+            <button 
+              type="button" 
+              onclick="selectTier('single')"
+              class="w-full py-2.5 rounded-full border border-[#c5a059] text-xs font-serif uppercase tracking-wider text-[#c5a059] hover:bg-[#c5a059] hover:text-[#050505] transition-all font-bold"
+            >
+              Seleccionar Single
+            </button>
+          </div>
+
+          <!-- Unicornio -->
+          <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
+            <div class="space-y-2">
+              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold">Pase Unicornio 🦄</div>
+              <div class="text-3xl font-bold text-[#f7f4ee]">$30.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></div>
+              <p class="text-xs font-sans text-[#ead397]">O separa con solo <strong>$12.000 COP</strong> (40%)</p>
+              <ul class="text-xs font-sans text-[#f7f4ee]/70 space-y-1.5 pt-2">
+                <li>✓ Exclusivo mujer sola</li>
+                <li>✓ Tarifa simbólica preferencial</li>
+                <li>✓ Espacio de absoluto consentimiento</li>
+                <li>✓ Anfitriona personal y coctel de cortesía</li>
+              </ul>
+            </div>
+            <button 
+              type="button" 
+              onclick="selectTier('unicornio')"
+              class="w-full py-2.5 rounded-full border border-[#c5a059] text-xs font-serif uppercase tracking-wider text-[#c5a059] hover:bg-[#c5a059] hover:text-[#050505] transition-all font-bold"
+            >
+              Seleccionar Unicornio
+            </button>
+          </div>
+        </div>
+
+        <!-- Checkout Form Box -->
+        <div class="max-w-2xl mx-auto p-8 rounded-3xl bg-[#0a0608] border border-[#c5a059] shadow-[0_0_40px_rgba(197,160,89,0.25)] space-y-6">
+          <div class="border-b border-[#c5a059]/20 pb-4 text-center">
+            <h3 class="text-2xl font-bold text-[#ead397]">Formalizar Reserva de Acceso</h3>
+            <p class="text-xs font-sans text-[#f7f4ee]/60 mt-1">Completa los datos de tu credencial digital sellada</p>
+          </div>
+
+          <form id="checkoutForm" class="space-y-5">
+            <!-- Modalidad Switch -->
+            <div class="space-y-2">
+              <label class="block text-xs uppercase tracking-wider text-[#c5a059] font-bold">Modalidad de Pago</label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex items-center justify-center gap-2 p-3 rounded-xl border border-[#c5a059]/40 cursor-pointer hover:bg-[#c5a059]/10 transition-colors">
+                  <input type="radio" name="modalidad" value="total" checked onchange="updateSummary()" class="accent-[#c5a059]" />
+                  <span class="text-xs font-sans text-[#f7f4ee]">Pago Total (100%)</span>
+                </label>
+                <label class="flex items-center justify-center gap-2 p-3 rounded-xl border border-[#c5a059]/40 cursor-pointer hover:bg-[#c5a059]/10 transition-colors">
+                  <input type="radio" name="modalidad" value="reserva_40" onchange="updateSummary()" class="accent-[#c5a059]" />
+                  <span class="text-xs font-sans text-[#f7f4ee]">Separación (40%)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Tier Select -->
+            <div class="space-y-2">
+              <label for="tipo_entrada" class="block text-xs uppercase tracking-wider text-[#c5a059] font-bold">Tipo de Pase</label>
+              <select 
+                id="tipo_entrada" 
+                name="tipo_entrada" 
+                onchange="updateSummary()" 
+                class="w-full bg-[#140a18] border border-[#c5a059]/40 rounded-xl px-4 py-3 text-sm text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
+              >
+                <option value="pareja">Pareja — $100.000 (o separa con $40.000)</option>
+                <option value="single">Single — $120.000 (o separa con $48.000)</option>
+                <option value="unicornio">Unicornio (Mujer sola) — $30.000 (o separa con $12.000)</option>
+              </select>
+            </div>
+
+            <!-- Lead Details -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1">
+                <label for="alias_nombre" class="block text-xs text-[#c5a059] uppercase tracking-wider">Nombre o Alias Discreto *</label>
+                <input 
+                  type="text" 
+                  id="alias_nombre" 
+                  name="alias_nombre" 
+                  required 
+                  placeholder="Tu alias" 
+                  class="w-full bg-[#140a18] border border-[#c5a059]/30 rounded-xl px-4 py-2.5 text-sm text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
+                />
+              </div>
+
+              <div class="space-y-1">
+                <label for="whatsapp" class="block text-xs text-[#c5a059] uppercase tracking-wider">WhatsApp Oficial (+57) *</label>
+                <input 
+                  type="tel" 
+                  id="whatsapp" 
+                  name="whatsapp" 
+                  required 
+                  placeholder="3194194785" 
+                  class="w-full bg-[#140a18] border border-[#c5a059]/30 rounded-xl px-4 py-2.5 text-sm text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <label for="email" class="block text-xs text-[#c5a059] uppercase tracking-wider">Correo Electrónico (Recepción de Ticket) *</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                required 
+                placeholder="tu-correo@privado.com" 
+                class="w-full bg-[#140a18] border border-[#c5a059]/30 rounded-xl px-4 py-2.5 text-sm text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
+              />
+            </div>
+
+            <!-- Price Breakdown Box -->
+            <div class="p-4 rounded-xl bg-[#140a18] border border-[#c5a059]/30 flex justify-between items-center text-sm font-sans">
+              <div>
+                <span class="text-[#c5a059] font-semibold block">Total a Pagar Hoy:</span>
+                <span id="saldoPendienteLabel" class="text-[11px] text-[#f7f4ee]/50">Saldo en puerta: $0 COP</span>
+              </div>
+              <div id="montoTotalDisplay" class="text-2xl font-bold font-serif text-[#ead397]">
+                $100.000 COP
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <button 
+                type="button" 
+                id="btnDlocal"
+                onclick="handleCheckout('dlocal_go')"
+                class="py-3.5 px-6 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.4)] transition-all"
+              >
+                Pagar Online (dLocal / PSE)
+              </button>
+
+              <button 
+                type="button" 
+                id="btnNequi"
+                onclick="handleCheckout('nequi_breb')"
+                class="py-3.5 px-6 rounded-full font-serif font-bold uppercase tracking-wider text-xs border border-[#c5a059] text-[#ead397] hover:bg-[#c5a059]/15 transition-all"
+              >
+                Separar Nequi / Bre-B
+              </button>
+            </div>
+
+            <p id="checkoutMsg" class="text-center text-xs font-sans text-[#ead397] min-h-[1.5rem]"></p>
+          </form>
+
+          <div class="text-[11px] font-sans text-center text-[#f7f4ee]/40 space-y-1 pt-2 border-t border-[#c5a059]/10">
+            <p>🔐 El acceso se concede, no se anuncia. Nos reservamos el derecho de admisión y permanencia.</p>
+            <p>Atención directa por WhatsApp: <strong>+57 319 419 4785</strong></p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script is:inline>
+    const PRICING = {
+      pareja: { total: 100000, reserva_40: 40000 },
+      single: { total: 120000, reserva_40: 48000 },
+      unicornio: { total: 30000, reserva_40: 12000 }
+    };
+
+    function selectTier(tier) {
+      const select = document.getElementById('tipo_entrada');
+      if (select) {
+        select.value = tier;
+        updateSummary();
+        document.getElementById('checkoutForm')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function updateSummary() {
+      const tier = document.getElementById('tipo_entrada')?.value || 'pareja';
+      const modalidad = document.querySelector('input[name="modalidad"]:checked')?.value || 'total';
+      const prices = PRICING[tier];
+      if (!prices) return;
+
+      const montoHoy = modalidad === 'reserva_40' ? prices.reserva_40 : prices.total;
+      const saldoPuerta = modalidad === 'reserva_40' ? (prices.total - prices.reserva_40) : 0;
+
+      const montoDisplay = document.getElementById('montoTotalDisplay');
+      if (montoDisplay) montoDisplay.textContent = `$${montoHoy.toLocaleString('es-CO')} COP`;
+
+      const saldoDisplay = document.getElementById('saldoPendienteLabel');
+      if (saldoDisplay) {
+        saldoDisplay.textContent = saldoPuerta > 0 
+          ? `Saldo restante en puerta: $${saldoPuerta.toLocaleString('es-CO')} COP`
+          : 'Pago 100% completado (Sin saldo pendiente)';
+      }
+    }
+
+    async function handleCheckout(metodo) {
+      const form = document.getElementById('checkoutForm');
+      const alias = document.getElementById('alias_nombre')?.value.trim();
+      const whatsapp = document.getElementById('whatsapp')?.value.trim();
+      const email = document.getElementById('email')?.value.trim();
+      const tipo_entrada = document.getElementById('tipo_entrada')?.value;
+      const modalidad = document.querySelector('input[name="modalidad"]:checked')?.value;
+      const msg = document.getElementById('checkoutMsg');
+
+      if (!alias || !whatsapp || !email) {
+        if (msg) msg.textContent = 'Por favor completa todos los campos requeridos (*).';
+        return;
+      }
+
+      if (msg) msg.textContent = 'Sellando tu credencial de acceso...';
+
+      try {
+        const res = await fetch('/api/checkout/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            alias_nombre: alias,
+            whatsapp: whatsapp,
+            email: email,
+            tipo_entrada: tipo_entrada,
+            modalidad_pago: modalidad,
+            metodo_pago: metodo
+          })
+        });
+
+        const data = await res.json();
+        if (data.redirect_url) {
+          window.location.href = data.redirect_url;
+        } else if (data.ticketHash) {
+          window.location.href = `/the-corset-society/ticket?hash=${data.ticketHash}`;
+        } else if (data.error) {
+          if (msg) msg.textContent = 'Error: ' + data.error;
+        }
+      } catch (err) {
+        if (msg) msg.textContent = 'Ocurrió un error al procesar la reserva. Intenta de nuevo.';
+      }
+    }
+
+    // Initialize display on load
+    document.addEventListener('DOMContentLoaded', updateSummary);
+  </script>
+</Layout>

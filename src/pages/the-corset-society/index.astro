@@ -1,0 +1,109 @@
+---
+// the-corset-society/index.astro - Landing Noir & Gold
+import Layout from "../../layouts/Layout.astro";
+import LeadForm from "../../components/LeadForm.astro";
+---
+
+<Layout 
+  title="The Corset Society | El Acceso se Concede, No se Anuncia"
+  description="Sociedad secreta de galas noir, antifaces y alta discreción. Círculo selecto de encuentros privados y experiencias sensoriales de alta gama."
+  isCorset={true}
+>
+  <!-- Dedicated Noir Ambient Canvas (No standard header/footer) -->
+  <div class="min-h-screen bg-[#050505] text-[#f7f4ee] font-serif selection:bg-[#c5a059] selection:text-[#050505] relative overflow-hidden">
+    <!-- Top Sigil & X Channel -->
+    <header class="py-6 px-6 sm:px-12 flex justify-between items-center border-b border-[#c5a059]/20 relative z-20">
+      <div class="flex items-center gap-3">
+        <img src="/media/logo_corsetsociety_x.jpg" alt="Sigilo The Corset Society" class="w-10 h-10 rounded-full border border-[#c5a059] object-cover" />
+        <span class="text-xs uppercase tracking-[0.3em] text-[#c5a059] font-bold">The Corset Society</span>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <a 
+          href="https://x.com/corsetsociety" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="text-xs tracking-widest uppercase text-[#ead397] hover:text-[#c5a059] transition-colors flex items-center gap-1.5"
+        >
+          <span>Canal Oficial X (@corsetsociety)</span>
+          <span>↗</span>
+        </a>
+        <a 
+          href="/" 
+          class="text-[11px] font-sans tracking-wider uppercase text-[#f7f4ee]/40 hover:text-[#f7f4ee]/80 transition-colors"
+        >
+          ← Web Pública
+        </a>
+      </div>
+    </header>
+
+    <!-- Hero Noir -->
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center space-y-12 relative z-10">
+      <div class="space-y-4">
+        <div class="inline-block px-4 py-1 rounded-full border border-[#c5a059]/40 bg-[#4a0e17]/20 text-[11px] tracking-[0.25em] uppercase text-[#ead397]">
+          Círculo Hermético de Alta Discreción
+        </div>
+        <h1 class="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#f7f4ee] leading-none pt-4">
+          El acceso se concede, <br />
+          <span class="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b]">
+            no se anuncia.
+          </span>
+        </h1>
+        <p class="max-w-xl mx-auto text-sm sm:text-base font-sans font-light text-[#f7f4ee]/70 leading-relaxed pt-4">
+          Una congregación íntima donde la elegancia, la sensualidad sofisticada y el anonimato voluntario convergen bajo estrictos códigos de honor.
+        </p>
+      </div>
+
+      <!-- Video Integrado de Juan Kreiss Damarén -->
+      <div class="max-w-3xl mx-auto rounded-2xl overflow-hidden border border-[#c5a059]/40 shadow-[0_0_50px_rgba(197,160,89,0.2)] bg-[#0a0608]">
+        <video 
+          controls 
+          preload="metadata" 
+          poster="/media/society_hero_opt.jpg"
+          class="w-full aspect-video object-cover"
+        >
+          <source src="/media/corset-society/video_juan_kreiss.mp4" type="video/mp4" />
+          Tu navegador no soporta el formato de video.
+        </video>
+        <div class="p-4 bg-[#0a0608] border-t border-[#c5a059]/20 flex items-center justify-between text-xs text-[#ead397]">
+          <span>Atmósfera & Ritual • Registro Exclusivo</span>
+          <span>The Corset Society Films</span>
+        </div>
+      </div>
+
+      <!-- Próxima Ceremonia: Luna Llena CTA -->
+      <div class="p-8 sm:p-10 rounded-2xl bg-gradient-to-b from-[#180a22]/80 to-[#050505] border border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.2)] max-w-2xl mx-auto space-y-6 text-center">
+        <span class="text-xs uppercase tracking-[0.2em] text-[#c5a059] font-bold">Próxima Convocatoria Sagrada</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-[#ead397]">
+          🌕 Noche de Luna Llena 🌲
+        </h2>
+        <p class="text-xs sm:text-sm font-sans font-light text-[#f7f4ee]/80 leading-relaxed">
+          Las máscaras ocultan identidades, la luna revela deseos. Parejas, singles y mujeres solas (unicornios) convocados a una velada de alta discreción.
+        </p>
+        <div class="pt-2">
+          <a 
+            href="/the-corset-society/luna-llena" 
+            class="inline-block px-8 py-4 rounded-full font-serif font-bold uppercase tracking-[0.15em] text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] hover:brightness-110 shadow-[0_0_25px_rgba(197,160,89,0.4)] transition-all"
+          >
+            Reservar Entrada & Ver Tarifas
+          </a>
+        </div>
+      </div>
+
+      <!-- Formulario de Membresía VIP -->
+      <div class="max-w-xl mx-auto pt-8">
+        <LeadForm 
+          isVip={true}
+          title="Solicitud de Membresía VIP"
+          subtitle="La admisión se evalúa rigurosamente. Requerimos verificación estricta de correo y canal de contacto."
+        />
+      </div>
+
+      <!-- Legal Footer Minimalista Noir -->
+      <footer class="pt-16 pb-8 text-center text-[10px] font-sans text-[#f7f4ee]/30 tracking-widest uppercase space-y-2">
+        <p>© {new Date().getFullYear()} The Corset Society. Todos los derechos reservados.</p>
+        <p>Línea Oficial de Asistencia: +57 319 419 4785</p>
+      </footer>
+    </main>
+  </div>
+</Layout>

@@ -1,227 +1,160 @@
 ---
-// Astro 5 SSR - El Placer de Compartir & The Corset Society Minimal Landing
+// index.astro - Landing Principal: El Placer de Compartir
+import Layout from "../layouts/Layout.astro";
+import LeadForm from "../components/LeadForm.astro";
 ---
 
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>El Placer de Compartir | Santuario de Libertad y Conexión</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      :root {
-        --noir-abyssal: #050505;
-        --midnight-plum: #180a22;
-        --gold-imperial: #c5a059;
-        --gold-champagne: #ead397;
-        --ivory-silk: #f7f4ee;
-        --terracotta: #b84a39;
-        --smoke-charcoal: #141414;
-      }
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-      body {
-        background-color: var(--noir-abyssal);
-        color: var(--ivory-silk);
-        font-family: 'Montserrat', sans-serif;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        background-image: radial-gradient(circle at 50% 20%, rgba(24, 10, 34, 0.8) 0%, rgba(5, 5, 5, 0.95) 70%);
-      }
-      header {
-        padding: 2.5rem 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(197, 160, 89, 0.15);
-      }
-      .brand-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.75rem;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--gold-imperial);
-      }
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.35rem 0.85rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        letter-spacing: 0.05em;
-        background: rgba(46, 125, 50, 0.15);
-        color: #4caf50;
-        border: 1px solid rgba(76, 175, 80, 0.3);
-      }
-      .badge-dot {
-        width: 6px;
-        height: 6px;
-        background: #4caf50;
-        border-radius: 50%;
-        box-shadow: 0 0 8px #4caf50;
-      }
-      main {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 4rem 2rem;
-        text-align: center;
-      }
-      .hero-tagline {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: clamp(2.25rem, 5vw, 3.75rem);
-        font-weight: 600;
-        line-height: 1.15;
-        color: var(--ivory-silk);
-        margin-bottom: 1.5rem;
-      }
-      .hero-tagline span {
-        color: var(--gold-champagne);
-        font-style: italic;
-      }
-      .hero-desc {
-        font-size: 1.05rem;
-        line-height: 1.7;
-        color: rgba(247, 244, 238, 0.8);
-        max-width: 680px;
-        margin: 0 auto 3rem;
-        font-weight: 300;
-      }
-      .grid-showcase {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 3.5rem;
-        text-align: left;
-      }
-      .card {
-        background: rgba(20, 20, 20, 0.6);
-        border: 1px solid rgba(197, 160, 89, 0.2);
-        border-radius: 12px;
-        padding: 2rem;
-        backdrop-filter: blur(10px);
-        transition: transform 0.2s, border-color 0.2s;
-      }
-      .card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(197, 160, 89, 0.5);
-      }
-      .card-sub {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--gold-imperial);
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-      }
-      .card-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
-        color: var(--ivory-silk);
-        margin-bottom: 0.75rem;
-      }
-      .card-desc {
-        font-size: 0.875rem;
-        color: rgba(247, 244, 238, 0.7);
-        line-height: 1.6;
-      }
-      .actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        justify-content: center;
-      }
-      .btn {
-        display: inline-block;
-        padding: 0.9rem 2rem;
-        border-radius: 6px;
-        font-weight: 500;
-        letter-spacing: 0.05em;
-        text-decoration: none;
-        font-size: 0.875rem;
-        transition: all 0.2s;
-      }
-      .btn-gold {
-        background: linear-gradient(135deg, var(--gold-imperial) 0%, #a4813f 100%);
-        color: #000;
-        font-weight: 600;
-        box-shadow: 0 4px 20px rgba(197, 160, 89, 0.25);
-      }
-      .btn-gold:hover {
-        filter: brightness(1.1);
-      }
-      .btn-outline {
-        border: 1px solid rgba(197, 160, 89, 0.3);
-        color: var(--gold-champagne);
-        background: transparent;
-      }
-      .btn-outline:hover {
-        background: rgba(197, 160, 89, 0.1);
-      }
-      footer {
-        padding: 2rem;
-        text-align: center;
-        border-top: 1px solid rgba(197, 160, 89, 0.1);
-        font-size: 0.8rem;
-        color: rgba(247, 244, 238, 0.5);
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <div class="brand-title">El Placer de Compartir</div>
-      <div class="badge">
-        <span class="badge-dot"></span>
-        Zerops Mesh Activa
-      </div>
-    </header>
+<Layout title="El Placer de Compartir | Santuario de Libertad, Erotismo Consciente y Comunidad">
+  <!-- Hero Section -->
+  <section class="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <!-- Ambient Radial Gradients -->
+    <div class="absolute inset-0 bg-radial from-[#180a22]/80 via-[#050505]/95 to-[#050505] -z-10"></div>
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[#682d7e]/15 rounded-full blur-[120px] pointer-events-none -z-10"></div>
 
-    <main>
-      <h1 class="hero-tagline">
-        Santuario de libertad, erotismo y <span>conexión consciente</span>.
+    <div class="max-w-5xl mx-auto text-center space-y-8">
+      <!-- Tag / Eyebrow -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#c5a059]/10 border border-[#c5a059]/30 text-xs font-semibold uppercase tracking-widest text-[#ead397]">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#c5a059]"></span>
+        <span>Santuario de Erotismo Consciente & Comunidad</span>
+      </div>
+
+      <!-- Main Title -->
+      <h1 class="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#f7f4ee] leading-[1.1]">
+        El arte de compartir <br />
+        <span class="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">
+          el placer sin juicio ni ataduras
+        </span>
       </h1>
-      <p class="hero-desc">
-        Dignificando el entretenimiento adulto de mente abierta en Bogotá y América Latina. Una comunidad libre de juicios, centrada en el confort femenino, la escucha activa y la cultura del consentimiento sacrosanto.
+
+      <!-- Subtitle -->
+      <p class="max-w-2xl mx-auto text-base sm:text-lg text-[#f7f4ee]/75 font-light leading-relaxed">
+        Pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo desgenitalizado. Un espacio seguro, confidencial y humano.
       </p>
 
-      <div class="grid-showcase">
-        <div class="card">
-          <div class="card-sub">Línea Exclusiva</div>
-          <h2 class="card-title">The Corset Society</h2>
-          <p class="card-desc">
-            Sociedad privada de etiqueta rigurosa inspirada en la sastrería clásica, el fetichismo elegante y las veladas europeas. El acceso se concede, no se anuncia.
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+        <a 
+          href="#registro" 
+          class="px-8 py-4 rounded-full font-serif font-bold uppercase tracking-wider text-sm bg-gradient-to-r from-[#c5a059] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_25px_rgba(197,160,89,0.3)] transition-all"
+        >
+          Unirme a la Comunidad
+        </a>
+        <a 
+          href="/centro-cultural" 
+          class="px-8 py-4 rounded-full font-serif font-semibold uppercase tracking-wider text-sm border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/10 transition-all flex items-center gap-2"
+        >
+          <span>Conocer el Centro Cultural</span>
+          <span class="text-xs">🏛️</span>
+        </a>
+      </div>
+
+      <!-- Official Social Badges -->
+      <div class="pt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-[#f7f4ee]/60 border-t border-[#c5a059]/10">
+        <span class="text-[#c5a059] font-serif uppercase tracking-wider font-semibold">Canales Verificados:</span>
+        <a href="https://x.com/ElPlacerDC" target="_blank" rel="noopener noreferrer" class="hover:text-[#ead397] transition-colors">X: @ElPlacerDC</a>
+        <span>•</span>
+        <a href="https://x.com/SegiSw" target="_blank" rel="noopener noreferrer" class="hover:text-[#ead397] transition-colors">Dirección: @SegiSw</a>
+        <span>•</span>
+        <a href="https://www.tiktok.com/@elplacerdc" target="_blank" rel="noopener noreferrer" class="hover:text-[#ead397] transition-colors">TikTok: @elplacerdc</a>
+        <span>•</span>
+        <a href="https://wa.me/573194194785" target="_blank" rel="noopener noreferrer" class="text-[#4caf50] hover:text-[#81c784] transition-colors font-medium">WhatsApp: +57 319 419 4785</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Anuncio Estelar: Centro Cultural -->
+  <section class="py-20 bg-gradient-to-b from-[#050505] via-[#14081c] to-[#050505] border-y border-[#c5a059]/20 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <div class="space-y-6">
+        <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-widest bg-[#b84a39]/20 text-[#b84a39] border border-[#b84a39]/40">
+          Apertura Exclusiva • Bogotá
+        </span>
+        <h2 class="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-[#f7f4ee]">
+          Nuevo Centro Cultural <br />
+          <span class="text-[#c5a059]">El Placer de Compartir</span>
+        </h2>
+        <p class="text-base text-[#f7f4ee]/80 font-light leading-relaxed">
+          Un espacio físico multidisciplinario concebido para la expansión sensorial, talleres de parejas, BDSM ético, nudismo consciente, masajes tántricos y citas a ciegas basadas en compatibilidad real.
+        </p>
+        <div class="p-4 rounded-xl bg-[#050505]/60 border border-[#c5a059]/30 space-y-2">
+          <p class="text-xs uppercase tracking-wider text-[#ead397] font-semibold">✨ Filosofía Innegociable</p>
+          <p class="text-xs text-[#f7f4ee]/70">
+            Cero anfitrionas pagas. Toda mujer asiste por decisión, curiosidad y disfrute propio. La seducción es recíproca o no es.
           </p>
         </div>
-
-        <div class="card">
-          <div class="card-sub">Comunidad & Escapes</div>
-          <h2 class="card-title">El Placer Comunidad</h2>
-          <p class="card-desc">
-            Encuentros relajados, pedagógicos, cine debate erótico, paseos a finca con piscina nudista y veladas de luna llena sin la presión de la genitalidad inmediata.
-          </p>
+        <div class="pt-2">
+          <a href="/centro-cultural" class="inline-flex items-center gap-2 text-sm font-serif font-bold text-[#c5a059] hover:text-[#ead397] transition-colors group">
+            <span>Explorar sedes, talleres y programa de aliados</span>
+            <span class="group-hover:translate-x-1 transition-transform">→</span>
+          </a>
         </div>
       </div>
 
-      <div class="actions">
-        <a href="/health" class="btn btn-gold">Verificar Salud de Plataforma (/health)</a>
-        <a href="https://wa.me/573194194785" target="_blank" class="btn btn-outline">WhatsApp Oficial (+57 319 419 4785)</a>
+      <!-- Society Banner Card -->
+      <div class="relative p-8 rounded-2xl bg-gradient-to-br from-[#180a22] to-[#0a0608] border border-[#c5a059]/40 shadow-[0_0_40px_rgba(197,160,89,0.15)] space-y-6">
+        <div class="flex items-center justify-between">
+          <span class="text-xs uppercase tracking-widest text-[#c5a059] font-serif">Sociedad Secreta</span>
+          <span class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40">Círculo Privado</span>
+        </div>
+        <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397]">
+          The Corset Society
+        </h3>
+        <p class="text-xs sm:text-sm text-[#f7f4ee]/70 leading-relaxed font-light">
+          Gala Noir, antifaces y misterio en las noches de luna llena. Experiencias de alto voltaje donde el acceso se concede y jamás se anuncia.
+        </p>
+        <div class="pt-4 border-t border-[#c5a059]/20 flex items-center justify-between">
+          <a href="/the-corset-society" class="px-5 py-2.5 rounded-full text-xs font-serif font-bold uppercase tracking-wider bg-[#c5a059] text-[#050505] hover:bg-[#ead397] transition-colors">
+            Acceso Ceremonial
+          </a>
+          <a href="/the-corset-society/luna-llena" class="text-xs text-[#ead397] hover:underline font-serif">
+            Próximo Evento: Luna Llena →
+          </a>
+        </div>
       </div>
-    </main>
+    </div>
+  </section>
 
-    <footer>
-      &copy; 2026 El Placer de Compartir | Operado soberanamente sobre Zerops Incus LXC (Bun 1.3 SSR, PostgreSQL 18, Valkey, NATS, EvolutionGo & Listmonk)
-    </footer>
-  </body>
-</html>
+  <!-- Manifiesto Comunitario -->
+  <section id="manifiesto" class="py-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-16">
+    <div class="text-center space-y-4">
+      <span class="text-xs uppercase tracking-widest text-[#c5a059] font-serif">Nuestros Principios</span>
+      <h2 class="font-serif text-3xl sm:text-4xl font-bold text-[#f7f4ee]">
+        El Manifiesto de la Libertad Consciente
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="p-6 rounded-xl bg-[#050505] border border-[#c5a059]/20 space-y-3">
+        <div class="w-10 h-10 rounded-full bg-[#2e7d32]/20 border border-[#2e7d32]/40 flex items-center justify-center text-[#4caf50] font-serif font-bold">1</div>
+        <h3 class="font-serif text-lg font-bold text-[#ead397]">Consentimiento Continuo</h3>
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
+          Un "sí" puede convertirse en un "no" en cualquier instante y es sagrado. La lucidez y la presencia son condiciones indispensables de cada encuentro.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-xl bg-[#050505] border border-[#c5a059]/20 space-y-3">
+        <div class="w-10 h-10 rounded-full bg-[#b84a39]/20 border border-[#b84a39]/40 flex items-center justify-center text-[#b84a39] font-serif font-bold">2</div>
+        <h3 class="font-serif text-lg font-bold text-[#ead397]">Erotismo Desgenitalizado</h3>
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
+          El placer trasciende lo genital. Miradas, caricias, conversación, tacto, aromas y atmósfera constituyen el 90% de la energía erótica compartida.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-xl bg-[#050505] border border-[#c5a059]/20 space-y-3">
+        <div class="w-10 h-10 rounded-full bg-[#682d7e]/20 border border-[#682d7e]/40 flex items-center justify-center text-[#ead397] font-serif font-bold">3</div>
+        <h3 class="font-serif text-lg font-bold text-[#ead397]">Sigilo y Privacidad</h3>
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
+          Cero cámaras no consentidas. Lo vivido dentro de nuestras puertas pertenece exclusivamente a la memoria de quienes lo compartieron.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Registration Form -->
+  <section id="registro" class="py-20 px-4 sm:px-6 lg:px-8 max-w-xl mx-auto">
+    <LeadForm 
+      title="Entrada a la Comunidad" 
+      subtitle="Ingresa tu WhatsApp o correo. Si ya formas parte de nuestra base de datos, te reconoceremos al instante."
+    />
+  </section>
+</Layout>

@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@layer theme {
+  :root {
+    /* ==========================================================================
+       The Corset Society (Línea Luxury / Secret Society)
+       ========================================================================== */
+    --color-corset-noir: #050505;
+    --color-corset-gold: #C5A059;
+    --color-corset-gold-champagne: #EAD397;
+    --color-corset-gold-antique: #8A6D3B;
+    --color-corset-velvet-burgundy: #4A0E17;
+    --color-corset-wine-cabernet: #721C24;
+
+    /* ==========================================================================
+       El Placer de Compartir (Marca Paraguas & Comunidad)
+       ========================================================================== */
+    --color-elplacer-midnight-plum: #180A22;
+    --color-elplacer-terracotta: #B84A39;
+    --color-elplacer-amethyst: #682D7E;
+    --color-elplacer-ivory: #F7F4EE;
+    --color-elplacer-charcoal: #1A1A1A;
+
+    /* ==========================================================================
+       Semántica de Consentimiento (Consent Code)
+       ========================================================================== */
+    --color-consent-safe: #2E7D32;
+    --color-consent-caution: #E65100;
+    --color-consent-boundary: #B71C1C;
+
+    /* ==========================================================================
+       Tipografías Progresivas
+       ========================================================================== */
+    --font-corset-display: 'Cinzel', 'Playfair Display', Georgia, serif;
+    --font-corset-body: 'Plus Jakarta Sans', 'Lato', -apple-system, sans-serif;
+    --font-corset-signature: 'Pinyon Script', 'Great Vibes', cursive;
+
+    --font-elplacer-display: 'Syne', 'Montserrat', sans-serif;
+    --font-elplacer-body: 'Inter', system-ui, sans-serif;
+    --font-elplacer-quote: 'Cormorant Garamond', Georgia, serif;
+  }
+}
+
+/* ==========================================================================
+   Utilidades Rápidas para Astro & Tailwind 4
+   ========================================================================== */
+.bg-corset-noir { background-color: var(--color-corset-noir); }
+.text-corset-gold { color: var(--color-corset-gold); }
+.text-corset-champagne { color: var(--color-corset-gold-champagne); }
+.border-corset-gold { border-color: var(--color-corset-gold); }
+.bg-corset-burgundy { background-color: var(--color-corset-velvet-burgundy); }
+
+.bg-elplacer-plum { background-color: var(--color-elplacer-midnight-plum); }
+.text-elplacer-terracotta { color: var(--color-elplacer-terracotta); }
+.text-elplacer-ivory { color: var(--color-elplacer-ivory); }
+
+.font-corset-display { font-family: var(--font-corset-display); }
+.font-corset-body { font-family: var(--font-corset-body); }
+.font-corset-signature { font-family: var(--font-corset-signature); }
+.font-elplacer-display { font-family: var(--font-elplacer-display); }
