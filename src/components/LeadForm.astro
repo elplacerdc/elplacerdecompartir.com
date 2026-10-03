@@ -13,7 +13,7 @@ const {
 } = Astro.props;
 ---
 
-<div class={`p-8 sm:p-10 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
+<div class={`p-6 sm:p-10 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
   isVip 
     ? "bg-[#0a0608]/90 border-[#c5a059]/40 shadow-[0_0_30px_rgba(197,160,89,0.15)]" 
     : "bg-[#180a22]/70 border-[#c5a059]/20 shadow-[0_0_20px_rgba(24,10,34,0.3)]"
@@ -30,12 +30,6 @@ const {
     <p class="text-sm text-[#f7f4ee]/70 mt-2 leading-relaxed">
       {subtitle}
     </p>
-  </div>
-
-  <!-- Realtime greeting badge -->
-  <div id="greeting-badge" class="hidden mb-6 p-3 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/30 text-xs text-[#81c784] flex items-center gap-2">
-    <span class="w-2 h-2 rounded-full bg-[#4caf50]"></span>
-    <span id="greeting-text"></span>
   </div>
 
   <form id="lead-form" class="space-y-5">
@@ -89,7 +83,7 @@ const {
     <!-- Rol / Identidad -->
     <div>
       <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Modalidad de Asistencia <span class="text-[#b84a39]">*</span>
+        Modalidad de Asistencia o Participación <span class="text-[#b84a39]">*</span>
       </label>
       <select
         name="rol"
@@ -99,7 +93,8 @@ const {
         <option value="pareja">Pareja</option>
         <option value="mujer_sola">Mujer Sola (Unicornio)</option>
         <option value="hombre_solo">Hombre Solo (Single)</option>
-        <option value="otro">Otro / Explorador</option>
+        <option value="organizador_eventos">Organizador de Eventos Mente Abierta / Adultos</option>
+        <option value="aliado_terapeuta">Aliado / Terapeuta / Tallerista</option>
       </select>
     </div>
 
@@ -143,8 +138,6 @@ const {
   const inputAlias = document.getElementById("input-alias") as HTMLInputElement;
   const inputRol = document.getElementById("input-rol") as HTMLSelectElement;
   const inputCiudad = document.getElementById("input-ciudad") as HTMLSelectElement;
-  const greetingBadge = document.getElementById("greeting-badge") as HTMLElement;
-  const greetingText = document.getElementById("greeting-text") as HTMLElement;
   const formFeedback = document.getElementById("form-feedback") as HTMLElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
 
@@ -166,9 +159,6 @@ const {
       const data = await res.json();
 
       if (data.exists && data.lead) {
-        greetingText.textContent = `¡Hola de nuevo, ${data.lead.alias_nombre || "miembro"}! Reconocemos tu contacto. Actualiza o confirma tus datos.`;
-        greetingBadge.classList.remove("hidden");
-
         if (!inputAlias.value && data.lead.alias_nombre) inputAlias.value = data.lead.alias_nombre;
         if (!inputWhatsapp.value && data.lead.whatsapp) inputWhatsapp.value = data.lead.whatsapp;
         if (!inputEmail.value && data.lead.email) inputEmail.value = data.lead.email;
@@ -176,7 +166,7 @@ const {
         if (data.lead.ciudad) inputCiudad.value = data.lead.ciudad;
       }
     } catch (e) {
-      console.error("Check contact error:", e);
+      // Silent error - zero invasive messaging
     } finally {
       checking = false;
     }

@@ -12,7 +12,7 @@ export async function sendTransactionalEmail({
   html,
 }: SendEmailOptions): Promise<{ success: boolean; provider: string; error?: string }> {
   const zeptomailToken = process.env.ZEPTOMAIL_SEND_MAIL_TOKEN;
-  const fromEmail = process.env.ZEPTOMAIL_DEFAULT_FROM_EMAIL || "info@elplacerdecompartir.com";
+  const fromEmail = process.env.ZEPTOMAIL_DEFAULT_FROM_EMAIL || "web@elplacerdecompartir.com";
 
   // 1. Primary: ZeptoMail REST API (RFC 8058 & DMARC compliant)
   if (zeptomailToken) {

@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro";
 import { pool, upsertLead } from "../../../db";
+import { notifyNewTicket } from "../../../services/notifications";
 import crypto from "crypto";
 
 const PRICES: Record<string, { total: number; reserva_40: number; label: string }> = {
   pareja: { total: 100000, reserva_40: 40000, label: "Pareja" },
-  single: { total: 120000, reserva_40: 48000, label: "Single" },
-  unicornio: { total: 30000, reserva_40: 12000, label: "Unicornio (Mujer Sola)" },
+  single: { total: 120000, reserva_40: 50000, label: "Single (Hombre Solo)" },
+  unicornio: { total: 30000, reserva_40: 10000, label: "Unicornio (Mujer Sola)" },
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -37,6 +38,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // 2. Insert into event_tickets
     const client = await pool.connect();
     let ticketId = "";
+    const isDigitalGateway = metodo_pago === "pasarela_digital" || metodo_pago === "dlocal_go";
     try {
       const res = await client.query(
         `INSERT INTO event_tickets (
@@ -50,7 +52,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           modalidad_pago,
           monto,
           metodo_pago || "nequi_breb",
-          metodo_pago === "dlocal_go" ? "pendiente" : "pendiente_verificacion",
+          isDigitalGateway ? "pendiente" : "pendiente_verificacion",
           affiliateRef,
           ticketHash,
         ]
@@ -60,13 +62,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       client.release();
     }
 
+    // Multi-Channel Transactional Notifications (User, Brand & Evolution WhatsApp)
+    notifyNewTicket(
+      {
+        id: ticketId,
+        tipo_entrada: priceInfo.label,
+        tipo_pago: modalidad_pago,
+        monto_pagado: monto,
+        metodo_pago: metodo_pago || "nequi_breb",
+        ticket_hash: ticketHash,
+      },
+      lead
+    ).catch((e) => console.error("[Checkout Notifications Err]:", e));
+
     // 3. Handle Payment Method
-    if (metodo_pago === "dlocal_go") {
+    if (isDigitalGateway) {
       const apiKey = process.env.DLOCAL_GO_API_KEY;
       const secretKey = process.env.DLOCAL_GO_SECRET_KEY;
 
       if (apiKey && secretKey) {
-        // dLocal Go payment creation
+        // Digital gateway payment creation
         try {
           const dlRes = await fetch("https://api.dlocalgo.com/v1/payments", {
             method: "POST",
@@ -93,7 +108,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             });
           }
         } catch (e: any) {
-          console.warn("dLocal Go call error, fallback to direct channel:", e.message);
+          console.warn("Gateway payment call error, fallback to direct channel:", e.message);
         }
       }
     }

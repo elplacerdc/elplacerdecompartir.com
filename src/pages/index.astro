@@ -4,7 +4,7 @@ import Layout from "../layouts/Layout.astro";
 import LeadForm from "../components/LeadForm.astro";
 ---
 
-<Layout title="El Placer de Compartir | Santuario de Libertad, Erotismo Consciente y Comunidad">
+<Layout title="El Placer de Compartir | Libertad, Erotismo Consciente y Comunidad">
   <!-- Hero Section -->
   <section class="relative min-h-[90vh] flex items-center justify-center pt-24 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
     <!-- Ambient Radial Gradients -->
@@ -15,11 +15,11 @@ import LeadForm from "../components/LeadForm.astro";
       <!-- Tag / Eyebrow -->
       <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#c5a059]/10 border border-[#c5a059]/30 text-xs font-semibold uppercase tracking-widest text-[#ead397]">
         <span class="w-1.5 h-1.5 rounded-full bg-[#c5a059]"></span>
-        <span>Santuario de Erotismo Consciente & Comunidad</span>
+        <span>Espacio de Erotismo Consciente & Comunidad</span>
       </div>
 
       <!-- Main Title -->
-      <h1 class="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-[#f7f4ee] leading-[1.1]">
+      <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f7f4ee] leading-[1.15] break-words">
         El arte de compartir <br />
         <span class="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">
           el placer sin juicio ni ataduras
@@ -28,7 +28,7 @@ import LeadForm from "../components/LeadForm.astro";
 
       <!-- Subtitle -->
       <p class="max-w-2xl mx-auto text-base sm:text-lg text-[#f7f4ee]/75 font-light leading-relaxed">
-        Pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo desgenitalizado. Un espacio seguro, confidencial y humano.
+        Pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo libre de presiones. Un espacio seguro, confidencial y humano.
       </p>
 
       <!-- Action Buttons -->
@@ -90,19 +90,36 @@ import LeadForm from "../components/LeadForm.astro";
         </div>
       </div>
 
-      <!-- Society Banner Card -->
-      <div class="relative p-8 rounded-2xl bg-gradient-to-br from-[#180a22] to-[#0a0608] border border-[#c5a059]/40 shadow-[0_0_40px_rgba(197,160,89,0.15)] space-y-6">
+      <!-- Society Banner Card with Corset Logo and Event Flyer -->
+      <div class="relative p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[#180a22] to-[#0a0608] border border-[#c5a059]/40 shadow-[0_0_40px_rgba(197,160,89,0.15)] space-y-6">
         <div class="flex items-center justify-between">
-          <span class="text-xs uppercase tracking-widest text-[#c5a059] font-serif">Sociedad Secreta</span>
+          <div class="flex items-center gap-3">
+            <img 
+              src="/media/logo_corsetsociety_x.jpg" 
+              alt="Logo The Corset Society" 
+              class="h-12 w-auto object-contain drop-shadow-[0_0_12px_rgba(197,160,89,0.3)]" 
+            />
+            <div class="flex flex-col">
+              <span class="text-xs uppercase tracking-widest text-[#ead397] font-serif font-bold">The Corset Society</span>
+              <span class="text-[10px] uppercase tracking-wider text-[#c5a059]/70 font-sans">Línea Luxury & Gala Noir</span>
+            </div>
+          </div>
           <span class="px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40">Círculo Privado</span>
         </div>
-        <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397]">
-          The Corset Society
-        </h3>
+
+        <!-- Flyer Oficial Luna Llena Preview -->
+        <div class="rounded-xl overflow-hidden border border-[#c5a059]/30 shadow-md">
+          <img 
+            src="/media/corset-society/flyer_halloween_clean.jpg" 
+            alt="Flyer Oficial Luna Llena Halloween" 
+            class="w-full h-44 object-cover object-top hover:scale-105 transition-transform duration-500" 
+          />
+        </div>
+
         <p class="text-xs sm:text-sm text-[#f7f4ee]/70 leading-relaxed font-light">
           Gala Noir, antifaces y misterio en las noches de luna llena. Experiencias de alto voltaje donde el acceso se concede y jamás se anuncia.
         </p>
-        <div class="pt-4 border-t border-[#c5a059]/20 flex items-center justify-between">
+        <div class="pt-4 border-t border-[#c5a059]/20 flex flex-wrap items-center justify-between gap-3">
           <a href="/the-corset-society" class="px-5 py-2.5 rounded-full text-xs font-serif font-bold uppercase tracking-wider bg-[#c5a059] text-[#050505] hover:bg-[#ead397] transition-colors">
             Acceso Ceremonial
           </a>
@@ -127,23 +144,23 @@ import LeadForm from "../components/LeadForm.astro";
       <div class="p-6 rounded-xl bg-[#050505] border border-[#c5a059]/20 space-y-3">
         <div class="w-10 h-10 rounded-full bg-[#2e7d32]/20 border border-[#2e7d32]/40 flex items-center justify-center text-[#4caf50] font-serif font-bold">1</div>
         <h3 class="font-serif text-lg font-bold text-[#ead397]">Consentimiento Continuo</h3>
-        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
-          Un "sí" puede convertirse en un "no" en cualquier instante y es sagrado. La lucidez y la presencia son condiciones indispensables de cada encuentro.
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+          Un "sí" puede convertirse en un "no" en cualquier instante y es innegociable. La lucidez y la presencia son condiciones indispensables de cada encuentro.
         </p>
       </div>
 
       <div class="p-6 rounded-xl bg-[#050505] border border-[#c5a059]/20 space-y-3">
         <div class="w-10 h-10 rounded-full bg-[#b84a39]/20 border border-[#b84a39]/40 flex items-center justify-center text-[#b84a39] font-serif font-bold">2</div>
-        <h3 class="font-serif text-lg font-bold text-[#ead397]">Erotismo Desgenitalizado</h3>
-        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
-          El placer trasciende lo genital. Miradas, caricias, conversación, tacto, aromas y atmósfera constituyen el 90% de la energía erótica compartida.
+        <h3 class="font-serif text-lg font-bold text-[#ead397]">Sensualidad Libre de Presiones</h3>
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+          El placer trasciende lo genital. Miradas, caricias, complicidad, tacto, aromas y atmósfera constituyen la verdadera esencia erótica compartida.
         </p>
       </div>
 
       <div class="p-6 rounded-xl bg-[#050505] border border-[#c5a059]/20 space-y-3">
         <div class="w-10 h-10 rounded-full bg-[#682d7e]/20 border border-[#682d7e]/40 flex items-center justify-center text-[#ead397] font-serif font-bold">3</div>
         <h3 class="font-serif text-lg font-bold text-[#ead397]">Sigilo y Privacidad</h3>
-        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
+        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
           Cero cámaras no consentidas. Lo vivido dentro de nuestras puertas pertenece exclusivamente a la memoria de quienes lo compartieron.
         </p>
       </div>
@@ -154,7 +171,7 @@ import LeadForm from "../components/LeadForm.astro";
   <section id="registro" class="py-20 px-4 sm:px-6 lg:px-8 max-w-xl mx-auto">
     <LeadForm 
       title="Entrada a la Comunidad" 
-      subtitle="Ingresa tu WhatsApp o correo. Si ya formas parte de nuestra base de datos, te reconoceremos al instante."
+      subtitle="Ingresa tu WhatsApp o correo para recibir convocatorias privadas, talleres y novedades de la comunidad."
     />
   </section>
 </Layout>

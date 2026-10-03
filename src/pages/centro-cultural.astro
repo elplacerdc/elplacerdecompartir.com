@@ -6,85 +6,203 @@ import LeadForm from "../components/LeadForm.astro";
 
 <Layout 
   title="Centro Cultural El Placer de Compartir | Talleres, Arte Sensorial y Encuentros en Bogotá"
-  description="Nuevo espacio cultural en Bogotá dedicado a talleres de parejas, BDSM ético, masajes tántricos, nudismo consciente y dating auténtico."
+  description="Nuevo espacio cultural en Bogotá dedicado a talleres de parejas, BDSM ético, masajes tántricos, nudismo consciente, organizadores de eventos para adultos y dating auténtico."
 >
-  <div class="pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-20">
+  <div class="pt-16 sm:pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-16 sm:space-y-20">
     <!-- Hero Section -->
-    <div class="text-center max-w-3xl mx-auto space-y-6 pt-10">
+    <div class="text-center max-w-3xl mx-auto space-y-6 pt-6 sm:pt-10">
       <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#b84a39]/20 text-[#b84a39] border border-[#b84a39]/40">
         Espacio Físico Multidisciplinario • Bogotá
       </span>
-      <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-[#f7f4ee]">
+      <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f7f4ee] break-words">
         Centro Cultural <br />
         <span class="italic text-[#c5a059]">El Placer de Compartir</span>
       </h1>
       <p class="text-base sm:text-lg text-[#f7f4ee]/80 font-light leading-relaxed">
-        Un santuario arquitectónico diseñado para desmitificar el erotismo y celebrar el cuerpo sin tabúes comerciales ni mercantilización.
+        Un espacio cultural multidisciplinario concebido para desmitificar el erotismo y celebrar el cuerpo sin tabúes comerciales ni mercantilización.
       </p>
     </div>
 
-    <!-- Promoción Destacada de Afiliados (3 Referidos = Entrada Gratis) -->
-    <div class="p-8 sm:p-10 rounded-2xl bg-gradient-to-r from-[#180a22] via-[#2a1138] to-[#180a22] border-2 border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.25)] text-center space-y-4">
+    <!-- Primera Convocatoria: Flyer Oficial de Apertura -->
+    <div class="max-w-4xl mx-auto rounded-3xl bg-[#0a0608] border border-[#c5a059]/40 shadow-[0_0_40px_rgba(197,160,89,0.2)] overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
+      <div class="p-6 sm:p-8 space-y-4">
+        <span class="text-xs uppercase tracking-widest text-[#c5a059] font-serif font-bold">Invitación Exclusiva</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397]">
+          Primera Convocatoria de Apertura
+        </h2>
+        <p class="text-xs sm:text-sm text-[#f7f4ee]/80 leading-relaxed font-light">
+          Acompaña a Segi y a nuestro equipo de anfitriones en la apertura oficial de nuestro Centro Cultural en Bogotá. Una velada inaugural con cata sensorial, charlas descontracturadas y presentación de las salas de talleres.
+        </p>
+        <div class="pt-2 flex flex-wrap gap-3">
+          <a 
+            href="#postulacion" 
+            class="px-5 py-2.5 rounded-full bg-[#c5a059] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] transition-all"
+          >
+            Postularme como Aliado
+          </a>
+          <a 
+            href="https://wa.me/573194194785?text=Hola,%20deseo%20asistir%20a%20la%20primera%20invitación%20del%20Centro%20Cultural" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="px-5 py-2.5 rounded-full border border-[#c5a059]/40 text-[#ead397] font-serif font-semibold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10 transition-all flex items-center gap-1.5"
+          >
+            <span>Reservar por WhatsApp</span>
+            <span>↗</span>
+          </a>
+        </div>
+      </div>
+      <div class="p-4 sm:p-6 flex justify-center bg-[#050505]">
+        <img 
+          src="/media/primera_invitacion_centro_cultural.jpg" 
+          alt="Primera Invitación Centro Cultural El Placer de Compartir" 
+          class="rounded-2xl max-h-[480px] w-full object-contain border border-[#c5a059]/30 shadow-lg"
+        />
+      </div>
+    </div>
+
+    <!-- Promoción Destacada de Afiliados (Ecosistema Completo) -->
+    <div class="p-6 sm:p-10 rounded-2xl bg-gradient-to-r from-[#180a22] via-[#2a1138] to-[#180a22] border-2 border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.25)] text-center space-y-4">
       <div class="inline-block px-3 py-1 rounded bg-[#c5a059] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider">
-        Programa de Embajadores & Afiliados
+        Programa de Embajadores & Afiliados Global
       </div>
       <h2 class="font-serif text-2xl sm:text-4xl font-bold text-[#ead397]">
-        "Por cada 3 personas que refieras y paguen, tu entrada es 100% GRATIS"
+        "Por cada 3 personas que invites y asistan, tu entrada es 100% GRATIS"
       </h2>
-      <p class="text-sm text-[#f7f4ee]/80 max-w-2xl mx-auto font-light">
-        Comparte tu enlace personalizado. Nuestro sistema almacena una cookie de 30 días y te acredita automáticamente un pase de cortesía ilimitado al acumular cada terceto de asistentes confirmados.
+      <p class="text-xs sm:text-sm text-[#f7f4ee]/80 max-w-2xl mx-auto font-light leading-relaxed">
+        Tu enlace de embajador es válido para <strong>todas las experiencias del ecosistema</strong> (Centro Cultural, veladas de comunidad y eventos de The Corset Society). Queda vinculado a tu cuenta para tu futuro panel de analíticas y recompensas.
       </p>
       
-      <!-- Generador de Link de Afiliado Rápido -->
-      <div class="pt-4 max-w-md mx-auto">
-        <div class="flex gap-2">
+      <!-- Generador de Link de Afiliado con Compartir Inmediato -->
+      <div class="pt-4 max-w-xl mx-auto space-y-4">
+        <div class="flex flex-col sm:flex-row gap-2">
           <input 
             type="text" 
             id="affiliate-alias-input" 
-            placeholder="Escribe tu alias deseado" 
+            placeholder="Tu alias o código de embajador" 
             class="px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/40 text-sm text-[#f7f4ee] flex-1 focus:outline-none focus:border-[#c5a059]"
           />
           <button 
             id="generate-link-btn" 
-            class="px-5 py-3 rounded-lg bg-[#c5a059] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] transition-all"
+            type="button"
+            class="px-6 py-3 rounded-lg bg-[#c5a059] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] transition-all"
           >
-            Crear Link
+            Generar Enlace
           </button>
         </div>
-        <div id="generated-link-container" class="hidden mt-3 p-3 rounded bg-[#050505]/80 border border-[#c5a059]/30 text-xs text-[#81c784] break-all"></div>
+
+        <div id="generated-link-box" class="hidden p-5 rounded-xl bg-[#050505]/90 border border-[#c5a059]/40 text-left space-y-3">
+          <div>
+            <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold block">Tu Enlace Personal de Embajador:</span>
+            <span id="affiliate-link-display" class="text-xs sm:text-sm font-mono text-[#ead397] break-all select-all font-semibold"></span>
+          </div>
+
+          <!-- Social Share Buttons Row -->
+          <div class="pt-2 border-t border-[#c5a059]/20">
+            <span class="text-[10px] uppercase tracking-wider text-[#f7f4ee]/60 block mb-2 font-medium">Compartir de inmediato en redes:</span>
+            <div class="flex flex-wrap gap-2">
+              <a 
+                id="share-whatsapp" 
+                href="#" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25d366]/20 hover:bg-[#25d366]/30 text-[#25d366] border border-[#25d366]/40 text-xs font-medium transition-colors"
+              >
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.587 1.776.88 2.788.88 3.18 0 5.767-2.587 5.768-5.766.001-3.181-2.585-5.766-5.766-5.766zm9.969 5.766c-.002 5.519-4.49 9.999-10.01 9.999-1.758 0-3.418-.465-4.885-1.275l-7.105 1.864 1.896-6.931c-.886-1.527-1.396-3.298-1.396-5.184.002-5.518 4.49-10.001 10.01-10.001 5.519 0 10.008 4.482 10.01 10.003z"/></svg>
+                <span>WhatsApp</span>
+              </a>
+
+              <a 
+                id="share-telegram" 
+                href="#" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#229ed9]/20 hover:bg-[#229ed9]/30 text-[#229ed9] border border-[#229ed9]/40 text-xs font-medium transition-colors"
+              >
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.536-.194 1.006.128.832.942z"/></svg>
+                <span>Telegram</span>
+              </a>
+
+              <a 
+                id="share-x" 
+                href="#" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-[#f7f4ee] border border-white/20 text-xs font-medium transition-colors"
+              >
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                <span>X / Twitter</span>
+              </a>
+
+              <a 
+                id="share-facebook" 
+                href="#" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1877f2]/20 hover:bg-[#1877f2]/30 text-[#1877f2] border border-[#1877f2]/40 text-xs font-medium transition-colors"
+              >
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                <span>Facebook</span>
+              </a>
+
+              <button 
+                id="copy-link-btn" 
+                type="button" 
+                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/10 text-xs font-medium transition-colors"
+              >
+                📋 <span id="copy-btn-text">Copiar</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Actividades & Experiencias -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
-        <span class="text-2xl">🌿</span>
-        <h3 class="font-serif text-xl font-bold text-[#ead397]">Masajes & Tacto Consciente</h3>
-        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
-          Talleres de masaje tántrico, desensibilización sensorial y desbloqueo emocional guiados por terapeutas certificados.
-        </p>
+    <!-- Actividades & Alianzas -->
+    <div class="space-y-6">
+      <div class="text-center space-y-2">
+        <span class="text-xs uppercase tracking-widest text-[#c5a059] font-serif">Áreas de Colaboración & Talleres</span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#f7f4ee]">Ecosistema Multidisciplinario</h2>
       </div>
 
-      <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
-        <span class="text-2xl">⛓️</span>
-        <h3 class="font-serif text-xl font-bold text-[#ead397]">BDSM Ético & Shibari</h3>
-        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
-          Cuerdas japonesas, dinámicas de poder acordadas, protocolos de seguridad SSC (Sano, Seguro y Consentido).
-        </p>
-      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
+          <span class="text-2xl">🌿</span>
+          <h3 class="font-serif text-lg font-bold text-[#ead397]">Masajes & Tacto Consciente</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+            Talleres de masaje tántrico, desensibilización sensorial y desbloqueo emocional guiados por terapeutas certificados.
+          </p>
+        </div>
 
-      <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
-        <span class="text-2xl">✨</span>
-        <h3 class="font-serif text-xl font-bold text-[#ead397]">Nudismo Social & Conexión</h3>
-        <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
-          Espacio seguro de desnudamiento libre de connotaciones sexuales obligatorias. Normalización del cuerpo en su estado natural.
-        </p>
+        <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
+          <span class="text-2xl">⛓️</span>
+          <h3 class="font-serif text-lg font-bold text-[#ead397]">BDSM Ético & Shibari</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+            Cuerdas japonesas, dinámicas de poder acordadas, protocolos de seguridad SSC (Sano, Seguro y Consentido).
+          </p>
+        </div>
+
+        <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/20 space-y-3">
+          <span class="text-2xl">✨</span>
+          <h3 class="font-serif text-lg font-bold text-[#ead397]">Nudismo Social & Conexión</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+            Espacio seguro de desnudamiento libre de connotaciones sexuales obligatorias. Normalización del cuerpo en su estado natural.
+          </p>
+        </div>
+
+        <!-- Nueva Sección: Organizadores de Eventos para Adultos y Mente Abierta -->
+        <div class="p-6 rounded-xl bg-[#0a0608] border border-[#c5a059]/40 bg-gradient-to-b from-[#180a22]/40 to-[#0a0608] space-y-3">
+          <span class="text-2xl">🥂</span>
+          <h3 class="font-serif text-lg font-bold text-[#c5a059]">Organizadores de Eventos Mente Abierta</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
+            Coproducción de galas privadas, fiestas temáticas, salones de networking swinger y experiencias para adultos con curaduría ética y logística segura.
+          </p>
+        </div>
       </div>
     </div>
 
     <!-- Filosofía SegiSw -->
-    <div class="p-8 rounded-2xl bg-[#050505] border border-[#c5a059]/30 space-y-4">
-      <h3 class="font-serif text-xl font-bold text-[#c5a059] uppercase tracking-wider">
+    <div class="p-6 sm:p-8 rounded-2xl bg-[#050505] border border-[#c5a059]/30 space-y-4">
+      <h3 class="font-serif text-lg sm:text-xl font-bold text-[#c5a059] uppercase tracking-wider">
         Filosofía de la Dirección (@SegiSw)
       </h3>
       <p class="text-sm text-[#f7f4ee]/80 leading-relaxed font-light">
@@ -92,11 +210,11 @@ import LeadForm from "../components/LeadForm.astro";
       </p>
     </div>
 
-    <!-- Formulario para Aliados y Terapeutas -->
-    <div class="max-w-xl mx-auto">
+    <!-- Formulario para Aliados, Terapeutas y Organizadores -->
+    <div id="postulacion" class="max-w-xl mx-auto">
       <LeadForm 
-        title="Postulación para Aliados & Terapeutas"
-        subtitle="¿Eres masajista, facilitador de BDSM, sexólogo o artista? Déjanos tus datos para coordinar una alianza en nuestro Centro Cultural."
+        title="Postulación para Organizadores de Eventos Mente Abierta, Aliados & Terapeutas"
+        subtitle="¿Organizas eventos para adultos o mente abierta, facilitas BDSM ético, dictas talleres de tantra o arte sensorial? Déjanos tus datos para coordinar alianzas y fechas en nuestro Centro Cultural."
       />
     </div>
   </div>
@@ -104,16 +222,45 @@ import LeadForm from "../components/LeadForm.astro";
   <script>
     const aliasInput = document.getElementById("affiliate-alias-input") as HTMLInputElement;
     const genBtn = document.getElementById("generate-link-btn") as HTMLButtonElement;
-    const linkContainer = document.getElementById("generated-link-container") as HTMLElement;
+    const linkBox = document.getElementById("generated-link-box") as HTMLElement;
+    const linkDisplay = document.getElementById("affiliate-link-display") as HTMLElement;
+    const copyBtn = document.getElementById("copy-link-btn") as HTMLButtonElement;
+    const copyText = document.getElementById("copy-btn-text") as HTMLElement;
+    const shareWa = document.getElementById("share-whatsapp") as HTMLAnchorElement;
+    const shareTg = document.getElementById("share-telegram") as HTMLAnchorElement;
+    const shareX = document.getElementById("share-x") as HTMLAnchorElement;
+    const shareFb = document.getElementById("share-facebook") as HTMLAnchorElement;
 
     genBtn?.addEventListener("click", () => {
       const alias = aliasInput.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
-      if (!alias) return;
+      if (!alias) {
+        aliasInput.focus();
+        return;
+      }
 
       const url = `https://elplacerdecompartir.com/r/${alias}`;
-      linkContainer.innerHTML = `Tu enlace de afiliado personal:<br/><strong class="text-[#c5a059]">${url}</strong><br/><span class="text-[10px] text-[#f7f4ee]/60">Copiado al portapapeles. Compártelo con tus amigos.</span>`;
-      linkContainer.classList.remove("hidden");
+      linkDisplay.textContent = url;
+      linkBox.classList.remove("hidden");
+
+      const shareText = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society en Bogotá. Explora las experiencias con mi enlace de invitado: ${url}`);
+      const encodedUrl = encodeURIComponent(url);
+
+      if (shareWa) shareWa.href = `https://wa.me/?text=${shareText}`;
+      if (shareTg) shareTg.href = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent("Experiencias de libertad, cultura y sensualidad consciente en Bogotá")}`;
+      if (shareX) shareX.href = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodeURIComponent("Descubre El Placer de Compartir & The Corset Society en Bogotá:")}`;
+      if (shareFb) shareFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+
       navigator.clipboard.writeText(url).catch(() => {});
+    });
+
+    copyBtn?.addEventListener("click", () => {
+      const text = linkDisplay.textContent;
+      if (text) {
+        navigator.clipboard.writeText(text).then(() => {
+          if (copyText) copyText.textContent = "¡Copiado!";
+          setTimeout(() => { if (copyText) copyText.textContent = "Copiar"; }, 2000);
+        });
+      }
     });
   </script>
 </Layout>

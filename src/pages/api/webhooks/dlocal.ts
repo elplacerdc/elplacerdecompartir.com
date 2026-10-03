@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { pool, recordAffiliatePayment } from "../../../db";
 import { sendTransactionalEmail } from "../../../services/email";
+import { sendEvolutionWhatsApp } from "../../../services/notifications";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -57,6 +58,34 @@ export const POST: APIRoute = async ({ request }) => {
                 `,
               });
             }
+
+            // Brand notification email & WhatsApp alert
+            const brandSubject = `[Pago Exitoso Digital] ${ticket.tipo_entrada.toUpperCase()} - ${leadRes.rows[0]?.alias_nombre || 'Invitado'}`;
+            const brandHtml = `
+              <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
+                <h2 style="color: #2e7d32;">Pago Confirmado (Pasarela Digital)</h2>
+                <p><strong>Invitado:</strong> ${leadRes.rows[0]?.alias_nombre || 'N/A'}</p>
+                <p><strong>Entrada:</strong> ${ticket.tipo_entrada} (${ticket.tipo_pago})</p>
+                <p><strong>Monto:</strong> $${Number(ticket.monto_pagado).toLocaleString('es-CO')} COP</p>
+                <p><strong>Transacción ID:</strong> ${event.payment_id || event.id}</p>
+                <p><strong>Ticket Hash:</strong> ${ticket.ticket_hash}</p>
+              </div>
+            `;
+            sendTransactionalEmail({
+              to: "web@elplacerdecompartir.com",
+              name: "Admin El Placer de Compartir",
+              subject: brandSubject,
+              html: brandHtml,
+            }).catch(() => {});
+
+            sendEvolutionWhatsApp(
+              "573021004070",
+              `✅ *PAGO CONFIRMADO (Pasarela Digital)*\n\n` +
+              `🎟️ *Entrada:* ${ticket.tipo_entrada} (${ticket.tipo_pago})\n` +
+              `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
+              `👤 *Invitado:* ${leadRes.rows[0]?.alias_nombre || 'N/A'}\n` +
+              `🔐 *Hash:* ${ticket.ticket_hash.substring(0, 16)}`
+            ).catch(() => {});
           }
         }
       } finally {
