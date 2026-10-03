@@ -305,18 +305,18 @@ import Layout from "../../layouts/Layout.astro";
                 type="button" 
                 id="btnDigitalPay"
                 onclick="handleCheckout('pasarela_digital')"
-                class="py-3.5 px-6 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.4)] transition-all"
+                class="py-3.5 px-6 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.4)] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Pagar Online (Tarjetas / PSE / Bancos)
+                Pagar Online con dLocal Go (Tarjetas / PSE / Nequi)
               </button>
 
               <button 
                 type="button" 
                 id="btnNequi"
                 onclick="handleCheckout('nequi_breb')"
-                class="py-3.5 px-6 rounded-full font-serif font-bold uppercase tracking-wider text-xs border border-[#c5a059] text-[#ead397] hover:bg-[#c5a059]/15 transition-all"
+                class="py-3.5 px-6 rounded-full font-serif font-bold uppercase tracking-wider text-xs border border-[#c5a059] text-[#ead397] hover:bg-[#c5a059]/15 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Separar Nequi / Bre-B
+                Coordinar por WhatsApp (Transferencia Directa)
               </button>
             </div>
 
@@ -369,20 +369,27 @@ import Layout from "../../layouts/Layout.astro";
     }
 
     async function handleCheckout(metodo) {
-      const form = document.getElementById('checkoutForm');
       const alias = document.getElementById('alias_nombre')?.value.trim();
       const whatsapp = document.getElementById('whatsapp')?.value.trim();
       const email = document.getElementById('email')?.value.trim();
       const tipo_entrada = document.getElementById('tipo_entrada')?.value;
       const modalidad = document.querySelector('input[name="modalidad"]:checked')?.value;
       const msg = document.getElementById('checkoutMsg');
+      const btnDigital = document.getElementById('btnDigitalPay');
+      const btnNequi = document.getElementById('btnNequi');
 
       if (!alias || !whatsapp || !email) {
         if (msg) msg.textContent = 'Por favor completa todos los campos requeridos (*).';
         return;
       }
 
-      if (msg) msg.textContent = 'Sellando tu credencial de acceso...';
+      // Deshabilitar botones para evitar multi-clic concurrente
+      if (btnDigital) btnDigital.disabled = true;
+      if (btnNequi) btnNequi.disabled = true;
+
+      if (msg) msg.textContent = metodo === 'pasarela_digital' 
+        ? 'Conectando con la pasarela segura dLocal Go...' 
+        : 'Generando enlace directo con mayordomía...';
 
       try {
         const res = await fetch('/api/checkout/create', {
@@ -400,14 +407,19 @@ import Layout from "../../layouts/Layout.astro";
 
         const data = await res.json();
         if (data.redirect_url) {
+          if (msg) msg.textContent = 'Redirigiendo a pasarela...';
           window.location.href = data.redirect_url;
         } else if (data.ticketHash) {
           window.location.href = `/the-corset-society/ticket?hash=${data.ticketHash}`;
         } else if (data.error) {
           if (msg) msg.textContent = 'Error: ' + data.error;
+          if (btnDigital) btnDigital.disabled = false;
+          if (btnNequi) btnNequi.disabled = false;
         }
       } catch (err) {
         if (msg) msg.textContent = 'Ocurrió un error al procesar la reserva. Intenta de nuevo.';
+        if (btnDigital) btnDigital.disabled = false;
+        if (btnNequi) btnNequi.disabled = false;
       }
     }
 

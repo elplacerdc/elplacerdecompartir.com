@@ -1,6 +1,7 @@
 export interface SendEmailOptions {
   to: string;
   name?: string;
+  fromName?: string;
   subject: string;
   html: string;
 }
@@ -8,6 +9,7 @@ export interface SendEmailOptions {
 export async function sendTransactionalEmail({
   to,
   name,
+  fromName,
   subject,
   html,
 }: SendEmailOptions): Promise<{ success: boolean; provider: string; error?: string }> {
@@ -29,7 +31,7 @@ export async function sendTransactionalEmail({
           Authorization: authHeader,
         },
         body: JSON.stringify({
-          from: { address: fromEmail, name: "El Placer de Compartir" },
+          from: { address: fromEmail, name: fromName || "El Placer de Compartir" },
           to: [{ email_address: { address: to, name: name || to } }],
           subject,
           htmlbody: html,

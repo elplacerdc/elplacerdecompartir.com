@@ -51,34 +51,72 @@ export async function notifyNewLead(lead: {
   origen?: string;
   corset_vip?: boolean;
 }): Promise<void> {
-  const channelName = lead.corset_vip ? "The Corset Society (VIP)" : "El Placer de Compartir";
+  const isCorset = Boolean(lead.corset_vip);
+  const channelName = isCorset ? "The Corset Society (VIP)" : "El Placer de Compartir";
 
   // 1. Correo transaccional al Usuario (si suministró email)
   if (lead.email) {
-    const userSubject = lead.corset_vip
-      ? "The Corset Society — Solicitud Registrada"
-      : "Bienvenido a El Placer de Compartir";
+    if (isCorset) {
+      // The Corset Society: Noir & Gold con logo transparente
+      const corsetHtml = `
+        <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
+          <div style="margin-bottom: 20px;">
+            <img src="https://elplacerdecompartir.com/media/logo_corsetsociety_transparent.png" alt="The Corset Society" style="height: 60px; width: auto; margin: 0 auto; display: block;" />
+          </div>
+          <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 3px; font-size: 18px; margin: 0 0 10px 0;">The Corset Society</h1>
+          <div style="width: 40px; height: 1px; background-color: #c5a059; margin: 0 auto 25px auto;"></div>
+          <div style="text-align: left; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
+            <p>Estimado(a) <strong style="color: #ead397;">${lead.alias_nombre || "Invitado(a)"}</strong>,</p>
+            <p>Tu solicitud para acceder a nuestro círculo privado ha sido recibida con estricto sigilo. Evaluamos cada perfil con detenimiento para salvaguardar la intimidad, la elegancia y el confort de nuestras veladas.</p>
+            <p style="color: #ead397; font-style: italic; font-family: 'Cinzel', Georgia, serif; text-align: center; margin: 25px 0; font-size: 15px;">
+              «El acceso se concede, no se anuncia.»
+            </p>
+            <p>Si tu postulación es concedida, nuestra mayordomía se comunicará contigo vía WhatsApp a tu número registrado (<strong>${lead.whatsapp}</strong>) con las instrucciones y el protocolo de admisión.</p>
+          </div>
+          <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
+          <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">The Corset Society • Círculo Privado de Gala<br/>Línea Oficial de Mayordomía: +57 319 419 4785</p>
+        </div>
+      `;
 
-    const userHtml = `
-      <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', serif, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #c5a059;">
-        <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 2px; font-size: 20px;">${channelName}</h1>
-        <p>Hola <strong>${lead.alias_nombre || "Invitado"}</strong>,</p>
-        <p>${
-          lead.corset_vip
-            ? "Tu solicitud para acceder a nuestro círculo privado ha sido recibida con estricto sigilo. Evaluamos cada perfil con detenimiento para salvaguardar la intimidad de nuestras veladas. El acceso se concede, no se anuncia."
-            : "Te damos la bienvenida a nuestra comunidad de libertad, erotismo consciente y respeto mutuo. Pronto recibirás nuestras convocatorias a encuentros y talleres."
-        }</p>
-        <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.3); margin: 30px 0;" />
-        <p style="font-size: 11px; color: #888;">El Placer de Compartir • Bogotá & Medellín<br/>Línea Oficial: +57 319 419 4785</p>
-      </div>
-    `;
+      sendTransactionalEmail({
+        to: lead.email,
+        name: lead.alias_nombre || undefined,
+        fromName: "La Sociedad del Corset",
+        subject: "The Corset Society — Solicitud Registrada",
+        html: corsetHtml,
+      }).catch((e) => console.error("[NotifyLead Corset Email Err]:", e));
+    } else {
+      // El Placer de Compartir: Salón cálido y luminoso de comunidad
+      const placerHtml = `
+        <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #591f26; text-align: center;">
+          <div style="margin-bottom: 20px;">
+            <img src="https://elplacerdecompartir.com/media/logo_elplacerdc_x.jpg" alt="El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+          </div>
+          <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">El Placer de Compartir</h1>
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; margin-bottom: 20px;">Comunidad de Erotismo Consciente & Centro Cultural</div>
+          <div style="text-align: left; font-family: 'Inter', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
+            <p>Hola <strong style="color: #ead397;">${lead.alias_nombre || "Bienvenido(a)"}</strong>,</p>
+            <p>Te damos una cálida bienvenida a nuestra comunidad. Somos pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo libre de presiones.</p>
+            <div style="background-color: #260d1d; border-left: 3px solid #c5a059; padding: 15px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0; font-size: 13px; color: #f7d6cb;">
+                🏛️ <strong>Nuevo Centro Cultural en Bogotá:</strong> Un espacio físico multidisciplinario para talleres de parejas, masajes tántricos, BDSM ético, nudismo consciente y encuentros sensoriales.
+              </p>
+            </div>
+            <p>Pronto recibirás nuestras convocatorias a veladas y actividades. Aquí tu ritmo es soberano y tu consentimiento, innegociable.</p>
+          </div>
+          <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
+          <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">El Placer de Compartir • Bogotá & Medellín<br/>Línea Oficial: +57 319 419 4785</p>
+        </div>
+      `;
 
-    sendTransactionalEmail({
-      to: lead.email,
-      name: lead.alias_nombre || undefined,
-      subject: userSubject,
-      html: userHtml,
-    }).catch((e) => console.error("[NotifyLead UserEmail Err]:", e));
+      sendTransactionalEmail({
+        to: lead.email,
+        name: lead.alias_nombre || undefined,
+        fromName: "El Placer de Compartir",
+        subject: "Bienvenido a El Placer de Compartir",
+        html: placerHtml,
+      }).catch((e) => console.error("[NotifyLead Placer Email Err]:", e));
+    }
   }
 
   // 2. Correo transaccional a la Marca (web@elplacerdecompartir.com)
@@ -106,8 +144,38 @@ export async function notifyNewLead(lead: {
     html: brandHtml,
   }).catch((e) => console.error("[NotifyLead BrandEmail Err]:", e));
 
-  // 3. Notificación WhatsApp al Evolution Inicial (3021004070)
-  const waText = 
+  // 3. Notificación WhatsApp directa al Lead (Mensaje de Bienvenida con Voz de Marca)
+  if (isCorset) {
+    const leadCorsetWa =
+      `🖤 *THE CORSET SOCIETY — CÍRCULO HERMÉTICO*\n\n` +
+      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
+      `Hemos recibido tu solicitud de admisión a nuestro círculo privado con estricto sigilo.\n\n` +
+      `Evaluamos cada perfil con detenimiento para proteger la intimidad, el confort y la elegancia de nuestras veladas.\n\n` +
+      `Si tu acceso es concedido, nuestra mayordomía se comunicará contigo por esta línea para coordinar tu protocolo de admisión.\n\n` +
+      `_El acceso se concede, no se anuncia._\n\n` +
+      `🎩 *The Corset Society*`;
+
+    sendEvolutionWhatsApp(lead.whatsapp, leadCorsetWa).catch((e) =>
+      console.error("[NotifyLead Corset WhatsApp Err]:", e)
+    );
+  } else {
+    const leadPlacerWa =
+      `🌹 *BIENVENIDO(A) A EL PLACER DE COMPARTIR*\n\n` +
+      `Hola *${lead.alias_nombre || "Bienvenido(a)"}* ✨\n\n` +
+      `Qué alegría darte la bienvenida a nuestra comunidad de libertad relacional, erotismo consciente y respeto mutuo.\n\n` +
+      `🏛️ *Centro Cultural en Bogotá*: Un espacio físico seguro para talleres de parejas, masajes tántricos, BDSM ético y experiencias sensoriales.\n\n` +
+      `Aquí la prioridad es tu confort, tu ritmo soberano y la cultura de consentimiento lúcido.\n\n` +
+      `Pronto recibirás detalles de nuestras próximas veladas y encuentros comunitarios.\n\n` +
+      `Si tienes cualquier duda, esta es nuestra línea de atención directa.\n\n` +
+      `🌹 *El Placer de Compartir*`;
+
+    sendEvolutionWhatsApp(lead.whatsapp, leadPlacerWa).catch((e) =>
+      console.error("[NotifyLead Placer WhatsApp Err]:", e)
+    );
+  }
+
+  // 4. Notificación WhatsApp al Evolution Inicial (3021004070 - Telemetría Interna)
+  const adminWaText = 
     `🔥 *NUEVO REGISTRO EN WEB*\n\n` +
     `🏷️ *Canal:* ${channelName}\n` +
     `👤 *Alias:* ${lead.alias_nombre || "No especificado"}\n` +
@@ -117,8 +185,8 @@ export async function notifyNewLead(lead: {
     `📍 *Ciudad:* ${lead.ciudad || "Bogotá"}\n` +
     `⏱️ *Hora:* ${new Date().toLocaleTimeString("es-CO")}`;
 
-  sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, waText).catch((e) =>
-    console.error("[NotifyLead Evolution WhatsApp Err]:", e)
+  sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, adminWaText).catch((e) =>
+    console.error("[NotifyLead Admin WhatsApp Err]:", e)
   );
 }
 
@@ -134,23 +202,32 @@ export async function notifyNewTicket(ticket: {
   whatsapp: string;
   email?: string;
 }): Promise<void> {
-  // 1. Correo al Usuario
+  const ticketUrl = `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticket.ticket_hash}`;
+
+  // 1. Correo al Usuario con Credencial Oficial
   if (lead.email) {
     const userSubject = "The Corset Society — Tu Credencial Digital (Noche de Luna Llena)";
-    const ticketUrl = `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticket.ticket_hash}`;
     const userHtml = `
-      <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', serif, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059;">
-        <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 2px; font-size: 20px;">The Corset Society</h1>
-        <h2 style="color: #ead397; font-size: 16px;">Noche de Luna Llena 🌕</h2>
-        <p>Estimado(a) <strong>${lead.alias_nombre || "Invitado"}</strong>,</p>
-        <p>Tu reserva para la velada privada del <strong>Sábado 31 de Octubre</strong> ha sido registrada con éxito.</p>
-        <div style="background-color: #140a18; border: 1px solid #c5a059; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <p style="margin: 5px 0;"><strong>Pase:</strong> ${ticket.tipo_entrada.toUpperCase()}</p>
-          <p style="margin: 5px 0;"><strong>Modalidad:</strong> ${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"}</p>
-          <p style="margin: 5px 0;"><strong>Monto:</strong> $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP</p>
-          <p style="margin: 5px 0;"><strong>ID Lacrado:</strong> ${ticket.ticket_hash.substring(0, 16)}</p>
+      <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', serif, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
+        <div style="margin-bottom: 20px;">
+          <img src="https://elplacerdecompartir.com/media/logo_corsetsociety_transparent.png" alt="The Corset Society" style="height: 60px; width: auto; margin: 0 auto; display: block;" />
         </div>
-        <p><a href="${ticketUrl}" style="background-color: #c5a059; color: #050505; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block;">Ver Credencial Oficial</a></p>
+        <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 2px; font-size: 20px; margin: 0 0 10px 0;">The Corset Society</h1>
+        <h2 style="color: #ead397; font-size: 16px; margin: 0 0 20px 0;">Noche de Luna Llena 🌕</h2>
+        <div style="text-align: left; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #eee;">
+          <p>Estimado(a) <strong>${lead.alias_nombre || "Invitado(a)"}</strong>,</p>
+          <p>Tu reserva para la velada privada del <strong>Sábado 31 de Octubre</strong> ha sido confirmada con éxito.</p>
+          <div style="background-color: #140a18; border: 1px solid #c5a059; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Pase:</strong> ${ticket.tipo_entrada.toUpperCase()}</p>
+            <p style="margin: 5px 0;"><strong>Modalidad:</strong> ${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"}</p>
+            <p style="margin: 5px 0;"><strong>Monto:</strong> $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP</p>
+            <p style="margin: 5px 0;"><strong>ID Lacrado:</strong> ${ticket.ticket_hash.substring(0, 16)}</p>
+          </div>
+          <div style="text-align: center; margin: 25px 0;">
+            <a href="${ticketUrl}" style="background-color: #c5a059; color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Ver Credencial Digital con QR</a>
+          </div>
+          <p style="font-size: 12px; color: #aaa;">Recuerda presentar el código QR de tu credencial al ingresar. Las coordenadas de la locación secreta se informarán 24 horas antes por WhatsApp confidencial.</p>
+        </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.3); margin: 30px 0;" />
         <p style="font-size: 11px; color: #888;">El acceso se concede, no se anuncia. Bogotá, Colombia.</p>
       </div>
@@ -159,16 +236,17 @@ export async function notifyNewTicket(ticket: {
     sendTransactionalEmail({
       to: lead.email,
       name: lead.alias_nombre || undefined,
+      fromName: "La Sociedad del Corset",
       subject: userSubject,
       html: userHtml,
     }).catch((e) => console.error("[NotifyTicket UserEmail Err]:", e));
   }
 
   // 2. Correo a la Marca
-  const brandSubject = `[Nueva Reserva] ${ticket.tipo_entrada.toUpperCase()} ($${Number(ticket.monto_pagado).toLocaleString("es-CO")}) - ${lead.alias_nombre}`;
+  const brandSubject = `[Nueva Reserva Confirmada] ${ticket.tipo_entrada.toUpperCase()} ($${Number(ticket.monto_pagado).toLocaleString("es-CO")}) - ${lead.alias_nombre}`;
   const brandHtml = `
     <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
-      <h2 style="color: #721c24;">Nueva Reserva Noche de Luna Llena</h2>
+      <h2 style="color: #721c24;">Nueva Reserva Confirmada Noche de Luna Llena</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Invitado:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.alias_nombre}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.whatsapp}</td></tr>
@@ -184,13 +262,30 @@ export async function notifyNewTicket(ticket: {
   sendTransactionalEmail({
     to: BRAND_NOTIFICATION_EMAIL,
     name: "The Corset Society Concierge",
+    fromName: "La Sociedad del Corset",
     subject: brandSubject,
     html: brandHtml,
   }).catch((e) => console.error("[NotifyTicket BrandEmail Err]:", e));
 
-  // 3. WhatsApp a Evolution Inicial
-  const waText = 
-    `🌕 *NUEVA RESERVA DE ENTRADA — CORSET SOCIETY*\n\n` +
+  // 3. WhatsApp Directo al Comprador (lead.whatsapp) con Enlace a su Credencial y QR
+  const buyerWaText = 
+    `🌕 *CREDENCIAL OFICIAL CONFIRMADA — THE CORSET SOCIETY*\n\n` +
+    `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
+    `Tu acceso para la velada privada *Noche de Luna Llena* (Sábado 31 de Octubre) ha sido confirmado.\n\n` +
+    `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()}\n` +
+    `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n\n` +
+    `🔐 *Accede a tu credencial sellada con código QR:* \n${ticketUrl}\n\n` +
+    `📍 Presenta tu credencial digital al ingresar. Las coordenadas exactas de la reserva privada se compartirán 24h antes por este medio.\n\n` +
+    `_El acceso se concede, no se anuncia._\n` +
+    `🎩 *The Corset Society*`;
+
+  sendEvolutionWhatsApp(lead.whatsapp, buyerWaText).catch((e) =>
+    console.error("[NotifyTicket Buyer WhatsApp Err]:", e)
+  );
+
+  // 4. WhatsApp al Evolution Inicial (Admin Telemetría)
+  const adminWaText = 
+    `🌕 *RESERVA CONFIRMADA — CORSET SOCIETY*\n\n` +
     `🎟️ *Entrada:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago})\n` +
     `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
     `👤 *Invitado:* ${lead.alias_nombre}\n` +
@@ -199,7 +294,7 @@ export async function notifyNewTicket(ticket: {
     `🔐 *Hash:* ${ticket.ticket_hash.substring(0, 16)}\n` +
     `⏱️ *Hora:* ${new Date().toLocaleTimeString("es-CO")}`;
 
-  sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, waText).catch((e) =>
-    console.error("[NotifyTicket Evolution WhatsApp Err]:", e)
+  sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, adminWaText).catch((e) =>
+    console.error("[NotifyTicket Admin WhatsApp Err]:", e)
   );
 }

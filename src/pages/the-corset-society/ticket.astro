@@ -2,10 +2,12 @@
 // the-corset-society/ticket.astro - Credencial Digital Sellada de Evento
 import Layout from "../../layouts/Layout.astro";
 import { query } from "../../db";
+import QRCode from "qrcode";
 
 const hash = Astro.url.searchParams.get("hash");
 let ticket: any = null;
 let lead: any = null;
+let qrSvg = "";
 
 if (hash) {
   try {
@@ -24,9 +26,20 @@ if (hash) {
         whatsapp: ticket.whatsapp,
         rol: ticket.rol,
       };
+
+      const ticketUrl = `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticket.ticket_hash}`;
+      qrSvg = await QRCode.toString(ticketUrl, {
+        type: "svg",
+        color: {
+          dark: "#C5A059",
+          light: "#00000000",
+        },
+        margin: 1,
+        width: 160,
+      });
     }
   } catch (err) {
-    console.error("Error consultando ticket:", err);
+    console.error("Error consultando ticket o generando QR:", err);
   }
 }
 ---
@@ -96,12 +109,17 @@ if (hash) {
               </div>
             </div>
 
-            <!-- Ticket Hash & Barcode simulation -->
-            <div class="space-y-2 pt-2">
-              <div class="text-[10px] font-mono tracking-widest text-[#f7f4ee]/40 uppercase">
+            <!-- Official Scannable Real QR & ID Lacrado -->
+            <div class="space-y-3 pt-2 flex flex-col items-center">
+              <div class="p-3 bg-[#050505] rounded-2xl border border-[#c5a059]/40 shadow-[0_0_25px_rgba(197,160,89,0.2)] flex flex-col items-center">
+                <div class="w-36 h-36 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full" set:html={qrSvg} />
+                <span class="text-[9px] font-mono tracking-widest text-[#ead397] uppercase mt-2">
+                  Escanear en Puerta para Validación
+                </span>
+              </div>
+              <div class="text-[10px] font-mono tracking-widest text-[#f7f4ee]/50 uppercase">
                 ID Lacrado: {ticket.ticket_hash ? ticket.ticket_hash.substring(0, 16) : 'CONFIDENTIAL'}
               </div>
-              <div class="h-10 bg-[repeating-linear-gradient(90deg,#c5a059_0,#c5a059_2px,transparent_2px,transparent_6px,#c5a059_6px,#c5a059_10px,transparent_10px,transparent_13px)] opacity-50 rounded"></div>
             </div>
 
             <!-- Security Instruction -->

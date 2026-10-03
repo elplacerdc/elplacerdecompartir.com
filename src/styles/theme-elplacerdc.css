@@ -15,8 +15,11 @@
     /* ==========================================================================
        El Placer de Compartir (Marca Paraguas, Centro Cultural & Salón Lindo)
        ========================================================================== */
+    --color-elplacer-canvas-salon: #180A1A;
+    --color-elplacer-canvas-card: #250F22;
+    --color-elplacer-canvas-card-hover: #32142E;
     --color-elplacer-canvas-blush: #F7D6CB;
-    --color-elplacer-canvas-light: #FDF8F5;
+    --color-elplacer-canvas-light: #2A1126;
     --color-elplacer-velvet-wine: #591F26;
     --color-elplacer-wine-deep: #380913;
     --color-elplacer-gold-champagne: #C5A059;
@@ -55,8 +58,10 @@
 .border-corset-gold { border-color: var(--color-corset-gold); }
 .bg-corset-burgundy { background-color: var(--color-corset-velvet-burgundy); }
 
+.bg-elplacer-salon { background-color: var(--color-elplacer-canvas-salon); }
+.bg-elplacer-card { background-color: var(--color-elplacer-canvas-card); }
 .bg-elplacer-blush { background-color: var(--color-elplacer-canvas-blush); }
-.bg-elplacer-light { background-color: var(--color-elplacer-canvas-light); }
+.bg-elplacer-light { background-color: var(--color-elplacer-canvas-card); }
 .text-elplacer-wine { color: var(--color-elplacer-velvet-wine); }
 .text-elplacer-wine-deep { color: var(--color-elplacer-wine-deep); }
 .bg-elplacer-plum { background-color: var(--color-elplacer-midnight-plum); }
