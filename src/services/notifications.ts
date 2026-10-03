@@ -3,7 +3,7 @@ import { sendTransactionalEmail } from "./email";
 
 const BRAND_NOTIFICATION_EMAIL = "web@elplacerdecompartir.com";
 const EVOLUTION_INITIAL_NUMBER = "573021004070";
-const EVOLUTION_API_URL = process.env.EVOLUTION_API_URL || "http://evolution:8085";
+const EVOLUTION_API_URL = process.env.EVOLUTION_URL || process.env.EVOLUTION_API_URL || "http://evolution:8085";
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || "481c8c43-0023-4028-bad5-9d1355a3674c";
 
 export async function sendEvolutionWhatsApp(
@@ -296,5 +296,122 @@ export async function notifyNewTicket(ticket: {
 
   sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, adminWaText).catch((e) =>
     console.error("[NotifyTicket Admin WhatsApp Err]:", e)
+  );
+}
+
+
+const ALLIANCE_LABELS: Record<string, string> = {
+  organizador_eventos_adultos: "Organizador de Eventos Adultos / Mente Abierta",
+  tallerista_terapeuta: "Tallerista / Terapeuta (Tantra, Masajes, BDSM Ético)",
+  alquiler_espacio_privado: "Alquiler Privado del Espacio (Celebraciones o Veladas)",
+  produccion_artistica: "Producción Artística / Fotografía / Performance",
+  otra_alianza: "Otra Modalidad de Alianza Comercial o Cultural",
+};
+
+export async function notifyNewAlliance(
+  lead: {
+    id?: string;
+    alias_nombre?: string | null;
+    whatsapp: string | null;
+    email?: string | null;
+    ciudad?: string | null;
+  },
+  details: {
+    tipo_alianza: string;
+    propuesta_detalle: string;
+  }
+): Promise<void> {
+  const allianceLabel = ALLIANCE_LABELS[details.tipo_alianza] || details.tipo_alianza;
+
+  // 1. Correo al Postulante
+  if (lead.email) {
+    const allianceHtml = `
+      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
+        <div style="margin-bottom: 20px;">
+          <img src="https://elplacerdecompartir.com/media/logo_elplacerdc_x.jpg" alt="Centro Cultural El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+        </div>
+        <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">Centro Cultural El Placer de Compartir</h1>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; margin-bottom: 20px;">Curaduría, Alianzas & Contratación de Sede</div>
+        <div style="text-align: left; font-family: 'Inter', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
+          <p>Hola <strong style="color: #ead397;">${lead.alias_nombre || "Estimado(a) Aliado(a)"}</strong>,</p>
+          <p>Hemos recibido con gran interés tu propuesta de alianza y colaboración para nuestro Centro Cultural en Bogotá.</p>
+          <div style="background-color: #260d1d; border-left: 3px solid #c5a059; padding: 15px; margin: 20px 0; border-radius: 4px;">
+            <p style="margin: 0 0 8px 0; font-size: 13px; color: #ead397;">
+              📌 <strong>Modalidad:</strong> ${allianceLabel}
+            </p>
+            <p style="margin: 0; font-size: 12px; color: #f7d6cb; font-style: italic;">
+              "${details.propuesta_detalle}"
+            </p>
+          </div>
+          <p>Nuestro equipo de curaduría y producción analiza la viabilidad logística, técnica y conceptual de cada iniciativa para preservar un entorno seguro, ético y de máxima comodidad.</p>
+          <p>Nos comunicaremos directamente contigo vía WhatsApp (${lead.whatsapp || "tu número registrado"}) para acordar disponibilidad de fechas, tarifas de co-producción o visita técnica a la sede.</p>
+        </div>
+        <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
+        <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Centro Cultural El Placer de Compartir • Bogotá<br/>Línea de Curaduría: +57 319 419 4785</p>
+      </div>
+    `;
+
+    sendTransactionalEmail({
+      to: lead.email,
+      name: lead.alias_nombre || undefined,
+      fromName: "Centro Cultural El Placer de Compartir",
+      subject: "Propuesta de Alianza Recibida — Centro Cultural El Placer de Compartir",
+      html: allianceHtml,
+    }).catch((e) => console.error("[NotifyAlliance User Email Err]:", e));
+  }
+
+  // 2. Correo a la Marca
+  const brandSubject = `[Nueva Alianza Centro Cultural] ${allianceLabel} - ${lead.alias_nombre}`;
+  const brandHtml = `
+    <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
+      <h2 style="color: #721c24;">Nueva Propuesta de Alianza / Contratación Centro Cultural</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Proponente / Colectivo:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.alias_nombre || "No especificado"}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;"><a href="https://wa.me/${(lead.whatsapp || "").replace(/\D/g, "")}">${lead.whatsapp}</a></td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Email:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.email || "No suministrado"}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Tipo de Alianza:</td><td style="padding: 8px; border: 1px solid #ddd;">${allianceLabel}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ciudad / Sede:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.ciudad || "Bogotá"}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Detalle de la Propuesta:</td><td style="padding: 8px; border: 1px solid #ddd; white-space: pre-wrap;">${details.propuesta_detalle}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${new Date().toISOString()}</td></tr>
+      </table>
+    </div>
+  `;
+
+  sendTransactionalEmail({
+    to: BRAND_NOTIFICATION_EMAIL,
+    name: "Centro Cultural Admin",
+    fromName: "Centro Cultural El Placer de Compartir",
+    subject: brandSubject,
+    html: brandHtml,
+  }).catch((e) => console.error("[NotifyAlliance Brand Email Err]:", e));
+
+  // 3. WhatsApp Directo al Proponente
+  if (lead.whatsapp) {
+    const allianceWa =
+      `🏛️ *CENTRO CULTURAL EL PLACER DE COMPARTIR*\n\n` +
+      `Hola *${lead.alias_nombre || "Estimado(a) Aliado(a)"}* ✨\n\n` +
+      `Hemos recibido tu propuesta de alianza / contratación para nuestro Centro Cultural en Bogotá con gran interés.\n\n` +
+      `📋 *Línea:* ${allianceLabel}\n\n` +
+      `Nuestro equipo de curaduría y producción analiza cada iniciativa para garantizar un espacio de máximo consentimiento, confort y resonancia cultural.\n\n` +
+      `Nos comunicaremos contigo por esta línea para coordinar detalles técnicos, disponibilidad de fechas y condiciones del espacio.\n\n` +
+      `🏛️ *Dirección y Curaduría — Centro Cultural El Placer de Compartir*`;
+
+    sendEvolutionWhatsApp(lead.whatsapp, allianceWa).catch((e) =>
+      console.error("[NotifyAlliance User WhatsApp Err]:", e)
+    );
+  }
+
+  // 4. WhatsApp al Evolution Inicial (Telemetría Admin)
+  const adminWa =
+    `🏛️ *NUEVA PROPUESTA DE ALIANZA*\n\n` +
+    `👤 *Proponente:* ${lead.alias_nombre}\n` +
+    `🏷️ *Línea:* ${allianceLabel}\n` +
+    `📱 *WhatsApp:* ${lead.whatsapp}\n` +
+    `✉️ *Email:* ${lead.email}\n` +
+    `📍 *Sede:* ${lead.ciudad || "Bogotá"}\n` +
+    `📝 *Propuesta:* ${details.propuesta_detalle.substring(0, 100)}...`;
+
+  sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, adminWa).catch((e) =>
+    console.error("[NotifyAlliance Admin WhatsApp Err]:", e)
   );
 }

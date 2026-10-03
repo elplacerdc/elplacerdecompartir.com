@@ -1,0 +1,181 @@
+---
+// AllianceForm.astro - Formulario Especializado para Alianzas y Contratación del Centro Cultural
+interface Props {
+  title?: string;
+  subtitle?: string;
+}
+
+const { 
+  title = "Propuesta de Alianza o Contratación de Sede", 
+  subtitle = "¿Organizas veladas mente abierta, facilitas talleres de tantra o BDSM ético, o buscas una locación singular en Bogotá? Déjanos tu propuesta para coordinar fechas y producción." 
+} = Astro.props;
+---
+
+<div class="p-6 sm:p-10 rounded-2xl border border-[#c5a059]/35 bg-[#250F22]/95 shadow-[0_4px_30px_rgba(89,31,38,0.3)] relative overflow-hidden">
+  <!-- Decorative Ambient Glow -->
+  <div class="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none bg-[#721c24]/20"></div>
+
+  <div class="mb-8 text-center sm:text-left">
+    <div class="inline-block px-3 py-1 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-xs text-[#ead397] uppercase tracking-wider font-semibold mb-3">
+      🏛️ Curaduría & Producción Cultural
+    </div>
+    <h3 class="text-2xl font-serif font-bold tracking-wide uppercase text-[#ead397]">
+      {title}
+    </h3>
+    <p class="text-sm text-[#f7f4ee]/75 mt-2 leading-relaxed font-light">
+      {subtitle}
+    </p>
+  </div>
+
+  <form id="alliance-form" class="space-y-5">
+    <input type="hidden" name="origen" value="alianza_centro_cultural" />
+
+    <!-- Nombre / Organización / Marca -->
+    <div>
+      <label for="input-alias" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Nombre, Colectivo o Marca Organizadora <span class="text-[#b84a39]">*</span>
+      </label>
+      <input
+        type="text"
+        name="alias_nombre"
+        id="input-alias"
+        required
+        placeholder="Ej. Colectivo Éter / Tu Nombre"
+        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+      />
+    </div>
+
+    <!-- WhatsApp & Email Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label for="input-whatsapp" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+          WhatsApp de Contacto Oficial <span class="text-[#b84a39]">*</span>
+        </label>
+        <input
+          type="tel"
+          name="whatsapp"
+          id="input-whatsapp"
+          required
+          placeholder="+57 300 000 0000"
+          class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        />
+      </div>
+
+      <div>
+        <label for="input-email" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+          Correo Electrónico <span class="text-[#b84a39]">*</span>
+        </label>
+        <input
+          type="email"
+          name="email"
+          id="input-email"
+          required
+          placeholder="alianzas@tuorganizacion.com"
+          class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        />
+      </div>
+    </div>
+
+    <!-- Tipo de Alianza o Contratación -->
+    <div>
+      <label for="input-tipo-alianza" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Tipo de Propuesta o Alianza <span class="text-[#b84a39]">*</span>
+      </label>
+      <select
+        name="tipo_alianza"
+        id="input-tipo-alianza"
+        required
+        class="w-full px-4 py-3 rounded-xl bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+        <option value="organizador_eventos_adultos">🥂 Organizador de Eventos Adultos / Mente Abierta</option>
+        <option value="tallerista_terapeuta">🧘 Tallerista / Terapeuta (Tantra, Masajes, BDSM Ético)</option>
+        <option value="alquiler_espacio_privado">🏛️ Alquiler Privado del Espacio (Celebraciones o Veladas)</option>
+        <option value="produccion_artistica">📸 Producción Artística / Fotografía / Performance</option>
+        <option value="otra_alianza">✨ Otra Modalidad de Alianza Comercial o Cultural</option>
+      </select>
+    </div>
+
+    <!-- Textarea para Detalle de la Propuesta -->
+    <div>
+      <label for="input-propuesta" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Cuéntanos sobre tu propuesta de alianza o requerimientos <span class="text-[#b84a39]">*</span>
+      </label>
+      <textarea
+        name="propuesta_detalle"
+        id="input-propuesta"
+        required
+        rows="4"
+        placeholder="Describe el concepto del evento o taller, público estimado, fechas tentativas, requerimientos de la sede y propuesta de colaboración..."
+        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all leading-relaxed"
+      ></textarea>
+    </div>
+
+    <!-- Ciudad -->
+    <div>
+      <label for="input-ciudad" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Sede de Interés
+      </label>
+      <select
+        name="ciudad"
+        id="input-ciudad"
+        class="w-full px-4 py-3 rounded-xl bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+        <option value="Bogotá">Sede Bogotá (Casa Teusaquillo / Galerías)</option>
+        <option value="Medellín">Próxima Sede Medellín</option>
+        <option value="Otra">Otra Locación</option>
+      </select>
+    </div>
+
+    <!-- Feedback Message Box -->
+    <div id="alliance-feedback" class="hidden text-sm p-4 rounded-xl"></div>
+
+    <button
+      type="submit"
+      id="alliance-submit-btn"
+      class="w-full py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
+    >
+      Enviar Propuesta a Curaduría
+    </button>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById("alliance-form") as HTMLFormElement;
+  const feedback = document.getElementById("alliance-feedback") as HTMLElement;
+  const submitBtn = document.getElementById("alliance-submit-btn") as HTMLButtonElement;
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Transmitiendo Propuesta...";
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch("/api/leads/alliance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        feedback.className = "text-sm p-4 rounded-xl bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
+        feedback.textContent = "✨ ¡Propuesta recibida con éxito! Nuestro equipo de curaduría y producción se comunicará contigo vía WhatsApp y correo.";
+        feedback.classList.remove("hidden");
+        form.reset();
+      } else {
+        throw new Error(data.error || "Ocurrió un error al procesar.");
+      }
+    } catch (err: any) {
+      feedback.className = "text-sm p-4 rounded-xl bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350]";
+      feedback.textContent = err.message || "Error al conectar.";
+      feedback.classList.remove("hidden");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar Propuesta a Curaduría";
+    }
+  });
+</script>

@@ -28,26 +28,52 @@ export interface Lead {
   updated_at: Date;
 }
 
+export function getPhoneVariants(phone?: string | null): string[] {
+  if (!phone) return [];
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) return [];
+  const variants = new Set<string>();
+  variants.add(phone.trim());
+  variants.add(digits);
+  if (digits.length === 10 && digits.startsWith("3")) {
+    variants.add(`57${digits}`);
+    variants.add(`+57${digits}`);
+  } else if (digits.length === 12 && digits.startsWith("573")) {
+    const raw10 = digits.slice(2);
+    variants.add(raw10);
+    variants.add(`+57${raw10}`);
+    variants.add(digits);
+  }
+  return Array.from(variants);
+}
+
 export async function findLeadByContact(email?: string, whatsapp?: string): Promise<Lead | null> {
   const client = await pool.connect();
   try {
-    let query = "SELECT * FROM leads WHERE false";
-    const params: string[] = [];
+    const cleanEmail = email && email.trim() ? email.trim().toLowerCase() : null;
+    const phoneVariants = getPhoneVariants(whatsapp);
 
-    if (email && whatsapp) {
-      query = "SELECT * FROM leads WHERE email = $1 OR whatsapp = $2 LIMIT 1";
-      params.push(email.trim().toLowerCase(), whatsapp.trim());
-    } else if (email) {
-      query = "SELECT * FROM leads WHERE email = $1 LIMIT 1";
-      params.push(email.trim().toLowerCase());
-    } else if (whatsapp) {
-      query = "SELECT * FROM leads WHERE whatsapp = $1 LIMIT 1";
-      params.push(whatsapp.trim());
-    } else {
+    if (!cleanEmail && phoneVariants.length === 0) {
       return null;
     }
 
-    const res = await client.query(query, params);
+    let queryStr = "SELECT * FROM leads WHERE ";
+    const conditions: string[] = [];
+    const params: any[] = [];
+
+    if (cleanEmail) {
+      params.push(cleanEmail);
+      conditions.push(`email = $${params.length}`);
+    }
+
+    if (phoneVariants.length > 0) {
+      params.push(phoneVariants);
+      conditions.push(`whatsapp = ANY($${params.length})`);
+    }
+
+    queryStr += `(${conditions.join(" OR ")}) ORDER BY created_at DESC LIMIT 1`;
+
+    const res = await client.query(queryStr, params);
     return res.rows[0] || null;
   } finally {
     client.release();
@@ -58,56 +84,113 @@ export async function upsertLead(data: {
   alias_nombre?: string;
   email?: string;
   whatsapp?: string;
-  rol?: "hombre_solo" | "mujer_sola" | "pareja" | "otro";
+  rol?: "hombre_solo" | "mujer_sola" | "pareja" | "otro" | string;
   ciudad?: string;
   origen?: string;
   afiliado_id?: string;
   corset_vip?: boolean;
+  metadata?: Record<string, any>;
 }): Promise<Lead> {
   const client = await pool.connect();
   try {
-    const existing = await findLeadByContact(data.email, data.whatsapp);
+    const cleanEmail = data.email && data.email.trim() ? data.email.trim().toLowerCase() : null;
+    const cleanWhatsapp = data.whatsapp && data.whatsapp.trim() ? data.whatsapp.trim() : null;
+    const phoneVariants = getPhoneVariants(cleanWhatsapp);
+
+    // Normalize rol to match check constraint: hombre_solo, mujer_sola, pareja, otro
+    const validRoles = ["hombre_solo", "mujer_sola", "pareja", "otro"];
+    const normalizedRol = data.rol && validRoles.includes(data.rol) ? data.rol : "otro";
+
+    const existing = await findLeadByContact(cleanEmail || undefined, cleanWhatsapp || undefined);
 
     if (existing) {
+      // Safely determine if email or whatsapp can be updated without causing unique constraint violations
+      let targetEmail = existing.email;
+      if (cleanEmail && cleanEmail !== existing.email) {
+        // Verify cleanEmail isn't claimed by ANOTHER lead record
+        const conflictEmail = await client.query(
+          "SELECT id FROM leads WHERE email = $1 AND id != $2 LIMIT 1",
+          [cleanEmail, existing.id]
+        );
+        if (conflictEmail.rows.length === 0) {
+          targetEmail = cleanEmail;
+        }
+      }
+
+      let targetWhatsapp = existing.whatsapp;
+      if (cleanWhatsapp && cleanWhatsapp !== existing.whatsapp) {
+        // Verify phone isn't claimed by ANOTHER lead record
+        const conflictPhone = await client.query(
+          "SELECT id FROM leads WHERE whatsapp = ANY($1) AND id != $2 LIMIT 1",
+          [phoneVariants, existing.id]
+        );
+        if (conflictPhone.rows.length === 0) {
+          targetWhatsapp = cleanWhatsapp;
+        }
+      }
+
+      const mergedMetadata = {
+        ...(existing.metadata || {}),
+        ...(data.metadata || {}),
+      };
+
       const updated = await client.query(
         `UPDATE leads SET
           alias_nombre = COALESCE($1, alias_nombre),
-          email = COALESCE($2, email),
-          whatsapp = COALESCE($3, whatsapp),
-          rol = COALESCE($4, rol),
+          email = $2,
+          whatsapp = $3,
+          rol = CASE WHEN $4 != 'otro' THEN $4 ELSE rol END,
           ciudad = COALESCE($5, ciudad),
           corset_vip = CASE WHEN $6 = true THEN true ELSE corset_vip END,
+          metadata = $7,
           updated_at = NOW()
-        WHERE id = $7
+        WHERE id = $8
         RETURNING *`,
         [
           data.alias_nombre || null,
-          data.email ? data.email.trim().toLowerCase() : null,
-          data.whatsapp ? data.whatsapp.trim() : null,
-          data.rol || null,
+          targetEmail,
+          targetWhatsapp,
+          normalizedRol,
           data.ciudad || null,
           data.corset_vip || false,
+          JSON.stringify(mergedMetadata),
           existing.id,
         ]
       );
       return updated.rows[0];
     } else {
-      const inserted = await client.query(
-        `INSERT INTO leads (alias_nombre, email, whatsapp, rol, ciudad, origen, afiliado_id, corset_vip)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-         RETURNING *`,
-        [
-          data.alias_nombre || null,
-          data.email ? data.email.trim().toLowerCase() : null,
-          data.whatsapp ? data.whatsapp.trim() : null,
-          data.rol || "otro",
-          data.ciudad || "Bogotá",
-          data.origen || "web_comunidad",
-          data.afiliado_id || null,
-          data.corset_vip || false,
-        ]
-      );
-      return inserted.rows[0];
+      try {
+        const inserted = await client.query(
+          `INSERT INTO leads (
+            alias_nombre, email, whatsapp, rol, ciudad, origen, afiliado_id, corset_vip, metadata
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          RETURNING *`,
+          [
+            data.alias_nombre || null,
+            cleanEmail,
+            cleanWhatsapp,
+            normalizedRol,
+            data.ciudad || "Bogotá",
+            data.origen || "web_comunidad",
+            data.afiliado_id || null,
+            data.corset_vip || false,
+            JSON.stringify(data.metadata || {}),
+          ]
+        );
+        return inserted.rows[0];
+      } catch (insertErr: any) {
+        // Fallback guard: In case of race condition unique violation (code 23505), fetch and return the conflicting record
+        if (insertErr.code === "23505") {
+          const fallback = await client.query(
+            `SELECT * FROM leads WHERE (email = $1 OR whatsapp = ANY($2)) ORDER BY created_at DESC LIMIT 1`,
+            [cleanEmail, phoneVariants]
+          );
+          if (fallback.rows.length > 0) {
+            return fallback.rows[0];
+          }
+        }
+        throw insertErr;
+      }
     }
   } finally {
     client.release();
