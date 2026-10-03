@@ -13,8 +13,13 @@
     --color-corset-wine-cabernet: #721C24;
 
     /* ==========================================================================
-       El Placer de Compartir (Marca Paraguas & Comunidad)
+       El Placer de Compartir (Marca Paraguas, Centro Cultural & Salón Lindo)
        ========================================================================== */
+    --color-elplacer-canvas-blush: #F7D6CB;
+    --color-elplacer-canvas-light: #FDF8F5;
+    --color-elplacer-velvet-wine: #591F26;
+    --color-elplacer-wine-deep: #380913;
+    --color-elplacer-gold-champagne: #C5A059;
     --color-elplacer-midnight-plum: #180A22;
     --color-elplacer-terracotta: #B84A39;
     --color-elplacer-amethyst: #682D7E;
@@ -35,7 +40,7 @@
     --font-corset-body: 'Plus Jakarta Sans', 'Lato', -apple-system, sans-serif;
     --font-corset-signature: 'Pinyon Script', 'Great Vibes', cursive;
 
-    --font-elplacer-display: 'Syne', 'Montserrat', sans-serif;
+    --font-elplacer-display: 'Cinzel', 'Playfair Display', Georgia, serif;
     --font-elplacer-body: 'Inter', system-ui, sans-serif;
     --font-elplacer-quote: 'Cormorant Garamond', Georgia, serif;
   }
@@ -50,6 +55,10 @@
 .border-corset-gold { border-color: var(--color-corset-gold); }
 .bg-corset-burgundy { background-color: var(--color-corset-velvet-burgundy); }
 
+.bg-elplacer-blush { background-color: var(--color-elplacer-canvas-blush); }
+.bg-elplacer-light { background-color: var(--color-elplacer-canvas-light); }
+.text-elplacer-wine { color: var(--color-elplacer-velvet-wine); }
+.text-elplacer-wine-deep { color: var(--color-elplacer-wine-deep); }
 .bg-elplacer-plum { background-color: var(--color-elplacer-midnight-plum); }
 .text-elplacer-terracotta { color: var(--color-elplacer-terracotta); }
 .text-elplacer-ivory { color: var(--color-elplacer-ivory); }
