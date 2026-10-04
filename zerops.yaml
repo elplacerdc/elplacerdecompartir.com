@@ -22,6 +22,14 @@ zerops:
         VALKEY_URL: ${valkey_connectionString}
         NATS_URL: ${nats_connectionString}
         EVOLUTION_URL: "http://evolution:8085"
+        EVOLUTION_API_URL: ${EVOLUTION_API_URL}
+        EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+        EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE}
+        DLOCAL_GO_API_KEY: ${DLOCAL_GO_API_KEY}
+        DLOCAL_GO_SECRET_KEY: ${DLOCAL_GO_SECRET_KEY}
+        DLOCAL_GO_ENV: ${DLOCAL_GO_ENV}
+        ZEPTOMAIL_SEND_MAIL_TOKEN: ${ZEPTOMAIL_SEND_MAIL_TOKEN}
+        ZEPTOMAIL_DEFAULT_FROM_EMAIL: ${ZEPTOMAIL_DEFAULT_FROM_EMAIL}
         LISTMONK_URL: "http://listmonk:9000"
         BIFROST_URL: "http://bifrost:8080/v1"
         FREELLMAPI_URL: "http://freellmapi:3001/v1"
@@ -54,6 +62,14 @@ zerops:
         VALKEY_URL: ${valkey_connectionString}
         NATS_URL: ${nats_connectionString}
         EVOLUTION_URL: "http://evolution:8085"
+        EVOLUTION_API_URL: ${EVOLUTION_API_URL}
+        EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+        EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE}
+        DLOCAL_GO_API_KEY: ${DLOCAL_GO_API_KEY}
+        DLOCAL_GO_SECRET_KEY: ${DLOCAL_GO_SECRET_KEY}
+        DLOCAL_GO_ENV: ${DLOCAL_GO_ENV}
+        ZEPTOMAIL_SEND_MAIL_TOKEN: ${ZEPTOMAIL_SEND_MAIL_TOKEN}
+        ZEPTOMAIL_DEFAULT_FROM_EMAIL: ${ZEPTOMAIL_DEFAULT_FROM_EMAIL}
         LISTMONK_URL: "http://listmonk:9000"
         BIFROST_URL: "http://bifrost:8080/v1"
         FREELLMAPI_URL: "http://freellmapi:3001/v1"

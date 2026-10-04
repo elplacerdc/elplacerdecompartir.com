@@ -43,17 +43,21 @@ export async function sendEvolutionWhatsApp(
   }
 }
 
-export async function notifyNewLead(lead: {
-  id?: string;
-  alias_nombre?: string;
-  whatsapp: string;
-  email?: string;
-  rol?: string;
-  ciudad?: string;
-  origen?: string;
-  corset_vip?: boolean;
-}): Promise<void> {
-  const isCorset = Boolean(lead.corset_vip);
+export async function notifyNewLead(
+  lead: {
+    id?: string;
+    alias_nombre?: string;
+    whatsapp: string;
+    email?: string;
+    rol?: string;
+    ciudad?: string;
+    origen?: string;
+    corset_vip?: boolean;
+  },
+  channel?: "elplacerdc" | "corset" | "centro_cultural" | string
+): Promise<void> {
+  const effectiveChannel = channel || (lead.corset_vip ? "corset" : "elplacerdc");
+  const isCorset = effectiveChannel === "corset";
   const channelName = isCorset ? "The Corset Society (VIP - Ticket Alto)" : "El Placer de Compartir";
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
@@ -64,11 +68,11 @@ export async function notifyNewLead(lead: {
     const leadCorsetWa =
       `🖤 *THE CORSET SOCIETY — CÍRCULO HERMÉTICO*\n\n` +
       `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
-      `Te contactamos directo por WhatsApp al ser nuestro canal preferencial y confidencial de mayordomía.\n\n` +
+      `Te contactamos directo por WhatsApp al ser nuestro canal preferencial y confidencial de atención oficial.\n\n` +
       `Hemos recibido tu postulación de ingreso. The Corset Society celebra encuentros privados de etiqueta rigurosa, concebidos como experiencias de ticket alto con aforo estrictamente limitado y covers de mayor valor, diseñados como filtro natural para salvaguardar la intimidad, la elegancia y la distinción de nuestras veladas.\n\n` +
       `Tu perfil se encuentra en evaluación confidencial. Te hemos enviado en paralelo a tu correo un dossier formal con el manifiesto institucional y los códigos de etiqueta.\n\n` +
       `_«El acceso se concede, no se anuncia.»_\n\n` +
-      `🎩 *La Mayordomía • The Corset Society*`;
+      `🎩 *Concierge Oficial • The Corset Society*`;
 
     sendEvolutionWhatsApp(lead.whatsapp, leadCorsetWa).catch((e) =>
       console.error("[NotifyLead Corset WhatsApp Err]:", e)
@@ -95,13 +99,13 @@ export async function notifyNewLead(lead: {
       const corsetHtml = `
         <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
           <div style="margin-bottom: 25px;">
-            <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 64px; width: auto; margin: 0 auto; display: block;" />
+            <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 96px; width: auto; margin: 0 auto; display: block;" />
           </div>
           <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 3px; font-size: 18px; margin: 0 0 10px 0;">The Corset Society</h1>
           <div style="width: 40px; height: 1px; background-color: #c5a059; margin: 0 auto 25px auto;"></div>
           <div style="text-align: left; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
             <p>Estimado(a) <strong style="color: #ead397;">${lead.alias_nombre || "Invitado(a)"}</strong>,</p>
-            <p>Te hemos enviado previamente un saludo directo a tu WhatsApp (<strong style="color: #ead397;">${formattedPhone}</strong>), nuestro canal prioritario de mayordomía para coordinaciones ágiles. Mediante esta comunicación formal dejamos constancia institucional de tu solicitud de admisión.</p>
+            <p>Te hemos enviado previamente un saludo directo a tu WhatsApp (<strong style="color: #ead397;">${formattedPhone}</strong>), nuestro canal prioritario de concierge para coordinaciones ágiles. Mediante esta comunicación formal dejamos constancia institucional de tu solicitud de admisión.</p>
             <div style="background-color: #0f0a0d; border-left: 3px solid #c5a059; padding: 16px; margin: 20px 0; border-radius: 4px;">
               <p style="margin: 0; font-size: 13px; color: #f7f4ee;">
                 👑 <strong>Círculo Privado de Ticket Alto:</strong> Nuestras galas cuentan con covers e inversión de nivel prémium, diseñados como filtro natural para salvaguardar la intimidad, la elegancia patrimonial y el aforo sumamente reservado de cada velada.
@@ -109,7 +113,7 @@ export async function notifyNewLead(lead: {
             </div>
             <p><strong>Criterios de Admisión:</strong></p>
             <ul style="padding-left: 20px; color: rgba(247, 244, 238, 0.75); font-size: 13px;">
-              <li>Evaluación confidencial de perfil por parte de la mayordomía.</li>
+              <li>Evaluación confidencial de perfil por parte del comité de admisión.</li>
               <li>Códigos de etiqueta y anonimato voluntario de estricto cumplimiento.</li>
               <li>Liberación de coordenadas de sede exclusivamente 24 horas antes de cada ceremonia.</li>
             </ul>
@@ -118,7 +122,7 @@ export async function notifyNewLead(lead: {
             </p>
           </div>
           <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
-          <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">The Corset Society • Círculo Privado de Gala<br/>Línea Oficial de Mayordomía: +57 319 419 4785 • Bogotá, Colombia</p>
+          <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">The Corset Society • Círculo Privado de Gala<br/>Línea Oficial de Concierge: +57 319 419 4785 • Bogotá, Colombia</p>
         </div>
       `;
 
@@ -134,7 +138,7 @@ export async function notifyNewLead(lead: {
       const placerHtml = `
         <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #591f26; text-align: center;">
           <div style="margin-bottom: 20px;">
-            <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+            <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 96px; width: 96px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
           </div>
           <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">El Placer de Compartir</h1>
           <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; margin-bottom: 20px;">Comunidad de Erotismo Consciente & Centro Cultural</div>
@@ -148,7 +152,7 @@ export async function notifyNewLead(lead: {
             </div>
             <p><strong>Nuestros Acuerdos Fundamentales:</strong></p>
             <ul style="padding-left: 20px; color: rgba(247, 244, 238, 0.75); font-size: 13px;">
-              <li>Consentimiento lúcido: El respeto a la autonomía y al ritmo personal es sagrado.</li>
+              <li>Consentimiento lúcido: El respeto a la autonomía y al ritmo personal es innegociable.</li>
               <li>Cero personal contratado: Todo asistente participa por decisión e interés genuino propio.</li>
               <li>Privacidad recíproca: Lo que se comparte en nuestras veladas permanece en la intimidad del grupo.</li>
             </ul>
@@ -169,10 +173,13 @@ export async function notifyNewLead(lead: {
   }
 
   // 3. Correo transaccional a la Marca (Admin)
-  const brandSubject = `[Nuevo Lead] ${lead.alias_nombre || "Anónimo"} (${lead.rol || "General"}) - ${channelName}`;
+  const brandSubject = isCorset
+    ? `[Nuevo Lead VIP] ${lead.alias_nombre || "Anónimo"} (${lead.rol || "General"}) - The Corset Society`
+    : `[Nuevo Registro Comunidad] ${lead.alias_nombre || "Anónimo"} (${lead.rol || "General"}) - El Placer de Compartir`;
+
   const brandHtml = `
     <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
-      <h2 style="color: #b84a39;">Nuevo Registro en Plataforma</h2>
+      <h2 style="color: ${isCorset ? '#721c24' : '#b84a39'};">Nuevo Registro en Plataforma (${channelName})</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Canal:</td><td style="padding: 8px; border: 1px solid #ddd;">${channelName}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Alias / Nombre:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.alias_nombre || "No especificado"}</td></tr>
@@ -188,7 +195,8 @@ export async function notifyNewLead(lead: {
 
   sendTransactionalEmail({
     to: BRAND_NOTIFICATION_EMAIL,
-    name: "El Placer de Compartir Admin",
+    name: isCorset ? "The Corset Society Concierge" : "El Placer de Compartir Admin",
+    fromName: isCorset ? "The Corset Society" : "El Placer de Compartir",
     subject: brandSubject,
     html: brandHtml,
   }).catch((e) => console.error("[NotifyLead BrandEmail Err]:", e));
@@ -238,7 +246,7 @@ export async function notifyNewTicket(
     `🔐 *Accede a tu credencial digital con código QR scannable:*\n${ticketUrl}\n\n` +
     `📍 Presenta tu credencial digital en puerta. Las coordenadas exactas de la reserva privada se compartirán 24h antes por este medio.\n\n` +
     `_«El acceso se concede, no se anuncia.»_\n\n` +
-    `🎩 *La Mayordomía • The Corset Society*`;
+    `🎩 *Concierge Oficial • The Corset Society*`;
 
   sendEvolutionWhatsApp(lead.whatsapp, buyerWaText).catch((e) =>
     console.error("[NotifyTicket Buyer WhatsApp Err]:", e)
@@ -250,7 +258,7 @@ export async function notifyNewTicket(
     const userHtml = `
       <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', serif, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
         <div style="margin-bottom: 25px;">
-          <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 64px; width: auto; margin: 0 auto; display: block;" />
+          <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 96px; width: auto; margin: 0 auto; display: block;" />
         </div>
         <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 2px; font-size: 20px; margin: 0 0 10px 0;">The Corset Society</h1>
         <h2 style="color: #ead397; font-size: 15px; margin: 0 0 20px 0; letter-spacing: 1px;">Noche de Luna Llena 🌕</h2>
@@ -302,7 +310,7 @@ export async function notifyNewTicket(
   sendTransactionalEmail({
     to: BRAND_NOTIFICATION_EMAIL,
     name: "The Corset Society Concierge",
-    fromName: "La Sociedad del Corset",
+    fromName: "The Corset Society",
     subject: brandSubject,
     html: brandHtml,
   }).catch((e) => console.error("[NotifyTicket BrandEmail Err]:", e));
@@ -370,7 +378,7 @@ export async function notifyNewAlliance(
     const allianceHtml = `
       <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
         <div style="margin-bottom: 20px;">
-          <img src="${PLACER_LOGO_URL}" alt="Centro Cultural El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+          <img src="${PLACER_LOGO_URL}" alt="Centro Cultural El Placer de Compartir" style="height: 96px; width: 96px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
         </div>
         <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">Centro Cultural El Placer de Compartir</h1>
         <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; margin-bottom: 20px;">Dirección & Producción Cultural</div>

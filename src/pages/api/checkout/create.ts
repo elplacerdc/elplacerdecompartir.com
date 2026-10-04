@@ -157,7 +157,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       `🎟️ *Entrada:* ${priceInfo.label}\n` +
       `💵 *Modalidad:* ${modalidad_pago === "reserva_40" ? "Separación 40% ($" + monto.toLocaleString("es-CO") + ")" : "Pago Total ($" + monto.toLocaleString("es-CO") + ")"}\n` +
       `🔐 *Ticket Hash:* ${ticketHash}\n\n` +
-      `Deseo coordinar el pago directo vía Nequi / Bre-B con la mayordomía oficial.`
+      `Deseo coordinar el pago directo vía Nequi / Bre-B con la atención oficial.`
     );
     const waUrl = `https://wa.me/573194194785?text=${waText}`;
 

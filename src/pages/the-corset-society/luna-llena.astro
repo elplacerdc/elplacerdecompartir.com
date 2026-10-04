@@ -68,6 +68,16 @@ import Layout from "../../layouts/Layout.astro";
         <p class="text-sm font-sans italic text-[#ead397]">
           🧚‍♀️ ¿Hada, elfo, duende o una criatura salida de tu imaginación? Ven caracterizado y vive la experiencia.
         </p>
+
+        <div class="pt-4">
+          <a
+            href="#reservas"
+            class="inline-flex items-center gap-3 px-8 py-3.5 rounded-full font-serif font-semibold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059] text-[#050505] shadow-[0_0_25px_rgba(197,160,89,0.35)] hover:shadow-[0_0_35px_rgba(197,160,89,0.6)] hover:scale-105 active:scale-95 transition-all duration-300"
+          >
+            <span>Reservar Entrada / Mesa</span>
+            <span>→</span>
+          </a>
+        </div>
       </section>
 
       <!-- Event Details Bar -->
@@ -389,7 +399,7 @@ import Layout from "../../layouts/Layout.astro";
 
       if (msg) msg.textContent = metodo === 'pasarela_digital' 
         ? 'Conectando con la pasarela segura dLocal Go...' 
-        : 'Generando enlace directo con mayordomía...';
+        : 'Generando enlace directo con atención oficial...';
 
       try {
         const res = await fetch('/api/checkout/create', {

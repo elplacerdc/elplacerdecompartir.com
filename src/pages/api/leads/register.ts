@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // 3. Nuevo registro o nuevo canal habilitado: Disparo controlado de notificaciones
     if (result.lead) {
-      notifyNewLead(result.lead as any).catch((e) =>
+      notifyNewLead(result.lead as any, targetChannel).catch((e) =>
         console.error("[Lead Notifications Err]:", e)
       );
     }
