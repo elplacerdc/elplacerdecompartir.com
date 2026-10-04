@@ -44,11 +44,22 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // 1. Extraer emisor y mensaje soportando diversas firmas de eventos de Evolution
+    // 1. Extraer emisor y mensaje soportando firmas de Evolution Go (whatsmeow) y Baileys
     const eventData = payload.data || payload;
+    const info = eventData.Info || eventData.info || {};
     const key = eventData.key || {};
-    const fromMe = Boolean(key.fromMe || payload.fromMe || eventData.fromMe);
-    const remoteJid = key.remoteJid || payload.remoteJid || eventData.remoteJid || payload.sender || "";
+    const fromMe = Boolean(info.IsFromMe ?? info.isFromMe ?? key.fromMe ?? payload.fromMe ?? eventData.fromMe ?? false);
+    const remoteJid = String(
+      info.Chat ||
+      info.Sender ||
+      eventData.Chat ||
+      eventData.Sender ||
+      key.remoteJid ||
+      payload.remoteJid ||
+      eventData.remoteJid ||
+      payload.sender ||
+      ""
+    );
 
     // Ignorar mensajes enviados por nosotros mismos o de grupos
     if (fromMe || !remoteJid || remoteJid.includes("@g.us") || remoteJid.includes("status@broadcast")) {
@@ -66,8 +77,8 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Extraer texto del mensaje
-    const msgObj = eventData.message || payload.message || {};
+    // Extraer texto del mensaje (soporta mayúsculas de Go structs: Message.conversation)
+    const msgObj = eventData.Message || eventData.message || payload.message || {};
     const messageText =
       msgObj.conversation ||
       msgObj.extendedTextMessage?.text ||
@@ -82,7 +93,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const senderName = eventData.pushName || payload.pushName || "Invitado(a)";
+    const senderName = info.PushName || eventData.pushName || payload.pushName || "Invitado(a)";
 
     // 2. Procesamiento asíncrono con Bifrost LLM para responder sin bloquear el webhook
     (async () => {
