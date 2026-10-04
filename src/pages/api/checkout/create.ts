@@ -22,15 +22,27 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const affiliateRef = cookies.get("affiliate_ref")?.value || null;
 
     // 1. Upsert lead first
-    const lead = await upsertLead({
-      alias_nombre,
-      email,
-      whatsapp,
-      rol: tipo_entrada === "pareja" ? "pareja" : tipo_entrada === "unicornio" ? "mujer_sola" : "hombre_solo",
-      corset_vip: true,
-      origen: "evento_luna_llena",
-      afiliado_id: affiliateRef || undefined,
-    });
+    const leadResult = await upsertLead(
+      {
+        alias_nombre,
+        email,
+        whatsapp,
+        rol: tipo_entrada === "pareja" ? "pareja" : tipo_entrada === "unicornio" ? "mujer_sola" : "hombre_solo",
+        corset_vip: true,
+        origen: "evento_luna_llena",
+        afiliado_id: affiliateRef || undefined,
+      },
+      "corset"
+    );
+
+    if (leadResult.status === "conflict") {
+      return new Response(JSON.stringify({ error: leadResult.error }), { status: 409 });
+    }
+
+    const lead = leadResult.lead;
+    if (!lead) {
+      return new Response(JSON.stringify({ error: "No se pudo vincular el perfil de invitado." }), { status: 500 });
+    }
 
     const isDigitalGateway = metodo_pago === "pasarela_digital" || metodo_pago === "dlocal_go";
 

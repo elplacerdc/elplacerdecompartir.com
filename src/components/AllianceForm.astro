@@ -17,7 +17,7 @@ const {
 
   <div class="mb-8 text-center sm:text-left">
     <div class="inline-block px-3 py-1 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-xs text-[#ead397] uppercase tracking-wider font-semibold mb-3">
-      🏛️ Curaduría & Producción Cultural
+      🏛️ Dirección & Producción Cultural
     </div>
     <h3 class="text-2xl font-serif font-bold tracking-wide uppercase text-[#ead397]">
       {title}
@@ -134,7 +134,7 @@ const {
       id="alliance-submit-btn"
       class="w-full py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
     >
-      Enviar Propuesta a Curaduría
+      Enviar Propuesta a Dirección Cultural
     </button>
   </form>
 </div>
@@ -162,10 +162,15 @@ const {
       const data = await res.json();
 
       if (data.success) {
-        feedback.className = "text-sm p-4 rounded-xl bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
-        feedback.textContent = "✨ ¡Propuesta recibida con éxito! Nuestro equipo de curaduría y producción se comunicará contigo vía WhatsApp y correo.";
+        if (data.already_registered) {
+          feedback.className = "text-sm p-4 rounded-xl bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          feedback.textContent = `ℹ️ ${data.message || "Ya hemos recibido tu propuesta de alianza previamente."}`;
+        } else {
+          feedback.className = "text-sm p-4 rounded-xl bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
+          feedback.textContent = "✨ ¡Propuesta recibida con éxito! Nuestro equipo de dirección y producción se comunicará contigo vía WhatsApp y correo.";
+          form.reset();
+        }
         feedback.classList.remove("hidden");
-        form.reset();
       } else {
         throw new Error(data.error || "Ocurrió un error al procesar.");
       }
@@ -175,7 +180,7 @@ const {
       feedback.classList.remove("hidden");
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar Propuesta a Curaduría";
+      submitBtn.textContent = "Enviar Propuesta a Dirección Cultural";
     }
   });
 </script>

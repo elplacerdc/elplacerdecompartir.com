@@ -1,21 +1,23 @@
 // notifications.ts - Multi-Channel Notification Orchestrator
 import { sendTransactionalEmail } from "./email";
+import { normalizePhone } from "../db";
 
 const BRAND_NOTIFICATION_EMAIL = "web@elplacerdecompartir.com";
 const EVOLUTION_INITIAL_NUMBER = "573021004070";
 const EVOLUTION_API_URL = process.env.EVOLUTION_URL || process.env.EVOLUTION_API_URL || "http://evolution:8085";
 const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || "481c8c43-0023-4028-bad5-9d1355a3674c";
 
+// Verified public accessible transparent logo for The Corset Society
+const CORSET_LOGO_URL = "https://webdev-278-3000.ny1.zerops.app/media/logo_corsetsociety_transparent.png";
+const PLACER_LOGO_URL = "https://elplacerdecompartir.com/media/logo_elplacerdc_x.jpg";
+
 export async function sendEvolutionWhatsApp(
   number: string,
   text: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Normalizar número internacional (Colombia)
-    let cleanNumber = number.replace(/\D/g, "");
-    if (cleanNumber.length === 10 && cleanNumber.startsWith("3")) {
-      cleanNumber = `57${cleanNumber}`;
-    }
+    const phoneNorm = normalizePhone(number);
+    const cleanNumber = phoneNorm ? phoneNorm.waNumber : number.replace(/\D/g, "");
 
     const response = await fetch(`${EVOLUTION_API_URL}/send/text`, {
       method: "POST",
@@ -52,29 +54,71 @@ export async function notifyNewLead(lead: {
   corset_vip?: boolean;
 }): Promise<void> {
   const isCorset = Boolean(lead.corset_vip);
-  const channelName = isCorset ? "The Corset Society (VIP)" : "El Placer de Compartir";
+  const channelName = isCorset ? "The Corset Society (VIP - Ticket Alto)" : "El Placer de Compartir";
+  const phoneNorm = normalizePhone(lead.whatsapp);
+  const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
+  const waDirectDigits = phoneNorm ? phoneNorm.waNumber : lead.whatsapp.replace(/\D/g, "");
 
-  // 1. Correo transaccional al Usuario (si suministró email)
+  // 1. Notificación WhatsApp directa al Lead (Canal Primario de Comunicación Ágil)
+  if (isCorset) {
+    const leadCorsetWa =
+      `🖤 *THE CORSET SOCIETY — CÍRCULO HERMÉTICO*\n\n` +
+      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
+      `Te contactamos directo por WhatsApp al ser nuestro canal preferencial y confidencial de mayordomía.\n\n` +
+      `Hemos recibido tu postulación de ingreso. The Corset Society celebra encuentros privados de etiqueta rigurosa, concebidos como experiencias de ticket alto con aforo estrictamente limitado y covers de mayor valor, diseñados como filtro natural para salvaguardar la intimidad, la elegancia y la distinción de nuestras veladas.\n\n` +
+      `Tu perfil se encuentra en evaluación confidencial. Te hemos enviado en paralelo a tu correo un dossier formal con el manifiesto institucional y los códigos de etiqueta.\n\n` +
+      `_«El acceso se concede, no se anuncia.»_\n\n` +
+      `🎩 *La Mayordomía • The Corset Society*`;
+
+    sendEvolutionWhatsApp(lead.whatsapp, leadCorsetWa).catch((e) =>
+      console.error("[NotifyLead Corset WhatsApp Err]:", e)
+    );
+  } else {
+    const leadPlacerWa =
+      `🌹 *EL PLACER DE COMPARTIR — COMUNIDAD*\n\n` +
+      `Hola *${lead.alias_nombre || "Bienvenido(a)"}* ✨\n\n` +
+      `Te escribimos directo a tu WhatsApp porque es nuestra línea ágil para convocatorias comunitarias y coordinación en tiempo real.\n\n` +
+      `¡Qué alegría darte la bienvenida! Somos pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo libre de presiones.\n\n` +
+      `Te acabamos de remitir a tu correo electrónico una guía con nuestros principios comunitarios y la presentación de nuestro nuevo Centro Cultural en Bogotá.\n\n` +
+      `Guarda este contacto en tu agenda para no perderte nuestras próximas fechas.\n\n` +
+      `🌹 *El Placer de Compartir*`;
+
+    sendEvolutionWhatsApp(lead.whatsapp, leadPlacerWa).catch((e) =>
+      console.error("[NotifyLead Placer WhatsApp Err]:", e)
+    );
+  }
+
+  // 2. Correo transaccional al Usuario (Dossier Formal Complementario - No Redundante)
   if (lead.email) {
     if (isCorset) {
-      // The Corset Society: Noir & Gold con logo transparente
+      // The Corset Society: Noir & Gold con logo transparente garantizado
       const corsetHtml = `
         <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
-          <div style="margin-bottom: 20px;">
-            <img src="https://elplacerdecompartir.com/media/logo_corsetsociety_transparent.png" alt="The Corset Society" style="height: 60px; width: auto; margin: 0 auto; display: block;" />
+          <div style="margin-bottom: 25px;">
+            <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 64px; width: auto; margin: 0 auto; display: block;" />
           </div>
           <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 3px; font-size: 18px; margin: 0 0 10px 0;">The Corset Society</h1>
           <div style="width: 40px; height: 1px; background-color: #c5a059; margin: 0 auto 25px auto;"></div>
           <div style="text-align: left; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
             <p>Estimado(a) <strong style="color: #ead397;">${lead.alias_nombre || "Invitado(a)"}</strong>,</p>
-            <p>Tu solicitud para acceder a nuestro círculo privado ha sido recibida con estricto sigilo. Evaluamos cada perfil con detenimiento para salvaguardar la intimidad, la elegancia y el confort de nuestras veladas.</p>
+            <p>Te hemos enviado previamente un saludo directo a tu WhatsApp (<strong style="color: #ead397;">${formattedPhone}</strong>), nuestro canal prioritario de mayordomía para coordinaciones ágiles. Mediante esta comunicación formal dejamos constancia institucional de tu solicitud de admisión.</p>
+            <div style="background-color: #0f0a0d; border-left: 3px solid #c5a059; padding: 16px; margin: 20px 0; border-radius: 4px;">
+              <p style="margin: 0; font-size: 13px; color: #f7f4ee;">
+                👑 <strong>Círculo Privado de Ticket Alto:</strong> Nuestras galas cuentan con covers e inversión de nivel prémium, diseñados como filtro natural para salvaguardar la intimidad, la elegancia patrimonial y el aforo sumamente reservado de cada velada.
+              </p>
+            </div>
+            <p><strong>Criterios de Admisión:</strong></p>
+            <ul style="padding-left: 20px; color: rgba(247, 244, 238, 0.75); font-size: 13px;">
+              <li>Evaluación confidencial de perfil por parte de la mayordomía.</li>
+              <li>Códigos de etiqueta y anonimato voluntario de estricto cumplimiento.</li>
+              <li>Liberación de coordenadas de sede exclusivamente 24 horas antes de cada ceremonia.</li>
+            </ul>
             <p style="color: #ead397; font-style: italic; font-family: 'Cinzel', Georgia, serif; text-align: center; margin: 25px 0; font-size: 15px;">
               «El acceso se concede, no se anuncia.»
             </p>
-            <p>Si tu postulación es concedida, nuestra mayordomía se comunicará contigo vía WhatsApp a tu número registrado (<strong>${lead.whatsapp}</strong>) con las instrucciones y el protocolo de admisión.</p>
           </div>
           <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
-          <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">The Corset Society • Círculo Privado de Gala<br/>Línea Oficial de Mayordomía: +57 319 419 4785</p>
+          <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">The Corset Society • Círculo Privado de Gala<br/>Línea Oficial de Mayordomía: +57 319 419 4785 • Bogotá, Colombia</p>
         </div>
       `;
 
@@ -82,27 +126,32 @@ export async function notifyNewLead(lead: {
         to: lead.email,
         name: lead.alias_nombre || undefined,
         fromName: "La Sociedad del Corset",
-        subject: "The Corset Society — Solicitud Registrada",
+        subject: "The Corset Society — Constancia Formal de Postulación",
         html: corsetHtml,
       }).catch((e) => console.error("[NotifyLead Corset Email Err]:", e));
     } else {
-      // El Placer de Compartir: Salón cálido y luminoso de comunidad
+      // El Placer de Compartir: Carta Comunitaria Formal
       const placerHtml = `
         <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #591f26; text-align: center;">
           <div style="margin-bottom: 20px;">
-            <img src="https://elplacerdecompartir.com/media/logo_elplacerdc_x.jpg" alt="El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+            <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
           </div>
           <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">El Placer de Compartir</h1>
           <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; margin-bottom: 20px;">Comunidad de Erotismo Consciente & Centro Cultural</div>
           <div style="text-align: left; font-family: 'Inter', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
             <p>Hola <strong style="color: #ead397;">${lead.alias_nombre || "Bienvenido(a)"}</strong>,</p>
-            <p>Te damos una cálida bienvenida a nuestra comunidad. Somos pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo libre de presiones.</p>
+            <p>Te enviamos previamente un saludo directo a tu WhatsApp (<strong style="color: #ead397;">${formattedPhone}</strong>), nuestro canal ágil para coordinaciones en tiempo real. Por este medio formal te compartimos el marco de convivencia de nuestra comunidad.</p>
             <div style="background-color: #260d1d; border-left: 3px solid #c5a059; padding: 15px; margin: 20px 0; border-radius: 4px;">
               <p style="margin: 0; font-size: 13px; color: #f7d6cb;">
-                🏛️ <strong>Nuevo Centro Cultural en Bogotá:</strong> Un espacio físico multidisciplinario para talleres de parejas, masajes tántricos, BDSM ético, nudismo consciente y encuentros sensoriales.
+                🏛️ <strong>Nuevo Centro Cultural en Bogotá:</strong> Un espacio físico multidisciplinario para talleres de parejas, masajes tántricos, BDSM ético y experiencias sensoriales con criterios de consentimiento innegociable.
               </p>
             </div>
-            <p>Pronto recibirás nuestras convocatorias a veladas y actividades. Aquí tu ritmo es soberano y tu consentimiento, innegociable.</p>
+            <p><strong>Nuestros Acuerdos Fundamentales:</strong></p>
+            <ul style="padding-left: 20px; color: rgba(247, 244, 238, 0.75); font-size: 13px;">
+              <li>Consentimiento lúcido: El respeto a la autonomía y al ritmo personal es sagrado.</li>
+              <li>Cero personal contratado: Todo asistente participa por decisión e interés genuino propio.</li>
+              <li>Privacidad recíproca: Lo que se comparte en nuestras veladas permanece en la intimidad del grupo.</li>
+            </ul>
           </div>
           <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
           <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">El Placer de Compartir • Bogotá & Medellín<br/>Línea Oficial: +57 319 419 4785</p>
@@ -113,13 +162,13 @@ export async function notifyNewLead(lead: {
         to: lead.email,
         name: lead.alias_nombre || undefined,
         fromName: "El Placer de Compartir",
-        subject: "Bienvenido a El Placer de Compartir",
+        subject: "Bienvenido a El Placer de Compartir — Carta Comunitaria",
         html: placerHtml,
       }).catch((e) => console.error("[NotifyLead Placer Email Err]:", e));
     }
   }
 
-  // 2. Correo transaccional a la Marca (web@elplacerdecompartir.com)
+  // 3. Correo transaccional a la Marca (Admin)
   const brandSubject = `[Nuevo Lead] ${lead.alias_nombre || "Anónimo"} (${lead.rol || "General"}) - ${channelName}`;
   const brandHtml = `
     <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
@@ -127,7 +176,7 @@ export async function notifyNewLead(lead: {
       <table style="width: 100%; border-collapse: collapse;">
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Canal:</td><td style="padding: 8px; border: 1px solid #ddd;">${channelName}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Alias / Nombre:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.alias_nombre || "No especificado"}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;"><a href="https://wa.me/${lead.whatsapp.replace(/\D/g, "")}">${lead.whatsapp}</a></td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;"><a href="https://wa.me/${waDirectDigits}">${formattedPhone}</a></td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Email:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.email || "No suministrado"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Modalidad / Rol:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.rol || "No especificado"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ciudad:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.ciudad || "Bogotá"}</td></tr>
@@ -144,42 +193,12 @@ export async function notifyNewLead(lead: {
     html: brandHtml,
   }).catch((e) => console.error("[NotifyLead BrandEmail Err]:", e));
 
-  // 3. Notificación WhatsApp directa al Lead (Mensaje de Bienvenida con Voz de Marca)
-  if (isCorset) {
-    const leadCorsetWa =
-      `🖤 *THE CORSET SOCIETY — CÍRCULO HERMÉTICO*\n\n` +
-      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
-      `Hemos recibido tu solicitud de admisión a nuestro círculo privado con estricto sigilo.\n\n` +
-      `Evaluamos cada perfil con detenimiento para proteger la intimidad, el confort y la elegancia de nuestras veladas.\n\n` +
-      `Si tu acceso es concedido, nuestra mayordomía se comunicará contigo por esta línea para coordinar tu protocolo de admisión.\n\n` +
-      `_El acceso se concede, no se anuncia._\n\n` +
-      `🎩 *The Corset Society*`;
-
-    sendEvolutionWhatsApp(lead.whatsapp, leadCorsetWa).catch((e) =>
-      console.error("[NotifyLead Corset WhatsApp Err]:", e)
-    );
-  } else {
-    const leadPlacerWa =
-      `🌹 *BIENVENIDO(A) A EL PLACER DE COMPARTIR*\n\n` +
-      `Hola *${lead.alias_nombre || "Bienvenido(a)"}* ✨\n\n` +
-      `Qué alegría darte la bienvenida a nuestra comunidad de libertad relacional, erotismo consciente y respeto mutuo.\n\n` +
-      `🏛️ *Centro Cultural en Bogotá*: Un espacio físico seguro para talleres de parejas, masajes tántricos, BDSM ético y experiencias sensoriales.\n\n` +
-      `Aquí la prioridad es tu confort, tu ritmo soberano y la cultura de consentimiento lúcido.\n\n` +
-      `Pronto recibirás detalles de nuestras próximas veladas y encuentros comunitarios.\n\n` +
-      `Si tienes cualquier duda, esta es nuestra línea de atención directa.\n\n` +
-      `🌹 *El Placer de Compartir*`;
-
-    sendEvolutionWhatsApp(lead.whatsapp, leadPlacerWa).catch((e) =>
-      console.error("[NotifyLead Placer WhatsApp Err]:", e)
-    );
-  }
-
-  // 4. Notificación WhatsApp al Evolution Inicial (3021004070 - Telemetría Interna)
+  // 4. WhatsApp al Evolution Inicial (Admin Telemetría)
   const adminWaText = 
     `🔥 *NUEVO REGISTRO EN WEB*\n\n` +
     `🏷️ *Canal:* ${channelName}\n` +
     `👤 *Alias:* ${lead.alias_nombre || "No especificado"}\n` +
-    `📱 *WhatsApp:* ${lead.whatsapp}\n` +
+    `📱 *WhatsApp:* ${formattedPhone}\n` +
     `✉️ *Email:* ${lead.email || "No suministrado"}\n` +
     `🎭 *Modalidad:* ${lead.rol || "General"}\n` +
     `📍 *Ciudad:* ${lead.ciudad || "Bogotá"}\n` +
@@ -190,33 +209,54 @@ export async function notifyNewLead(lead: {
   );
 }
 
-export async function notifyNewTicket(ticket: {
-  id?: string;
-  tipo_entrada: string;
-  tipo_pago: string;
-  monto_pagado: number | string;
-  metodo_pago: string;
-  ticket_hash: string;
-}, lead: {
-  alias_nombre?: string;
-  whatsapp: string;
-  email?: string;
-}): Promise<void> {
+export async function notifyNewTicket(
+  ticket: {
+    id?: string;
+    tipo_entrada: string;
+    tipo_pago: string;
+    monto_pagado: number | string;
+    metodo_pago: string;
+    ticket_hash: string;
+  },
+  lead: {
+    alias_nombre?: string;
+    whatsapp: string;
+    email?: string;
+  }
+): Promise<void> {
   const ticketUrl = `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticket.ticket_hash}`;
+  const phoneNorm = normalizePhone(lead.whatsapp);
+  const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
 
-  // 1. Correo al Usuario con Credencial Oficial
+  // 1. WhatsApp Directo al Comprador (Canal Inmediato de Entrada y Credencial)
+  const buyerWaText = 
+    `🌕 *CREDENCIAL OFICIAL CONFIRMADA — THE CORSET SOCIETY*\n\n` +
+    `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
+    `Tu acceso para la velada privada *Noche de Luna Llena* (Sábado 31 de Octubre) ha sido confirmado con éxito.\n\n` +
+    `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()}\n` +
+    `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n\n` +
+    `🔐 *Accede a tu credencial digital con código QR scannable:*\n${ticketUrl}\n\n` +
+    `📍 Presenta tu credencial digital en puerta. Las coordenadas exactas de la reserva privada se compartirán 24h antes por este medio.\n\n` +
+    `_«El acceso se concede, no se anuncia.»_\n\n` +
+    `🎩 *La Mayordomía • The Corset Society*`;
+
+  sendEvolutionWhatsApp(lead.whatsapp, buyerWaText).catch((e) =>
+    console.error("[NotifyTicket Buyer WhatsApp Err]:", e)
+  );
+
+  // 2. Correo al Usuario con Credencial Oficial y Resguardo Institucional
   if (lead.email) {
-    const userSubject = "The Corset Society — Tu Credencial Digital (Noche de Luna Llena)";
+    const userSubject = "The Corset Society — Tu Credencial Digital Sellada (Noche de Luna Llena)";
     const userHtml = `
       <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', serif, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
-        <div style="margin-bottom: 20px;">
-          <img src="https://elplacerdecompartir.com/media/logo_corsetsociety_transparent.png" alt="The Corset Society" style="height: 60px; width: auto; margin: 0 auto; display: block;" />
+        <div style="margin-bottom: 25px;">
+          <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 64px; width: auto; margin: 0 auto; display: block;" />
         </div>
         <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 2px; font-size: 20px; margin: 0 0 10px 0;">The Corset Society</h1>
-        <h2 style="color: #ead397; font-size: 16px; margin: 0 0 20px 0;">Noche de Luna Llena 🌕</h2>
+        <h2 style="color: #ead397; font-size: 15px; margin: 0 0 20px 0; letter-spacing: 1px;">Noche de Luna Llena 🌕</h2>
         <div style="text-align: left; font-family: sans-serif; font-size: 14px; line-height: 1.6; color: #eee;">
           <p>Estimado(a) <strong>${lead.alias_nombre || "Invitado(a)"}</strong>,</p>
-          <p>Tu reserva para la velada privada del <strong>Sábado 31 de Octubre</strong> ha sido confirmada con éxito.</p>
+          <p>Te hemos notificado previamente vía WhatsApp a tu línea registrada (<strong>${formattedPhone}</strong>). Por medio de este correo te enviamos el respaldo formal y enlace a tu credencial sellada.</p>
           <div style="background-color: #140a18; border: 1px solid #c5a059; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <p style="margin: 5px 0;"><strong>Pase:</strong> ${ticket.tipo_entrada.toUpperCase()}</p>
             <p style="margin: 5px 0;"><strong>Modalidad:</strong> ${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"}</p>
@@ -226,7 +266,7 @@ export async function notifyNewTicket(ticket: {
           <div style="text-align: center; margin: 25px 0;">
             <a href="${ticketUrl}" style="background-color: #c5a059; color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Ver Credencial Digital con QR</a>
           </div>
-          <p style="font-size: 12px; color: #aaa;">Recuerda presentar el código QR de tu credencial al ingresar. Las coordenadas de la locación secreta se informarán 24 horas antes por WhatsApp confidencial.</p>
+          <p style="font-size: 12px; color: #aaa;">Recuerda presentar el código QR scannable de tu credencial al ingresar. Las coordenadas de la locación secreta se informarán 24 horas antes por WhatsApp confidencial.</p>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.3); margin: 30px 0;" />
         <p style="font-size: 11px; color: #888;">El acceso se concede, no se anuncia. Bogotá, Colombia.</p>
@@ -242,14 +282,14 @@ export async function notifyNewTicket(ticket: {
     }).catch((e) => console.error("[NotifyTicket UserEmail Err]:", e));
   }
 
-  // 2. Correo a la Marca
+  // 3. Correo a la Marca (Admin)
   const brandSubject = `[Nueva Reserva Confirmada] ${ticket.tipo_entrada.toUpperCase()} ($${Number(ticket.monto_pagado).toLocaleString("es-CO")}) - ${lead.alias_nombre}`;
   const brandHtml = `
     <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
       <h2 style="color: #721c24;">Nueva Reserva Confirmada Noche de Luna Llena</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Invitado:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.alias_nombre}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.whatsapp}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;">${formattedPhone}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Email:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.email || "N/A"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Entrada:</td><td style="padding: 8px; border: 1px solid #ddd;">${ticket.tipo_entrada} (${ticket.tipo_pago})</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Monto:</td><td style="padding: 8px; border: 1px solid #ddd;">$${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP</td></tr>
@@ -267,29 +307,13 @@ export async function notifyNewTicket(ticket: {
     html: brandHtml,
   }).catch((e) => console.error("[NotifyTicket BrandEmail Err]:", e));
 
-  // 3. WhatsApp Directo al Comprador (lead.whatsapp) con Enlace a su Credencial y QR
-  const buyerWaText = 
-    `🌕 *CREDENCIAL OFICIAL CONFIRMADA — THE CORSET SOCIETY*\n\n` +
-    `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
-    `Tu acceso para la velada privada *Noche de Luna Llena* (Sábado 31 de Octubre) ha sido confirmado.\n\n` +
-    `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()}\n` +
-    `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n\n` +
-    `🔐 *Accede a tu credencial sellada con código QR:* \n${ticketUrl}\n\n` +
-    `📍 Presenta tu credencial digital al ingresar. Las coordenadas exactas de la reserva privada se compartirán 24h antes por este medio.\n\n` +
-    `_El acceso se concede, no se anuncia._\n` +
-    `🎩 *The Corset Society*`;
-
-  sendEvolutionWhatsApp(lead.whatsapp, buyerWaText).catch((e) =>
-    console.error("[NotifyTicket Buyer WhatsApp Err]:", e)
-  );
-
   // 4. WhatsApp al Evolution Inicial (Admin Telemetría)
   const adminWaText = 
     `🌕 *RESERVA CONFIRMADA — CORSET SOCIETY*\n\n` +
     `🎟️ *Entrada:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago})\n` +
     `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
     `👤 *Invitado:* ${lead.alias_nombre}\n` +
-    `📱 *WhatsApp:* ${lead.whatsapp}\n` +
+    `📱 *WhatsApp:* ${formattedPhone}\n` +
     `💳 *Método:* ${ticket.metodo_pago}\n` +
     `🔐 *Hash:* ${ticket.ticket_hash.substring(0, 16)}\n` +
     `⏱️ *Hora:* ${new Date().toLocaleTimeString("es-CO")}`;
@@ -298,7 +322,6 @@ export async function notifyNewTicket(ticket: {
     console.error("[NotifyTicket Admin WhatsApp Err]:", e)
   );
 }
-
 
 const ALLIANCE_LABELS: Record<string, string> = {
   organizador_eventos_adultos: "Organizador de Eventos Adultos / Mente Abierta",
@@ -322,19 +345,38 @@ export async function notifyNewAlliance(
   }
 ): Promise<void> {
   const allianceLabel = ALLIANCE_LABELS[details.tipo_alianza] || details.tipo_alianza;
+  const phoneNorm = normalizePhone(lead.whatsapp);
+  const formattedPhone = phoneNorm ? phoneNorm.display : (lead.whatsapp || "No suministrado");
+  const waDirectDigits = phoneNorm ? phoneNorm.waNumber : (lead.whatsapp || "").replace(/\D/g, "");
 
-  // 1. Correo al Postulante
+  // 1. WhatsApp Directo al Proponente (Canal Prioritario y Ágil)
+  if (lead.whatsapp) {
+    const allianceWa =
+      `🏛️ *CENTRO CULTURAL EL PLACER DE COMPARTIR*\n\n` +
+      `Hola *${lead.alias_nombre || "Estimado(a) Aliado(a)"}* ✨\n\n` +
+      `Te saludamos directamente por WhatsApp como canal preferencial para la gestión ágil de coproducciones y visitas técnicas.\n\n` +
+      `Hemos recibido tu propuesta en la línea de: *${allianceLabel}*.\n\n` +
+      `Nuestro equipo de dirección y producción cultural analiza cada iniciativa para garantizar un espacio de máximo consentimiento, confort y resonancia cultural.\n\n` +
+      `Nos comunicaremos contigo por esta línea para coordinar detalles técnicos, disponibilidad de fechas y condiciones del espacio.\n\n` +
+      `🏛️ *Dirección & Producción — Centro Cultural El Placer de Compartir*`;
+
+    sendEvolutionWhatsApp(lead.whatsapp, allianceWa).catch((e) =>
+      console.error("[NotifyAlliance User WhatsApp Err]:", e)
+    );
+  }
+
+  // 2. Correo al Postulante (Dossier Técnico Formal)
   if (lead.email) {
     const allianceHtml = `
       <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
         <div style="margin-bottom: 20px;">
-          <img src="https://elplacerdecompartir.com/media/logo_elplacerdc_x.jpg" alt="Centro Cultural El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+          <img src="${PLACER_LOGO_URL}" alt="Centro Cultural El Placer de Compartir" style="height: 64px; width: 64px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
         </div>
         <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">Centro Cultural El Placer de Compartir</h1>
-        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; margin-bottom: 20px;">Curaduría, Alianzas & Contratación de Sede</div>
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; margin-bottom: 20px;">Dirección & Producción Cultural</div>
         <div style="text-align: left; font-family: 'Inter', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
           <p>Hola <strong style="color: #ead397;">${lead.alias_nombre || "Estimado(a) Aliado(a)"}</strong>,</p>
-          <p>Hemos recibido con gran interés tu propuesta de alianza y colaboración para nuestro Centro Cultural en Bogotá.</p>
+          <p>Te hemos confirmado la radicación previa a través de tu WhatsApp (<strong style="color: #ead397;">${formattedPhone}</strong>). Por este medio formal te compartimos el comprobante de recepción para nuestro Centro Cultural en Bogotá.</p>
           <div style="background-color: #260d1d; border-left: 3px solid #c5a059; padding: 15px; margin: 20px 0; border-radius: 4px;">
             <p style="margin: 0 0 8px 0; font-size: 13px; color: #ead397;">
               📌 <strong>Modalidad:</strong> ${allianceLabel}
@@ -343,11 +385,11 @@ export async function notifyNewAlliance(
               "${details.propuesta_detalle}"
             </p>
           </div>
-          <p>Nuestro equipo de curaduría y producción analiza la viabilidad logística, técnica y conceptual de cada iniciativa para preservar un entorno seguro, ético y de máxima comodidad.</p>
-          <p>Nos comunicaremos directamente contigo vía WhatsApp (${lead.whatsapp || "tu número registrado"}) para acordar disponibilidad de fechas, tarifas de co-producción o visita técnica a la sede.</p>
+          <p>Nuestro equipo de dirección y producción analiza la viabilidad logística, técnica y conceptual de cada iniciativa para preservar un entorno seguro, ético y de máxima comodidad.</p>
+          <p>Nos comunicaremos directamente contigo vía WhatsApp para acordar disponibilidad de fechas, tarifas de coproducción o visita técnica a la sede.</p>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
-        <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Centro Cultural El Placer de Compartir • Bogotá<br/>Línea de Curaduría: +57 319 419 4785</p>
+        <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Centro Cultural El Placer de Compartir • Bogotá<br/>Línea de Dirección Cultural: +57 319 419 4785</p>
       </div>
     `;
 
@@ -360,14 +402,14 @@ export async function notifyNewAlliance(
     }).catch((e) => console.error("[NotifyAlliance User Email Err]:", e));
   }
 
-  // 2. Correo a la Marca
+  // 3. Correo a la Marca (Admin)
   const brandSubject = `[Nueva Alianza Centro Cultural] ${allianceLabel} - ${lead.alias_nombre}`;
   const brandHtml = `
     <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
       <h2 style="color: #721c24;">Nueva Propuesta de Alianza / Contratación Centro Cultural</h2>
       <table style="width: 100%; border-collapse: collapse;">
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Proponente / Colectivo:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.alias_nombre || "No especificado"}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;"><a href="https://wa.me/${(lead.whatsapp || "").replace(/\D/g, "")}">${lead.whatsapp}</a></td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;"><a href="https://wa.me/${waDirectDigits}">${formattedPhone}</a></td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Email:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.email || "No suministrado"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Tipo de Alianza:</td><td style="padding: 8px; border: 1px solid #ddd;">${allianceLabel}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ciudad / Sede:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.ciudad || "Bogotá"}</td></tr>
@@ -385,28 +427,12 @@ export async function notifyNewAlliance(
     html: brandHtml,
   }).catch((e) => console.error("[NotifyAlliance Brand Email Err]:", e));
 
-  // 3. WhatsApp Directo al Proponente
-  if (lead.whatsapp) {
-    const allianceWa =
-      `🏛️ *CENTRO CULTURAL EL PLACER DE COMPARTIR*\n\n` +
-      `Hola *${lead.alias_nombre || "Estimado(a) Aliado(a)"}* ✨\n\n` +
-      `Hemos recibido tu propuesta de alianza / contratación para nuestro Centro Cultural en Bogotá con gran interés.\n\n` +
-      `📋 *Línea:* ${allianceLabel}\n\n` +
-      `Nuestro equipo de curaduría y producción analiza cada iniciativa para garantizar un espacio de máximo consentimiento, confort y resonancia cultural.\n\n` +
-      `Nos comunicaremos contigo por esta línea para coordinar detalles técnicos, disponibilidad de fechas y condiciones del espacio.\n\n` +
-      `🏛️ *Dirección y Curaduría — Centro Cultural El Placer de Compartir*`;
-
-    sendEvolutionWhatsApp(lead.whatsapp, allianceWa).catch((e) =>
-      console.error("[NotifyAlliance User WhatsApp Err]:", e)
-    );
-  }
-
-  // 4. WhatsApp al Evolution Inicial (Telemetría Admin)
+  // 4. WhatsApp al Evolution Inicial (Admin Telemetría)
   const adminWa =
     `🏛️ *NUEVA PROPUESTA DE ALIANZA*\n\n` +
     `👤 *Proponente:* ${lead.alias_nombre}\n` +
     `🏷️ *Línea:* ${allianceLabel}\n` +
-    `📱 *WhatsApp:* ${lead.whatsapp}\n` +
+    `📱 *WhatsApp:* ${formattedPhone}\n` +
     `✉️ *Email:* ${lead.email}\n` +
     `📍 *Sede:* ${lead.ciudad || "Bogotá"}\n` +
     `📝 *Propuesta:* ${details.propuesta_detalle.substring(0, 100)}...`;

@@ -1,5 +1,5 @@
 ---
-// LeadForm.astro - Formulario con Perfilado Progresivo y Detección en Tiempo Real
+// LeadForm.astro - Formulario con Perfilado Progresivo, Emojis de Rol y Detección de Conflictos
 interface Props {
   isVip?: boolean;
   title?: string;
@@ -8,8 +8,10 @@ interface Props {
 
 const { 
   isVip = false, 
-  title = "Acceso a la Comunidad", 
-  subtitle = "Regístrate para recibir convocatorias privadas, talleres y accesos exclusivos." 
+  title = isVip ? "Solicitud de Membresía VIP" : "Acceso a la Comunidad", 
+  subtitle = isVip
+    ? "La admisión se evalúa rigurosamente. The Corset Society es un círculo privado de gala y ticket alto, con covers prémium y aforo estrictamente limitado como filtro natural de privacidad y confort."
+    : "Regístrate para recibir convocatorias privadas, talleres y accesos exclusivos a nuestro centro cultural." 
 } = Astro.props;
 ---
 
@@ -45,9 +47,10 @@ const {
         name="whatsapp"
         id="input-whatsapp"
         required
-        placeholder="+57 310 000 0000"
+        placeholder="Ej: 310 123 4567 o +57 310..."
         class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
       />
+      <p class="text-[10px] text-[#f7f4ee]/40 mt-1">Deducción automática Colombia (+57). Si usas número internacional, escribe con indicativo (+).</p>
     </div>
 
     <!-- Email -->
@@ -80,7 +83,7 @@ const {
       />
     </div>
 
-    <!-- Rol / Identidad -->
+    <!-- Rol / Identidad con Emojis Canónicos -->
     <div>
       <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
         Modalidad de Asistencia o Participación <span class="text-[#b84a39]">*</span>
@@ -90,9 +93,9 @@ const {
         id="input-rol"
         class="w-full px-4 py-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
       >
-        <option value="pareja">Pareja</option>
+        <option value="pareja">👫 Pareja</option>
         <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
-        <option value="hombre_solo">Hombre Solo (Single)</option>
+        <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
       </select>
     </div>
 
@@ -193,10 +196,15 @@ const {
       const data = await res.json();
 
       if (data.success) {
-        formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
-        formFeedback.textContent = "✨ ¡Registro confirmado exitosamente! Te hemos enviado los detalles a tus canales de contacto.";
+        if (data.already_registered) {
+          formFeedback.className = "text-sm p-4 rounded-lg bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          formFeedback.textContent = `ℹ️ ${data.message || "Ya te encuentras registrado(a) en este canal."}`;
+        } else {
+          formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
+          formFeedback.textContent = "✨ ¡Registro confirmado exitosamente! Te hemos enviado los detalles a tus canales de contacto.";
+          form.reset();
+        }
         formFeedback.classList.remove("hidden");
-        form.reset();
       } else {
         throw new Error(data.error || "Ocurrió un error al procesar.");
       }
