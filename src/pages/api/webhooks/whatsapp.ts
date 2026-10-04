@@ -104,7 +104,7 @@ export const POST: APIRoute = async ({ request }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            model: "deepseek/deepseek-chat",
+            model: "auto",
             messages: [
               { role: "system", content: SYSTEM_PROMPT },
               {
@@ -113,7 +113,7 @@ export const POST: APIRoute = async ({ request }) => {
               },
             ],
             temperature: 0.7,
-            max_tokens: 450,
+            max_tokens: 800,
           }),
         });
 
@@ -123,7 +123,9 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const completion = await bifrostResponse.json();
-        const replyText = completion.choices?.[0]?.message?.content;
+        const replyText =
+          completion.choices?.[0]?.message?.content ||
+          completion.choices?.[0]?.message?.reasoning_content;
 
         if (replyText && replyText.trim()) {
           await sendEvolutionWhatsApp(cleanSenderDigits, replyText.trim());
