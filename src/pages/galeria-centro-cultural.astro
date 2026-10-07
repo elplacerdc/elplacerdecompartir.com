@@ -1,0 +1,94 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout 
+  title="Galería del Centro Cultural | El Placer de Compartir"
+  description="Explora los espacios y salones de nuestro Centro Cultural en Bogotá."
+>
+  <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+    
+    <div class="text-center space-y-4">
+      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#c5a059]/20 text-[#c5a059] border border-[#c5a059]/40">
+        Nuestros Espacios
+      </span>
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-[#f7f4ee]">
+        Galería Centro Cultural
+      </h1>
+      <p class="text-lg text-[#f7f4ee]/80 font-light max-w-2xl mx-auto">
+        Conoce las instalaciones, zonas y salones diseñados para la exploración sensorial, talleres y eventos de nuestra comunidad.
+      </p>
+      
+      <div class="pt-4">
+        <a 
+          href="/centro-cultural#alianzas" 
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] transition-all"
+        >
+          Reserva un espacio (Alianzas)
+        </a>
+      </div>
+    </div>
+
+    <!-- Grid Masonry para la Galería -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-auto">
+      
+      <!-- Zona Principal (Horizontal) -->
+      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg lg:col-span-2">
+        <img 
+          src="/media/centro-cultural/fotos/salon-principal-1-a.jpg" 
+          alt="Salón Principal" 
+          class="w-full h-full object-cover min-h-[300px] group-hover:scale-105 transition-transform duration-700"
+          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
+          <h3 class="font-serif text-xl font-bold text-[#ead397]">Salón Principal</h3>
+        </div>
+      </div>
+
+      <!-- Salas de Talleres (Vertical) -->
+      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg row-span-2">
+        <img 
+          src="/media/centro-cultural/fotos/salon-negro-1.jpg" 
+          alt="Salón Negro" 
+          class="w-full h-full object-cover min-h-[400px] group-hover:scale-105 transition-transform duration-700"
+          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
+          <h3 class="font-serif text-xl font-bold text-[#ead397]">Salón Negro</h3>
+        </div>
+      </div>
+
+      <!-- Área Social -->
+      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg">
+        <img 
+          src="/media/centro-cultural/fotos/salon-rogo-1.jpg" 
+          alt="Salón Rojo" 
+          class="w-full h-full object-cover min-h-[250px] group-hover:scale-105 transition-transform duration-700"
+          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
+          <h3 class="font-serif text-xl font-bold text-[#ead397]">Salón Rojo</h3>
+        </div>
+      </div>
+
+      <!-- Bar / Cata -->
+      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg">
+        <img 
+          src="/media/centro-cultural/fotos/licorera-1.jpg" 
+          alt="Zona Licorera" 
+          class="w-full h-full object-cover min-h-[250px] group-hover:scale-105 transition-transform duration-700"
+          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
+          <h3 class="font-serif text-xl font-bold text-[#ead397]">Zona Licorera</h3>
+        </div>
+      </div>
+
+    </div>
+    
+    <div class="text-center pt-8">
+      <a href="/centro-cultural" class="text-xs text-[#c5a059] hover:text-[#ead397] transition-colors underline underline-offset-2">← Volver a Centro Cultural</a>
+    </div>
+
+  </div>
+</Layout>
