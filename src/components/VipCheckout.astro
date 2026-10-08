@@ -9,9 +9,9 @@ export interface Props {
 const { userId, userEmail, userName } = Astro.props;
 ---
 
-<div class="vip-checkout-container bg-gradient-to-b from-[#180a22]/80 to-[#050505] p-6 rounded-xl border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] text-center space-y-4">
-  <h3 class="text-xl font-bold font-serif text-[#ead397]">Membresía VIP Anual</h3>
-  <p class="text-sm font-sans font-light text-[#f7f4ee]/80">
+<div class="vip-checkout-container bg-gradient-to-b from-[#180a22]/80 to-corset-noir p-6 rounded-xl border border-corset-gold shadow-[0_0_20px_rgba(197,160,89,0.2)] text-center space-y-4">
+  <h3 class="text-xl font-bold font-serif text-corset-champagne">Membresía VIP Anual</h3>
+  <p class="text-sm font-sans font-light text-elplacer-ivory/80">
     Acceso preferencial, invitaciones exclusivas y estatus prioritario durante todo un año por $99 USD.
   </p>
   
@@ -21,7 +21,7 @@ const { userId, userEmail, userName } = Astro.props;
     <input type="hidden" name="userName" value={userName || ""} />
     <button 
       type="submit"
-      class="inline-block px-6 py-3 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] hover:brightness-110 shadow-[0_0_15px_rgba(197,160,89,0.4)] transition-all cursor-pointer"
+      class="inline-block px-6 py-3 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-corset-gold to-corset-champagne text-corset-noir hover:brightness-110 shadow-[0_0_15px_rgba(197,160,89,0.4)] transition-all cursor-pointer"
     >
       Become VIP
     </button>

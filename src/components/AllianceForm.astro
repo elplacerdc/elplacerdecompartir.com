@@ -11,18 +11,18 @@ const {
 } = Astro.props;
 ---
 
-<div class="p-6 sm:p-10 rounded-2xl border border-[#c5a059]/35 bg-[#250F22]/95 shadow-[0_4px_30px_rgba(89,31,38,0.3)] relative overflow-hidden">
+<div class="p-6 sm:p-10 rounded-2xl border border-corset-gold/35 bg-[#250F22]/95 shadow-[0_4px_30px_rgba(89,31,38,0.3)] relative overflow-hidden">
   <!-- Decorative Ambient Glow -->
   <div class="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none bg-[#721c24]/20"></div>
 
   <div class="mb-8 text-center sm:text-left">
-    <div class="inline-block px-3 py-1 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-xs text-[#ead397] uppercase tracking-wider font-semibold mb-3">
+    <div class="inline-block px-3 py-1 rounded-full bg-corset-gold/15 border border-corset-gold/30 text-xs text-corset-champagne uppercase tracking-wider font-semibold mb-3">
       🏛️ Dirección & Producción Cultural
     </div>
-    <h3 class="text-2xl font-serif font-bold tracking-wide uppercase text-[#ead397]">
+    <h3 class="text-2xl font-serif font-bold tracking-wide uppercase text-corset-champagne">
       {title}
     </h3>
-    <p class="text-sm text-[#f7f4ee]/75 mt-2 leading-relaxed font-light">
+    <p class="text-sm text-elplacer-ivory/75 mt-2 leading-relaxed font-light">
       {subtitle}
     </p>
   </div>
@@ -32,8 +32,8 @@ const {
 
     <!-- Nombre / Organización / Marca -->
     <div>
-      <label for="input-alias" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
-        Nombre, Colectivo o Marca Organizadora <span class="text-[#b84a39]">*</span>
+      <label for="input-alias" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
+        Nombre, Colectivo o Marca Organizadora <span class="text-elplacer-terracotta">*</span>
       </label>
       <input
         type="text"
@@ -41,15 +41,15 @@ const {
         id="input-alias"
         required
         placeholder="Ej. Colectivo Éter / Tu Nombre"
-        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
       />
     </div>
 
     <!-- WhatsApp & Email Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div>
-        <label for="input-whatsapp" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
-          WhatsApp de Contacto Oficial <span class="text-[#b84a39]">*</span>
+        <label for="input-whatsapp" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
+          WhatsApp de Contacto Oficial <span class="text-elplacer-terracotta">*</span>
         </label>
         <input
           type="tel"
@@ -57,13 +57,13 @@ const {
           id="input-whatsapp"
           required
           placeholder="+57 300 000 0000"
-          class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+          class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
         />
       </div>
 
       <div>
-        <label for="input-email" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
-          Correo Electrónico <span class="text-[#b84a39]">*</span>
+        <label for="input-email" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
+          Correo Electrónico <span class="text-elplacer-terracotta">*</span>
         </label>
         <input
           type="email"
@@ -71,21 +71,21 @@ const {
           id="input-email"
           required
           placeholder="alianzas@tuorganizacion.com"
-          class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+          class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
         />
       </div>
     </div>
 
     <!-- Tipo de Alianza o Contratación -->
     <div>
-      <label for="input-tipo-alianza" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
-        Tipo de Propuesta o Alianza <span class="text-[#b84a39]">*</span>
+      <label for="input-tipo-alianza" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
+        Tipo de Propuesta o Alianza <span class="text-elplacer-terracotta">*</span>
       </label>
       <select
         name="tipo_alianza"
         id="input-tipo-alianza"
         required
-        class="w-full px-4 py-3 rounded-xl bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
       >
         <option value="organizador_eventos_adultos">🥂 Organizador de Eventos Adultos / Mente Abierta</option>
         <option value="tallerista_terapeuta">🧘 Tallerista / Terapeuta (Tantra, Masajes, BDSM Ético)</option>
@@ -97,8 +97,8 @@ const {
 
     <!-- Textarea para Detalle de la Propuesta -->
     <div>
-      <label for="input-propuesta" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
-        Cuéntanos sobre tu propuesta de alianza o requerimientos <span class="text-[#b84a39]">*</span>
+      <label for="input-propuesta" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
+        Cuéntanos sobre tu propuesta de alianza o requerimientos <span class="text-elplacer-terracotta">*</span>
       </label>
       <textarea
         name="propuesta_detalle"
@@ -106,19 +106,19 @@ const {
         required
         rows="4"
         placeholder="Describe el concepto del evento o taller, público estimado, fechas tentativas, requerimientos de la sede y propuesta de colaboración..."
-        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all leading-relaxed"
+        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all leading-relaxed"
       ></textarea>
     </div>
 
     <!-- Ciudad -->
     <div>
-      <label for="input-ciudad" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+      <label for="input-ciudad" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
         Sede de Interés
       </label>
       <select
         name="ciudad"
         id="input-ciudad"
-        class="w-full px-4 py-3 rounded-xl bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
       >
         <option value="Bogotá">Sede Bogotá (Casa Teusaquillo / Galerías)</option>
         <option value="Medellín">Próxima Sede Medellín</option>
@@ -131,22 +131,22 @@ const {
 
     <!-- OTP Section (Hidden initially) -->
     <div id="otp-section" class="hidden">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
-        Código de Verificación (Enviado a WhatsApp) <span class="text-[#b84a39]">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
+        Código de Verificación (Enviado a WhatsApp) <span class="text-elplacer-terracotta">*</span>
       </label>
       <input
         type="text"
         name="otp"
         id="input-otp"
         placeholder="Ej: 123456"
-        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all text-center tracking-[0.5em] font-mono"
+        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all text-center tracking-[0.5em] font-mono"
       />
     </div>
 
     <button
       type="submit"
       id="alliance-submit-btn"
-      class="w-full py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
+      class="w-full py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-corset-gold via-corset-champagne to-[#8a6d3b] text-corset-noir hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
     >
       Enviar Propuesta a Dirección Cultural
     </button>
@@ -184,7 +184,7 @@ const {
           otpSent = true;
           otpSection.classList.remove("hidden");
           inputOtp.required = true;
-          feedback.className = "text-sm p-4 rounded-xl bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          feedback.className = "text-sm p-4 rounded-xl bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
           feedback.textContent = "ℹ️ Hemos enviado un código de verificación a tu WhatsApp. Ingrésalo para continuar.";
           feedback.classList.remove("hidden");
           submitBtn.textContent = "Verificar y Enviar";
@@ -205,7 +205,7 @@ const {
 
       if (data.success) {
         if (data.already_registered) {
-          feedback.className = "text-sm p-4 rounded-xl bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          feedback.className = "text-sm p-4 rounded-xl bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
           feedback.textContent = `ℹ️ ${data.message || "Ya hemos recibido tu propuesta de alianza previamente."}`;
         } else {
           feedback.className = "text-sm p-4 rounded-xl bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";

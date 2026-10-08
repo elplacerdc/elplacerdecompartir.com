@@ -51,20 +51,20 @@ const zones = [
   <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
     
     <div class="text-center space-y-4">
-      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#c5a059]/20 text-[#c5a059] border border-[#c5a059]/40 inline-block mb-4">
+      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-corset-gold/20 text-corset-gold border border-corset-gold/40 inline-block mb-4">
         Nuestros Espacios
       </span>
-      <h1 class="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-[#f7f4ee]">
+      <h1 class="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-elplacer-ivory">
         Galería Centro Cultural
       </h1>
-      <p class="text-lg text-[#f7f4ee]/80 font-light max-w-2xl mx-auto">
+      <p class="text-lg text-elplacer-ivory/80 font-light max-w-2xl mx-auto">
         Conoce las instalaciones, zonas y salones diseñados para la exploración sensorial, talleres y eventos de nuestra comunidad.
       </p>
       
       <div class="pt-4">
         <a 
           href="/centro-cultural#alianzas" 
-          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] transition-all"
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-corset-gold text-elplacer-midnight-plum font-serif font-bold text-xs uppercase tracking-wider hover:bg-corset-champagne transition-all"
         >
           Reserva un espacio (Alianzas)
         </a>
@@ -75,19 +75,19 @@ const zones = [
     <div class="space-y-12">
       {zones.map((zone) => (
         <section class="space-y-4">
-          <h2 class="text-2xl font-serif font-bold text-[#ead397] border-b border-[#c5a059]/30 pb-2">{zone.title}</h2>
+          <h2 class="text-2xl font-serif font-bold text-corset-champagne border-b border-corset-gold/30 pb-2">{zone.title}</h2>
           
-          <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin scrollbar-thumb-[#c5a059]/50 scrollbar-track-transparent">
+          <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin scrollbar-thumb-corset-gold/50 scrollbar-track-transparent">
             {zone.photos.map((photo) => (
-              <div class="flex-none w-[85%] sm:w-[60%] lg:w-[40%] snap-center rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg relative group aspect-[4/3]">
+              <div class="flex-none w-[85%] sm:w-[60%] lg:w-[40%] snap-center rounded-2xl overflow-hidden border border-corset-gold/20 shadow-lg relative group aspect-[4/3]">
                 <img 
                   src={photo} 
                   alt={zone.title} 
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-transparent to-transparent flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span class="text-[#ead397] font-serif font-bold">{zone.title}</span>
+                <div class="absolute inset-0 bg-gradient-to-t from-elplacer-midnight-plum/90 via-transparent to-transparent flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span class="text-corset-champagne font-serif font-bold">{zone.title}</span>
                 </div>
               </div>
             ))}
@@ -97,7 +97,7 @@ const zones = [
     </div>
     
     <div class="text-center pt-8">
-      <a href="/centro-cultural" class="text-xs text-[#c5a059] hover:text-[#ead397] transition-colors underline underline-offset-2">← Volver a Centro Cultural</a>
+      <a href="/centro-cultural" class="text-xs text-corset-gold hover:text-corset-champagne transition-colors underline underline-offset-2">← Volver a Centro Cultural</a>
     </div>
 
   </div>

@@ -1,31 +1,6 @@
 @import "tailwindcss";
+@source "../**/*.astro";
 @import "./theme-elplacerdc.css";
 
-/* Custom Smooth Transitions and Noir Accents */
-html {
-  scroll-behavior: smooth;
-  color-scheme: dark;
-}
-
-body {
-  background-color: var(--color-elplacer-midnight-plum, #180a22);
-  color: var(--color-elplacer-ivory, #f7f4ee);
-  font-family: var(--font-elplacer-body, 'Inter', system-ui, sans-serif);
-  overflow-x: hidden;
-  min-height: 100vh;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: #050505;
-}
-::-webkit-scrollbar-thumb {
-  background: #c5a059;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #ead397;
-}
+html { scroll-behavior: smooth; color-scheme: dark; }
+body { min-height: 100vh; overflow-x: hidden; }

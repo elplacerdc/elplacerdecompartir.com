@@ -17,8 +17,8 @@ const {
 
 <div class={`p-6 sm:p-10 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
   isVip 
-    ? "bg-[#0a0608]/90 border-[#c5a059]/40 shadow-[0_0_30px_rgba(197,160,89,0.15)]" 
-    : "bg-[#250F22]/90 border-[#c5a059]/35 shadow-[0_4px_30px_rgba(89,31,38,0.25)]"
+    ? "bg-[#0a0608]/90 border-corset-gold/40 shadow-[0_0_30px_rgba(197,160,89,0.15)]" 
+    : "bg-[#250F22]/90 border-corset-gold/35 shadow-[0_4px_30px_rgba(89,31,38,0.25)]"
 }`}>
   <!-- Decorative Ambient Glow -->
   <div class={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none ${
@@ -26,10 +26,10 @@ const {
   }`}></div>
 
   <div class="mb-8">
-    <h3 class={`text-2xl font-serif font-bold tracking-wide uppercase ${isVip ? "text-[#c5a059]" : "text-[#ead397]"}`}>
+    <h3 class={`text-2xl font-serif font-bold tracking-wide uppercase ${isVip ? "text-corset-gold" : "text-corset-champagne"}`}>
       {title}
     </h3>
-    <p class="text-sm text-[#f7f4ee]/70 mt-2 leading-relaxed">
+    <p class="text-sm text-elplacer-ivory/70 mt-2 leading-relaxed">
       {subtitle}
     </p>
   </div>
@@ -39,8 +39,8 @@ const {
 
     <!-- WhatsApp Phone -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        WhatsApp / Teléfono <span class="text-[#b84a39]">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
+        WhatsApp / Teléfono <span class="text-elplacer-terracotta">*</span>
       </label>
       <input
         type="tel"
@@ -48,15 +48,15 @@ const {
         id="input-whatsapp"
         required
         placeholder="Ej: 310 123 4567 o +57 310..."
-        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
       />
-      <p class="text-[10px] text-[#f7f4ee]/40 mt-1">Deducción automática Colombia (+57). Si usas número internacional, escribe con indicativo (+).</p>
+      <p class="text-[10px] text-elplacer-ivory/40 mt-1">Deducción automática Colombia (+57). Si usas número internacional, escribe con indicativo (+).</p>
     </div>
 
     <!-- Email -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Correo Electrónico {isVip ? <span class="text-[#c5a059]">(Requerido para membresía VIP *)</span> : <span class="text-[#f7f4ee]/40">(Opcional)</span>}
+      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
+        Correo Electrónico {isVip ? <span class="text-corset-gold">(Requerido para membresía VIP *)</span> : <span class="text-elplacer-ivory/40">(Opcional)</span>}
       </label>
       <input
         type="email"
@@ -64,14 +64,14 @@ const {
         id="input-email"
         required={isVip}
         placeholder="ejemplo@correo.com"
-        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
       />
     </div>
 
     <!-- Alias / Nombre -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Alias o Nombre de Pila <span class="text-[#b84a39]">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
+        Alias o Nombre de Pila <span class="text-elplacer-terracotta">*</span>
       </label>
       <input
         type="text"
@@ -79,19 +79,19 @@ const {
         id="input-alias"
         required
         placeholder="Tu alias o nombre discreto"
-        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
       />
     </div>
 
     <!-- Rol / Identidad con Emojis Canónicos -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Modalidad de Asistencia o Participación <span class="text-[#b84a39]">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
+        Modalidad de Asistencia o Participación <span class="text-elplacer-terracotta">*</span>
       </label>
       <select
         name="rol"
         id="input-rol"
-        class="w-full px-4 py-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
       >
         <option value="pareja">👫 Pareja</option>
         <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
@@ -101,13 +101,13 @@ const {
 
     <!-- Ciudad -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
         Ciudad
       </label>
       <select
         name="ciudad"
         id="input-ciudad"
-        class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-corset-noir border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
       >
         <option value="Bogotá">Bogotá</option>
         <option value="Medellín">Medellín</option>
@@ -120,15 +120,15 @@ const {
 
     <!-- OTP Section (Hidden initially) -->
     <div id="otp-section" class="hidden">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Código de Verificación (Enviado a WhatsApp) <span class="text-[#b84a39]">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
+        Código de Verificación (Enviado a WhatsApp) <span class="text-elplacer-terracotta">*</span>
       </label>
       <input
         type="text"
         name="otp"
         id="input-otp"
         placeholder="Ej: 123456"
-        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all text-center tracking-[0.5em] font-mono"
+        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all text-center tracking-[0.5em] font-mono"
       />
     </div>
 
@@ -137,8 +137,8 @@ const {
       id="submit-btn"
       class={`w-full py-4 rounded-lg font-serif font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
         isVip
-          ? "bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
-          : "bg-[#b84a39] text-[#f7f4ee] hover:bg-[#a03d2e] shadow-[0_0_15px_rgba(184,74,57,0.3)]"
+          ? "bg-gradient-to-r from-corset-gold via-corset-champagne to-[#8a6d3b] text-corset-noir hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
+          : "bg-elplacer-terracotta text-elplacer-ivory hover:bg-[#a03d2e] shadow-[0_0_15px_rgba(184,74,57,0.3)]"
       }`}
     >
       {isVip ? "Solicitar Admisión VIP" : "Unirme al Círculo"}
@@ -215,7 +215,7 @@ const {
           otpSent = true;
           otpSection.classList.remove("hidden");
           inputOtp.required = true;
-          formFeedback.className = "text-sm p-4 rounded-lg bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          formFeedback.className = "text-sm p-4 rounded-lg bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
           formFeedback.textContent = "ℹ️ Hemos enviado un código de verificación a tu WhatsApp. Ingrésalo para continuar.";
           formFeedback.classList.remove("hidden");
           submitBtn.textContent = "Verificar y Completar";
@@ -239,7 +239,7 @@ const {
 
       if (data.success) {
         if (data.already_registered) {
-          formFeedback.className = "text-sm p-4 rounded-lg bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          formFeedback.className = "text-sm p-4 rounded-lg bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
           formFeedback.textContent = `ℹ️ ${data.message || "Ya te encuentras registrado(a) en este canal."}`;
         } else {
           formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
