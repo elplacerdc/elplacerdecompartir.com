@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { upsertLead } from "../../../db";
 import { notifyNewAlliance } from "../../../services/notifications";
 import { verifyOTP } from "../../../services/evolution";
+import { addSubscriber } from "../../../services/listmonk";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -73,6 +74,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         tipo_alianza: tipo_alianza || "otra_alianza",
         propuesta_detalle: propuesta_detalle || "",
       }).catch((e) => console.error("[Alliance Notifications Err]:", e));
+
+      if (email) {
+        addSubscriber(email, alias_nombre || "Alliance Lead", [1]).catch((e) =>
+          console.error("[Listmonk Alliance Sync Err]:", e)
+        );
+      }
     }
 
     return new Response(

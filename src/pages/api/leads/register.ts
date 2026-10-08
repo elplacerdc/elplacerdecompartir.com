@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { upsertLead } from "../../../db";
 import { notifyNewLead } from "../../../services/notifications";
 import { verifyOTP } from "../../../services/evolution";
+import { addSubscriber } from "../../../services/listmonk";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -61,6 +62,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       notifyNewLead(result.lead as any, targetChannel).catch((e) =>
         console.error("[Lead Notifications Err]:", e)
       );
+
+      if (email) {
+        addSubscriber(email, alias_nombre || "Lead", [1]).catch((e) =>
+          console.error("[Listmonk Register Sync Err]:", e)
+        );
+      }
     }
 
     return new Response(
