@@ -414,3 +414,10 @@ export async function recordAffiliatePayment(affiliateAlias: string): Promise<bo
     client.release();
   }
 }
+
+
+// --- DRIZZLE ORM ---
+import { drizzle } from 'drizzle-orm/node-postgres';
+import * as schema from './schema';
+
+export const db = drizzle(pool, { schema });

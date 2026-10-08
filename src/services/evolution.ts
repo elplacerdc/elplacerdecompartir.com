@@ -61,3 +61,35 @@ export async function verifyOTP(phone: string, code: string): Promise<boolean> {
   
   return false;
 }
+
+export async function sendWhatsAppMessage(phone: string, text: string): Promise<void> {
+  const apiUrl = import.meta.env.EVOLUTION_API_URL;
+  const apiKey = import.meta.env.EVOLUTION_API_KEY;
+
+  if (!apiUrl || !apiKey) {
+    console.warn("Evolution API credentials not configured. Message:", text);
+    return;
+  }
+
+  const endpoint = apiUrl.endsWith('/') ? `${apiUrl}message/sendText/instance` : `${apiUrl}/message/sendText/instance`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": apiKey,
+      },
+      body: JSON.stringify({
+        number: phone,
+        text,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error("Evolution API error:", await response.text());
+    }
+  } catch (error) {
+    console.error("Evolution API request failed:", error);
+  }
+}

@@ -1,0 +1,101 @@
+---
+// AmbassadorLogin.astro
+---
+
+<div id="ambassador-login" class="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md mt-10">
+  <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Acceso a Embajadores</h2>
+  
+  <div id="step-phone" class="space-y-4">
+    <p class="text-sm text-gray-600">Ingresa tu número de WhatsApp para recibir un código de acceso.</p>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">WhatsApp</label>
+      <input type="text" id="phone-input" placeholder="+573001234567" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-black focus:border-black">
+    </div>
+    <button id="send-otp-btn" class="w-full bg-black text-white p-2 rounded hover:bg-gray-800 transition">Enviar Código</button>
+  </div>
+
+  <div id="step-verify" class="space-y-4 hidden">
+    <p class="text-sm text-gray-600">Ingresa el código que hemos enviado a tu WhatsApp.</p>
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Código</label>
+      <input type="text" id="code-input" placeholder="123456" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-black focus:border-black">
+    </div>
+    <button id="verify-otp-btn" class="w-full bg-black text-white p-2 rounded hover:bg-gray-800 transition">Verificar y Entrar</button>
+  </div>
+  
+  <p id="auth-message" class="mt-4 text-sm text-red-500 text-center"></p>
+</div>
+
+<script>
+  import { authClient } from '../auth-client';
+  
+  const stepPhone = document.getElementById('step-phone');
+  const stepVerify = document.getElementById('step-verify');
+  const phoneInput = document.getElementById('phone-input') as HTMLInputElement;
+  const codeInput = document.getElementById('code-input') as HTMLInputElement;
+  const sendOtpBtn = document.getElementById('send-otp-btn');
+  const verifyOtpBtn = document.getElementById('verify-otp-btn');
+  const authMessage = document.getElementById('auth-message');
+
+  let currentPhone = '';
+
+  sendOtpBtn?.addEventListener('click', async () => {
+    currentPhone = phoneInput?.value.trim();
+    if (!currentPhone) {
+      if (authMessage) authMessage.textContent = 'Por favor ingresa un número de teléfono válido';
+      return;
+    }
+    
+    sendOtpBtn.textContent = 'Enviando...';
+    sendOtpBtn.setAttribute('disabled', 'true');
+    
+    try {
+      const { data, error } = await authClient.phoneNumber.sendOtp({
+        phoneNumber: currentPhone
+      });
+      
+      if (error) {
+        if (authMessage) authMessage.textContent = error.message || 'Error al enviar código';
+      } else {
+        stepPhone?.classList.add('hidden');
+        stepVerify?.classList.remove('hidden');
+        if (authMessage) authMessage.textContent = '';
+      }
+    } catch (e: any) {
+      if (authMessage) authMessage.textContent = e.message || 'Error de conexión';
+    } finally {
+      sendOtpBtn.textContent = 'Enviar Código';
+      sendOtpBtn.removeAttribute('disabled');
+    }
+  });
+
+  verifyOtpBtn?.addEventListener('click', async () => {
+    const code = codeInput?.value.trim();
+    if (!code) {
+      if (authMessage) authMessage.textContent = 'Por favor ingresa el código';
+      return;
+    }
+    
+    verifyOtpBtn.textContent = 'Verificando...';
+    verifyOtpBtn.setAttribute('disabled', 'true');
+    
+    try {
+      const { data, error } = await authClient.signIn.phoneNumber({
+        phoneNumber: currentPhone,
+        code
+      });
+      
+      if (error) {
+        if (authMessage) authMessage.textContent = error.message || 'Código inválido';
+      } else {
+        if (authMessage) authMessage.textContent = 'Acceso exitoso';
+        window.location.href = '/dashboard'; // Redirect to dashboard
+      }
+    } catch (e: any) {
+      if (authMessage) authMessage.textContent = e.message || 'Error de verificación';
+    } finally {
+      verifyOtpBtn.textContent = 'Verificar y Entrar';
+      verifyOtpBtn.removeAttribute('disabled');
+    }
+  });
+</script>
