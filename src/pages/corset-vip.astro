@@ -1,0 +1,82 @@
+---
+import Layout from "../layouts/Layout.astro";
+import VipCheckout from "../components/VipCheckout.astro";
+---
+
+<Layout 
+  title="The Corset Society VIP | Credencial Anual"
+  description="Línea exclusiva nivel premium de ElPlacerDC. Accede a nuestra membresía VIP."
+>
+  <div class="min-h-screen bg-[#050505] text-[#f7f4ee] flex items-center justify-center py-24 px-4 sm:px-6">
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+      
+      <!-- Growth Engine Persuasive Copy -->
+      <div class="space-y-8">
+        <div class="inline-block px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#c5a059]/10 text-[#c5a059] text-xs font-bold uppercase tracking-widest">
+          Suscripción Anual
+        </div>
+        
+        <h1 class="text-4xl sm:text-5xl font-serif font-bold tracking-tight text-[#ead397]">
+          The Corset Society <span class="block text-2xl mt-2 font-light italic">Línea de Alta Exclusividad</span>
+        </h1>
+        
+        <div class="space-y-4 text-[#f7f4ee]/80 font-light leading-relaxed">
+          <p>
+            Eleva tu experiencia a nivel premium. La activación de esta credencial a través de nuestra membresía anual te otorga acceso sin precedentes al círculo interno de ElPlacerDC.
+          </p>
+          <ul class="space-y-3 pt-4">
+            <li class="flex items-start gap-3">
+              <span class="text-[#c5a059] mt-1">✦</span>
+              <span><strong>Descuentos Permanentes</strong> en experiencias, talleres y eventos de alto nivel.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-[#c5a059] mt-1">✦</span>
+              <span><strong>Invitaciones Prioritarias</strong> y convocatorias cerradas.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-[#c5a059] mt-1">✦</span>
+              <span><strong>Fantasías Privadas</strong> diseñadas a medida.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-[#c5a059] mt-1">✦</span>
+              <span>Acceso directo a la <strong>Comunidad Premium</strong>.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="pt-6 border-t border-[#c5a059]/20">
+          <a href="/#eventos" class="group block bg-[#180A1A] border border-[#c5a059]/30 rounded-xl overflow-hidden hover:border-[#c5a059] transition-all">
+            <div class="p-6 flex flex-col md:flex-row gap-6 items-center">
+              <img src="/media/flayer_luna_llena.jpg" alt="Fiesta Luna Llena" class="w-24 h-24 object-cover rounded-lg" onerror="this.src='/media/flayer_membresia_clean.jpg'" />
+              <div class="space-y-2">
+                <h4 class="text-[#ead397] font-bold font-serif">🎁 Promoción Especial</h4>
+                <p class="text-xs text-[#f7f4ee]/70">
+                  Asiste a la <strong class="text-[#c5a059]">Fiesta Luna Llena Halloween</strong> y obtén tu primer año de credencial <strong>SIN COSTO</strong>. Solo las primeras diez entradas.
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- dLocalGo Checkout Form -->
+      <div class="bg-[#140816]/90 p-8 rounded-2xl border border-[#c5a059]/30 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+          <svg class="w-32 h-32 text-[#c5a059]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+        </div>
+        
+        <div class="relative z-10 text-center mb-8">
+          <h3 class="text-2xl font-serif font-bold text-[#f7f4ee] mb-2">Activación VIP</h3>
+          <p class="text-sm text-[#f7f4ee]/60">Asegura tu membresía anual hoy.</p>
+        </div>
+
+        <VipCheckout />
+        
+        <p class="text-[10px] text-center text-[#f7f4ee]/40 mt-6 mt-4">
+          Es obligatorio postularse enviando el formulario antes de procesar el alta definitiva. Todos los accesos están sujetos a verificación de perfil.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</Layout>

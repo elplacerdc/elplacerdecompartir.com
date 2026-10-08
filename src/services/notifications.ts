@@ -105,10 +105,10 @@ export async function notifyNewLead(
           <div style="width: 40px; height: 1px; background-color: #c5a059; margin: 0 auto 25px auto;"></div>
           <div style="text-align: left; font-family: 'Plus Jakarta Sans', Arial, sans-serif; font-size: 14px; line-height: 1.7; color: rgba(247, 244, 238, 0.85);">
             <p>Estimado(a) <strong style="color: #ead397;">${lead.alias_nombre || "Invitado(a)"}</strong>,</p>
-            <p>Te hemos enviado previamente un saludo directo a tu WhatsApp (<strong style="color: #ead397;">${formattedPhone}</strong>), nuestro canal prioritario de concierge para coordinaciones ágiles. Mediante esta comunicación formal dejamos constancia institucional de tu solicitud de admisión.</p>
+            <p>Te hemos enviado previamente un saludo directo a tu WhatsApp (<strong style="color: #ead397;">${formattedPhone}</strong>), nuestro canal prioritario. Mediante esta comunicación formal dejamos constancia de tu solicitud de admisión a nuestra membresía anual VIP.</p>
             <div style="background-color: #0f0a0d; border-left: 3px solid #c5a059; padding: 16px; margin: 20px 0; border-radius: 4px;">
               <p style="margin: 0; font-size: 13px; color: #f7f4ee;">
-                👑 <strong>Círculo Privado de Ticket Alto:</strong> Nuestras galas cuentan con covers e inversión de nivel prémium, diseñados como filtro natural para salvaguardar la intimidad, la elegancia patrimonial y el aforo sumamente reservado de cada velada.
+                👑 <strong>Credencial VIP Anual:</strong> Tu membresía te otorga descuentos permanentes, invitaciones prioritarias a eventos exclusivos y acceso a la comunidad premium, actuando como filtro de elegancia y privacidad.
               </p>
             </div>
             <p><strong>Criterios de Admisión:</strong></p>
@@ -117,6 +117,9 @@ export async function notifyNewLead(
               <li>Códigos de etiqueta y anonimato voluntario de estricto cumplimiento.</li>
               <li>Liberación de coordenadas de sede exclusivamente 24 horas antes de cada ceremonia.</li>
             </ul>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://elplacerdecompartir.com/#embajadores" style="background-color: #c5a059; color: #050505; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 20px; font-size: 12px; text-transform: uppercase;">Únete como Embajador</a>
+            </div>
             <p style="color: #ead397; font-style: italic; font-family: 'Cinzel', Georgia, serif; text-align: center; margin: 25px 0; font-size: 15px;">
               «El acceso se concede, no se anuncia.»
             </p>

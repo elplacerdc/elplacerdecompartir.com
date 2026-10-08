@@ -1,15 +1,57 @@
 ---
 import Layout from "../layouts/Layout.astro";
+
+const zones = [
+  {
+    title: "Zona Lobby",
+    photos: [
+      "/media/centro-cultural/fotos/lobby-1.jpg",
+      "/media/centro-cultural/fotos/lobby-2.jpg",
+      "/media/centro-cultural/fotos/lobby-3.jpg",
+    ]
+  },
+  {
+    title: "Salón Principal",
+    photos: [
+      "/media/centro-cultural/fotos/salon-principal-1-a.jpg",
+      "/media/centro-cultural/fotos/salon-principal-2.jpg",
+      "/media/centro-cultural/fotos/salon-principal-3.jpg",
+    ]
+  },
+  {
+    title: "Salón Negro",
+    photos: [
+      "/media/centro-cultural/fotos/salon-negro-1.jpg",
+      "/media/centro-cultural/fotos/salon-negro-2.jpg",
+      "/media/centro-cultural/fotos/salon-negro-3.jpg",
+    ]
+  },
+  {
+    title: "Salón Rojo",
+    photos: [
+      "/media/centro-cultural/fotos/salon-rogo-1.jpg",
+      "/media/centro-cultural/fotos/salon-rojo-2.jpg",
+      "/media/centro-cultural/fotos/salon-rojo-3.jpg",
+    ]
+  },
+  {
+    title: "Zona Licorera",
+    photos: [
+      "/media/centro-cultural/fotos/licorera-1.jpg",
+      "/media/centro-cultural/fotos/licorera-2.jpg",
+    ]
+  }
+];
 ---
 
 <Layout 
   title="Galería del Centro Cultural | El Placer de Compartir"
   description="Explora los espacios y salones de nuestro Centro Cultural en Bogotá."
 >
-  <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-12">
+  <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
     
     <div class="text-center space-y-4">
-      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#c5a059]/20 text-[#c5a059] border border-[#c5a059]/40">
+      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#c5a059]/20 text-[#c5a059] border border-[#c5a059]/40 inline-block mb-4">
         Nuestros Espacios
       </span>
       <h1 class="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-[#f7f4ee]">
@@ -29,61 +71,29 @@ import Layout from "../layouts/Layout.astro";
       </div>
     </div>
 
-    <!-- Grid Masonry para la Galería -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-auto">
-      
-      <!-- Zona Principal (Horizontal) -->
-      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg lg:col-span-2">
-        <img 
-          src="/media/centro-cultural/fotos/salon-principal-1-a.jpg" 
-          alt="Salón Principal" 
-          class="w-full h-full object-cover min-h-[300px] group-hover:scale-105 transition-transform duration-700"
-          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
-          <h3 class="font-serif text-xl font-bold text-[#ead397]">Salón Principal</h3>
-        </div>
-      </div>
-
-      <!-- Salas de Talleres (Vertical) -->
-      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg row-span-2">
-        <img 
-          src="/media/centro-cultural/fotos/salon-negro-1.jpg" 
-          alt="Salón Negro" 
-          class="w-full h-full object-cover min-h-[400px] group-hover:scale-105 transition-transform duration-700"
-          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
-          <h3 class="font-serif text-xl font-bold text-[#ead397]">Salón Negro</h3>
-        </div>
-      </div>
-
-      <!-- Área Social -->
-      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg">
-        <img 
-          src="/media/centro-cultural/fotos/salon-rogo-1.jpg" 
-          alt="Salón Rojo" 
-          class="w-full h-full object-cover min-h-[250px] group-hover:scale-105 transition-transform duration-700"
-          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
-          <h3 class="font-serif text-xl font-bold text-[#ead397]">Salón Rojo</h3>
-        </div>
-      </div>
-
-      <!-- Bar / Cata -->
-      <div class="group relative rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg">
-        <img 
-          src="/media/centro-cultural/fotos/licorera-1.jpg" 
-          alt="Zona Licorera" 
-          class="w-full h-full object-cover min-h-[250px] group-hover:scale-105 transition-transform duration-700"
-          onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-[#180A1A]/40 to-transparent flex items-end p-6">
-          <h3 class="font-serif text-xl font-bold text-[#ead397]">Zona Licorera</h3>
-        </div>
-      </div>
-
+    <!-- Zonas con Carrusel Horizontal -->
+    <div class="space-y-12">
+      {zones.map((zone) => (
+        <section class="space-y-4">
+          <h2 class="text-2xl font-serif font-bold text-[#ead397] border-b border-[#c5a059]/30 pb-2">{zone.title}</h2>
+          
+          <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin scrollbar-thumb-[#c5a059]/50 scrollbar-track-transparent">
+            {zone.photos.map((photo) => (
+              <div class="flex-none w-[85%] sm:w-[60%] lg:w-[40%] snap-center rounded-2xl overflow-hidden border border-[#c5a059]/20 shadow-lg relative group aspect-[4/3]">
+                <img 
+                  src={photo} 
+                  alt={zone.title} 
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-[#180A1A]/90 via-transparent to-transparent flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span class="text-[#ead397] font-serif font-bold">{zone.title}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
     
     <div class="text-center pt-8">

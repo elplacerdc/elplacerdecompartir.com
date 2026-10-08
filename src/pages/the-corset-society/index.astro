@@ -1,131 +1,68 @@
+import AmbassadorLink from "../../components/AmbassadorLink.astro";
 ---
-// the-corset-society/index.astro - Landing Noir & Gold
 import Layout from "../../layouts/Layout.astro";
 import LeadForm from "../../components/LeadForm.astro";
 import VipCheckout from "../../components/VipCheckout.astro";
 ---
 
 <Layout 
-  title="The Corset Society | El Acceso se Concede, No se Anuncia"
-  description="Sociedad secreta de galas noir, antifaces y alta discreción. Círculo selecto de encuentros privados y experiencias sensoriales de alta gama."
-  isCorset={true}
+  title="The Corset Society | Línea Exclusiva"
+  description="Línea de Alta Exclusividad nivel premium de ElPlacerDC."
 >
-  <!-- Dedicated Noir Ambient Canvas -->
-  <div class="min-h-screen bg-[#050505] text-[#f7f4ee] font-serif selection:bg-[#c5a059] selection:text-[#050505] relative overflow-hidden">
-    <!-- Top Sigil & Navigation -->
-    <header class="py-5 px-4 sm:px-8 max-w-7xl mx-auto flex justify-between items-center border-b border-[#c5a059]/20 relative z-20">
-      <a href="/the-corset-society" class="flex items-center gap-3 group">
-        <img 
-          src="/media/logo_corsetsociety_transparent.png" 
-          alt="Sigilo The Corset Society" 
-          class="h-12 sm:h-14 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-[0_0_15px_rgba(197,160,89,0.25)]" 
-        />
-        <div class="flex flex-col">
-          <span class="font-serif text-sm sm:text-base uppercase tracking-[0.25em] text-[#ead397] font-semibold">The Corset Society</span>
-          <span class="text-[9px] uppercase tracking-[0.3em] text-[#c5a059]/70 font-sans hidden sm:inline">Secret Society</span>
-        </div>
+  <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-16">
+    
+    <!-- Hero / Presentación -->
+    <div class="text-center space-y-6">
+      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#c5a059]/20 text-[#c5a059] border border-[#c5a059]/40 inline-block mb-4">
+        Línea de Alta Exclusividad
+      </span>
+      <h1 class="font-serif text-4xl sm:text-6xl font-bold tracking-tight text-[#f7f4ee]">
+        The Corset Society
+      </h1>
+      <p class="text-xl text-[#c5a059] font-light italic">
+        Nivel Premium de ElPlacerDC
+      </p>
+    </div>
+
+    <!-- Nueva Filosofía de Membresía Anual -->
+    <div class="bg-[#140816] p-8 sm:p-12 rounded-2xl border border-[#c5a059]/30 text-center space-y-6">
+      <h2 class="text-2xl font-serif font-bold text-[#ead397]">Membresía VIP Anual</h2>
+      <p class="text-[#f7f4ee]/80 font-light leading-relaxed max-w-2xl mx-auto">
+        El concepto de ticket alto de The Corset Society evoluciona hacia una <strong>Credencial Anual Exclusiva</strong>. Esta membresía es tu acceso directo a descuentos permanentes, invitaciones prioritarias, convocatorias para encuentros, fantasías privadas y nuestra comunidad premium.
+      </p>
+      
+      <div class="bg-[#180A1A] border border-[#c5a059]/40 p-6 rounded-xl inline-block mt-4 text-left">
+        <h4 class="text-[#ead397] font-bold font-serif mb-2 text-center">🎁 Especial Noche de Halloween</h4>
+        <p class="text-sm text-[#f7f4ee]/70 text-center">
+          Quienes asistan a nuestra Fiesta de Luna Llena en Halloween recibirán su <strong>primer año de credencial sin costo</strong>.
+        </p>
+      </div>
+
+      <p class="text-sm text-[#c5a059] uppercase tracking-wider font-bold mt-8">
+        Importante: Postularse es Obligatorio
+      </p>
+      <p class="text-xs text-[#f7f4ee]/60">
+        Antes de cualquier activación o pago, debes postularte a través del siguiente formulario. Todo ingreso es curado por nuestro equipo.
+      </p>
+    </div>
+
+    <!-- Formulario Obligatorio VIP -->
+    <div class="pt-8">
+      <AmbassadorLink />
+      <LeadForm 
+        title="Postulación a Membresía" 
+        subtitle="Ingresa tus datos para iniciar el proceso de admisión VIP."
+        isVip={true}
+      />
+    </div>
+
+    <!-- Redirección al Checkout -->
+    <div class="text-center pt-12 border-t border-[#c5a059]/20">
+      <p class="text-[#f7f4ee]/70 text-sm mb-4">¿Ya fuiste admitido y deseas activar tu credencial anual?</p>
+      <a href="/corset-vip" class="inline-block px-8 py-3 rounded-full border border-[#c5a059] text-[#c5a059] hover:bg-[#c5a059] hover:text-[#050505] font-serif font-bold uppercase text-sm transition-all">
+        Ir a Pago de Membresía
       </a>
+    </div>
 
-      <div class="flex items-center gap-3 sm:gap-6">
-        <a 
-          href="/the-corset-society/luna-llena" 
-          class="text-xs uppercase tracking-wider text-[#c5a059] border border-[#c5a059]/40 px-3 py-1.5 rounded-full bg-[#c5a059]/10 hover:bg-[#c5a059]/20 transition-colors"
-        >
-          🌕 Luna Llena
-        </a>
-        <a 
-          href="https://x.com/corsetsociety" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          class="text-xs tracking-widest uppercase text-[#ead397] hover:text-[#c5a059] transition-colors hidden md:flex items-center gap-1.5"
-        >
-          <span>Canal X</span>
-          <span>↗</span>
-        </a>
-        <a 
-          href="/" 
-          class="text-xs font-sans tracking-wider uppercase text-[#c5a059] hover:text-[#ead397] border border-[#c5a059]/30 px-3 py-1.5 rounded-full hover:bg-[#c5a059]/10 transition-colors"
-        >
-          ← El Placer DC
-        </a>
-      </div>
-    </header>
-
-    <!-- Hero Noir -->
-    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 text-center space-y-12 relative z-10">
-      <div class="space-y-4">
-        <div class="inline-block px-4 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#4a0e17]/20 text-[11px] tracking-[0.25em] uppercase text-[#ead397]">
-          Círculo Hermético de Alta Discreción
-        </div>
-        <h1 class="text-3xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-[#f7f4ee] leading-[1.1] pt-4 break-words">
-          El acceso se concede, <br />
-          <span class="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b]">
-            no se anuncia.
-          </span>
-        </h1>
-        <p class="max-w-xl mx-auto text-sm sm:text-base font-sans font-light text-[#f7f4ee]/70 leading-relaxed pt-2">
-          Una congregación íntima donde la elegancia, la sensualidad sofisticada y el anonimato voluntario convergen bajo estrictos códigos de honor. Círculo exclusivo de ticket alto con aforo estrictamente limitado y protocolo de gala, garantizando la máxima reserva y distinción.
-        </p>
-      </div>
-
-      <!-- Membresía de Honor: Flyer Oficial Limpio -->
-      <div class="max-w-xl mx-auto rounded-2xl overflow-hidden border border-[#c5a059]/50 shadow-[0_0_50px_rgba(197,160,89,0.2)] bg-[#0a0608]">
-        <img 
-          src="/media/corset-society/flyer_membresia_clean.jpg" 
-          alt="Credencial y Membresía The Corset Society" 
-          class="w-full object-cover"
-        />
-        <div class="p-4 bg-[#0a0608] border-t border-[#c5a059]/20 flex items-center justify-between text-xs text-[#ead397] font-sans">
-          <span>Credencial de Membresía de Honor</span>
-          <span class="text-[#c5a059]">The Corset Society</span>
-        </div>
-      </div>
-
-      <!-- Próxima Ceremonia: Luna Llena CTA con Flyer Oficial -->
-      <div class="p-6 sm:p-10 rounded-2xl bg-gradient-to-b from-[#180a22]/80 to-[#050505] border border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.2)] max-w-2xl mx-auto space-y-6 text-center">
-        <span class="text-xs uppercase tracking-[0.2em] text-[#c5a059] font-bold">Próxima Convocatoria Exclusiva</span>
-        <h2 class="text-2xl sm:text-4xl font-bold text-[#ead397]">
-          🌕 Noche de Luna Llena 🌲
-        </h2>
-        <div class="max-w-xs mx-auto rounded-xl overflow-hidden border border-[#c5a059]/40 shadow-lg">
-          <img 
-            src="/media/corset-society/flyer_halloween_clean.jpg" 
-            alt="Flyer Oficial Luna Llena Halloween" 
-            class="w-full object-cover"
-          />
-        </div>
-        <p class="text-xs sm:text-sm font-sans font-light text-[#f7f4ee]/80 leading-relaxed">
-          Las máscaras ocultan identidades, la luna revela deseos. Parejas, singles y mujeres solas convocados a una velada de alta discreción en Bogotá.
-        </p>
-        <div class="pt-2">
-          <a 
-            href="/the-corset-society/luna-llena" 
-            class="inline-block px-8 py-4 rounded-full font-serif font-bold uppercase tracking-[0.15em] text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] hover:brightness-110 shadow-[0_0_25px_rgba(197,160,89,0.4)] transition-all"
-          >
-            Reservar Entrada & Ver Tarifas
-          </a>
-        </div>
-      </div>
-
-      <!-- Pago Membresía VIP dLocal Go -->
-      <div class="max-w-xl mx-auto pt-6">
-        <VipCheckout />
-      </div>
-
-      <!-- Formulario de Membresía VIP -->
-      <div class="max-w-xl mx-auto pt-6">
-        <LeadForm 
-          isVip={true}
-          title="Solicitud de Membresía VIP"
-          subtitle="La admisión se evalúa rigurosamente. Requerimos verificación estricta de correo y canal de contacto."
-        />
-      </div>
-
-      <!-- Legal Footer Minimalista Noir -->
-      <footer class="pt-16 pb-8 text-center text-[10px] font-sans text-[#f7f4ee]/30 tracking-widest uppercase space-y-2">
-        <p>© {new Date().getFullYear()} The Corset Society. Todos los derechos reservados.</p>
-        <p>Línea Oficial de Asistencia: +57 319 419 4785</p>
-      </footer>
-    </main>
   </div>
 </Layout>

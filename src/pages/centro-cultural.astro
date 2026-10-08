@@ -1,3 +1,4 @@
+import AmbassadorLink from "../components/AmbassadorLink.astro";
 ---
 // centro-cultural.astro - Landing Centro Cultural El Placer de Compartir
 import Layout from "../layouts/Layout.astro";
@@ -11,7 +12,7 @@ import AllianceForm from "../components/AllianceForm.astro";
   <div class="pt-16 sm:pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-16 sm:space-y-20">
     <!-- Hero Section -->
     <div class="text-center max-w-3xl mx-auto space-y-6 pt-6 sm:pt-10">
-      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#b84a39]/20 text-[#b84a39] border border-[#b84a39]/40">
+      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#b84a39]/20 text-[#b84a39] border border-[#b84a39]/40 inline-block mb-4">
         Espacio Multidisciplinario
       </span>
       <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f7f4ee] break-words">
@@ -61,7 +62,7 @@ import AllianceForm from "../components/AllianceForm.astro";
             Únete a nuestra experiencia oficial. Un espacio de encuentro, sensaciones y conexión libre de prejuicios en las nuevas instalaciones de nuestro centro cultural.
           </p>
           <div class="pt-2 flex flex-wrap gap-3">
-            <span class="px-5 py-2.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-[#ead397] transition-all">
+            <span class="px-5 py-2.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-[#ead397] transition-all inline-block mb-4">
               Ver Detalles y Reservar
             </span>
           </div>
@@ -86,7 +87,7 @@ import AllianceForm from "../components/AllianceForm.astro";
             Nuestros aliados de Impacto Producciones se toman la casa. Una noche distinta con música, shows y performances en vivo.
           </p>
           <div class="pt-2 flex flex-wrap gap-3">
-            <span class="px-5 py-2.5 rounded-full bg-[#1877f2] text-white font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-[#1877f2]/80 transition-all">
+            <span class="px-5 py-2.5 rounded-full bg-[#1877f2] text-white font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-[#1877f2]/80 transition-all inline-block mb-4">
               Ver Detalles y Reservar
             </span>
           </div>
@@ -261,6 +262,7 @@ import AllianceForm from "../components/AllianceForm.astro";
 
     <!-- Formulario para Aliados, Terapeutas y Organizadores -->
     <div id="postulacion" class="max-w-2xl mx-auto">
+      <AmbassadorLink />
       <AllianceForm 
         title="Alianzas, Talleres & Contratación de Sede"
         subtitle="¿Organizas eventos mente abierta, facilitas talleres de tantra o BDSM ético, o buscas una locación singular en Bogotá? Déjanos tu propuesta para coordinar fechas y producción."
