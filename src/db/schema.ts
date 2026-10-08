@@ -13,7 +13,8 @@ export const user = pgTable("user", {
 	role: text("role"),
 	banned: boolean("banned"),
 	banReason: text("banReason"),
-	banExpires: timestamp("banExpires")
+	banExpires: timestamp("banExpires"),
+	vipUntil: timestamp("vip_until")
 });
 
 export const session = pgTable("session", {

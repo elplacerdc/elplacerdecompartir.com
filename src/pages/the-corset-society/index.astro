@@ -2,6 +2,7 @@
 // the-corset-society/index.astro - Landing Noir & Gold
 import Layout from "../../layouts/Layout.astro";
 import LeadForm from "../../components/LeadForm.astro";
+import VipCheckout from "../../components/VipCheckout.astro";
 ---
 
 <Layout 
@@ -104,6 +105,11 @@ import LeadForm from "../../components/LeadForm.astro";
             Reservar Entrada & Ver Tarifas
           </a>
         </div>
+      </div>
+
+      <!-- Pago Membresía VIP dLocal Go -->
+      <div class="max-w-xl mx-auto pt-6">
+        <VipCheckout />
       </div>
 
       <!-- Formulario de Membresía VIP -->
