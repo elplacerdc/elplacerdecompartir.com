@@ -1,11 +1,19 @@
 import type { APIRoute } from "astro";
 import { upsertLead } from "../../../db";
 import { notifyNewLead } from "../../../services/notifications";
+import { verifyOTP } from "../../../services/evolution";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json();
-    const { alias_nombre, email, whatsapp, rol, ciudad, origen, corset_vip } = body;
+    const { alias_nombre, email, whatsapp, rol, ciudad, origen, corset_vip, otp } = body;
+
+    if (!otp || !(await verifyOTP(whatsapp, otp))) {
+      return new Response(JSON.stringify({ success: false, error: "OTP inválido o expirado" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
     const affiliateRef = cookies.get("affiliate_ref")?.value;
     const targetChannel = corset_vip ? "corset" : "elplacerdc";

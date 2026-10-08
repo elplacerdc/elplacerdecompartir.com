@@ -118,6 +118,20 @@ const {
     <!-- Feedback Message -->
     <div id="form-feedback" class="hidden text-sm p-3 rounded-lg"></div>
 
+    <!-- OTP Section (Hidden initially) -->
+    <div id="otp-section" class="hidden">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Código de Verificación (Enviado a WhatsApp) <span class="text-[#b84a39]">*</span>
+      </label>
+      <input
+        type="text"
+        name="otp"
+        id="input-otp"
+        placeholder="Ej: 123456"
+        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all text-center tracking-[0.5em] font-mono"
+      />
+    </div>
+
     <button
       type="submit"
       id="submit-btn"
@@ -141,8 +155,11 @@ const {
   const inputCiudad = document.getElementById("input-ciudad") as HTMLSelectElement;
   const formFeedback = document.getElementById("form-feedback") as HTMLElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const otpSection = document.getElementById("otp-section") as HTMLElement;
+  const inputOtp = document.getElementById("input-otp") as HTMLInputElement;
 
   let checking = false;
+  let otpSent = false;
 
   async function checkContact() {
     const whatsapp = inputWhatsapp.value.trim();
@@ -185,6 +202,31 @@ const {
     const payload = Object.fromEntries(formData.entries());
 
     try {
+      if (!otpSent) {
+        // Send OTP first
+        const otpRes = await fetch("/api/otp/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ whatsapp: payload.whatsapp }),
+        });
+        const otpData = await otpRes.json();
+        
+        if (otpData.success) {
+          otpSent = true;
+          otpSection.classList.remove("hidden");
+          inputOtp.required = true;
+          formFeedback.className = "text-sm p-4 rounded-lg bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          formFeedback.textContent = "ℹ️ Hemos enviado un código de verificación a tu WhatsApp. Ingrésalo para continuar.";
+          formFeedback.classList.remove("hidden");
+          submitBtn.textContent = "Verificar y Completar";
+          submitBtn.disabled = false;
+        } else {
+          throw new Error(otpData.error || "Error al enviar código de verificación.");
+        }
+        return;
+      }
+
+      // If OTP sent, proceed with registration
       const res = await fetch("/api/leads/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -203,6 +245,9 @@ const {
           formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
           formFeedback.textContent = "✨ ¡Registro confirmado exitosamente! Te hemos enviado los detalles a tus canales de contacto.";
           form.reset();
+          otpSent = false;
+          otpSection.classList.add("hidden");
+          inputOtp.required = false;
         }
         formFeedback.classList.remove("hidden");
       } else {
@@ -213,8 +258,12 @@ const {
       formFeedback.textContent = err.message || "Error al conectar.";
       formFeedback.classList.remove("hidden");
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Completado";
+      if (!otpSent) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Completado";
+      } else if (!submitBtn.disabled) {
+        submitBtn.textContent = "Verificar y Completar";
+      }
     }
   });
 </script>

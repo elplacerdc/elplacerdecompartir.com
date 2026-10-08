@@ -1,17 +1,25 @@
 import type { APIRoute } from "astro";
 import { upsertLead } from "../../../db";
 import { notifyNewAlliance } from "../../../services/notifications";
+import { verifyOTP } from "../../../services/evolution";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json();
-    const { alias_nombre, email, whatsapp, tipo_alianza, propuesta_detalle, ciudad, origen } = body;
+    const { alias_nombre, email, whatsapp, tipo_alianza, propuesta_detalle, ciudad, origen, otp } = body;
 
     if (!whatsapp || !email || !propuesta_detalle) {
       return new Response(
         JSON.stringify({ success: false, error: "WhatsApp, correo electrónico y detalle de la propuesta son obligatorios." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
+    }
+
+    if (!otp || !(await verifyOTP(whatsapp, otp))) {
+      return new Response(JSON.stringify({ success: false, error: "OTP inválido o expirado" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const affiliateRef = cookies.get("affiliate_ref")?.value;

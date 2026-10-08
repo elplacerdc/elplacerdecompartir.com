@@ -129,6 +129,20 @@ const {
     <!-- Feedback Message Box -->
     <div id="alliance-feedback" class="hidden text-sm p-4 rounded-xl"></div>
 
+    <!-- OTP Section (Hidden initially) -->
+    <div id="otp-section" class="hidden">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Código de Verificación (Enviado a WhatsApp) <span class="text-[#b84a39]">*</span>
+      </label>
+      <input
+        type="text"
+        name="otp"
+        id="input-otp"
+        placeholder="Ej: 123456"
+        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all text-center tracking-[0.5em] font-mono"
+      />
+    </div>
+
     <button
       type="submit"
       id="alliance-submit-btn"
@@ -143,16 +157,44 @@ const {
   const form = document.getElementById("alliance-form") as HTMLFormElement;
   const feedback = document.getElementById("alliance-feedback") as HTMLElement;
   const submitBtn = document.getElementById("alliance-submit-btn") as HTMLButtonElement;
+  const otpSection = document.getElementById("otp-section") as HTMLElement;
+  const inputOtp = document.getElementById("input-otp") as HTMLInputElement;
+
+  let otpSent = false;
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
-    submitBtn.textContent = "Transmitiendo Propuesta...";
+    submitBtn.textContent = "Procesando...";
 
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
 
     try {
+      if (!otpSent) {
+        // Send OTP first
+        const otpRes = await fetch("/api/otp/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ whatsapp: payload.whatsapp }),
+        });
+        const otpData = await otpRes.json();
+        
+        if (otpData.success) {
+          otpSent = true;
+          otpSection.classList.remove("hidden");
+          inputOtp.required = true;
+          feedback.className = "text-sm p-4 rounded-xl bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+          feedback.textContent = "ℹ️ Hemos enviado un código de verificación a tu WhatsApp. Ingrésalo para continuar.";
+          feedback.classList.remove("hidden");
+          submitBtn.textContent = "Verificar y Enviar";
+          submitBtn.disabled = false;
+        } else {
+          throw new Error(otpData.error || "Error al enviar código de verificación.");
+        }
+        return;
+      }
+
       const res = await fetch("/api/leads/alliance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -169,6 +211,9 @@ const {
           feedback.className = "text-sm p-4 rounded-xl bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
           feedback.textContent = "✨ ¡Propuesta recibida con éxito! Nuestro equipo de dirección y producción se comunicará contigo vía WhatsApp y correo.";
           form.reset();
+          otpSent = false;
+          otpSection.classList.add("hidden");
+          inputOtp.required = false;
         }
         feedback.classList.remove("hidden");
       } else {
@@ -179,8 +224,12 @@ const {
       feedback.textContent = err.message || "Error al conectar.";
       feedback.classList.remove("hidden");
     } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = "Enviar Propuesta a Dirección Cultural";
+      if (!otpSent) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Enviar Propuesta a Dirección Cultural";
+      } else if (!submitBtn.disabled) {
+        submitBtn.textContent = "Verificar y Enviar";
+      }
     }
   });
 </script>
