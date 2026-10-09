@@ -40,9 +40,9 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.getByText("Gana como Embajador de El Placer de Compartir")).toBeVisible();
     await expect(page.getByRole("link", { name: "OBTENER MI ENLACE DE EMBAJADOR" })).toBeVisible();
 
-    // LeadForm with OTP controls
+    // LeadForm with verification controls
     await expect(page.getByText("ENTRADA A LA COMUNIDAD")).toBeVisible();
-    await expect(page.getByPlaceholder("Ej: 310 123 4567 o +57 310...")).toBeVisible();
+    await expect(page.getByPlaceholder("Ej: 310 123 4567")).toBeVisible();
     await expect(page.locator("#btn-send-wa-otp")).toBeVisible();
     await expect(page.getByPlaceholder("Tu alias o nombre discreto")).toBeVisible();
   });
@@ -161,7 +161,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
 
     await expect(page.locator("h1")).toContainText("Panel de Control de Embajador");
     await expect(page.getByText("Acceso a Embajadores")).toBeVisible();
-    await expect(page.getByPlaceholder("Ej: 310 123 4567 o +57 310...")).toBeVisible();
+    await expect(page.getByPlaceholder("Ej: 310 123 4567")).toBeVisible();
     await expect(page.getByRole("button", { name: "Enviar Código de Acceso" })).toBeVisible();
 
     // Verify authenticated dashboard elements exist in DOM

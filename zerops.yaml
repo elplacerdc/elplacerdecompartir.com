@@ -26,8 +26,8 @@ zerops:
         VALKEY_URL: ${valkey_connectionString}
         NATS_URL: ${nats_connectionString}
         EVOLUTION_URL: "http://evolution:8085"
-        EVOLUTION_API_URL: ${EVOLUTION_API_URL}
-        EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+        EVOLUTION_API_URL: "http://evolution:8085"
+        EVOLUTION_API_KEY: "481c8c43-0023-4028-bad5-9d1355a3674c"
         LISTMONK_URL: "http://listmonk:9000"
         BIFROST_URL: "http://bifrost:8080/v1"
         FREELLMAPI_URL: "http://freellmapi:3001/v1"
@@ -64,8 +64,8 @@ zerops:
         VALKEY_URL: ${valkey_connectionString}
         NATS_URL: ${nats_connectionString}
         EVOLUTION_URL: "http://evolution:8085"
-        EVOLUTION_API_URL: ${EVOLUTION_API_URL}
-        EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+        EVOLUTION_API_URL: "http://evolution:8085"
+        EVOLUTION_API_KEY: "481c8c43-0023-4028-bad5-9d1355a3674c"
         LISTMONK_URL: "http://listmonk:9000"
         BIFROST_URL: "http://bifrost:8080/v1"
         FREELLMAPI_URL: "http://freellmapi:3001/v1"

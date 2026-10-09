@@ -58,7 +58,7 @@ const {
           name="whatsapp"
           id="input-alliance-whatsapp"
           required
-          placeholder="Ej: 310 000 0000 o +57 310..."
+          placeholder="Ej: 310 123 4567"
           class="flex-1 px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
         />
         <button
@@ -66,7 +66,7 @@ const {
           id="btn-alliance-send-wa-otp"
           class="w-full sm:w-auto px-4 py-3 rounded-xl bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 hover:bg-[#c5a059]/30 text-xs font-semibold uppercase tracking-wider transition-all text-center"
         >
-          Enviar Código OTP
+          Enviar Código de Seguridad
         </button>
       </div>
       <div id="alliance-wa-verified-badge" class="hidden mt-2 flex items-center gap-1.5 text-xs text-[#81c784] font-medium">
@@ -198,12 +198,12 @@ const {
         inputWaOtp.focus();
       } else {
         alert(data.error || "No se pudo enviar el código a WhatsApp");
-        btnSendWaOtp.textContent = "Enviar Código OTP";
+        btnSendWaOtp.textContent = "Enviar Código de Seguridad";
         btnSendWaOtp.disabled = false;
       }
     } catch (e: any) {
       alert("Error al conectar para enviar código");
-      btnSendWaOtp.textContent = "Enviar Código OTP";
+      btnSendWaOtp.textContent = "Enviar Código de Seguridad";
       btnSendWaOtp.disabled = false;
     }
   });
@@ -251,7 +251,7 @@ const {
 
     if (!waVerified) {
       feedback.className = "text-sm p-4 rounded-xl bg-[#b84a39]/20 border border-[#b84a39]/40 text-[#ef5350]";
-      feedback.textContent = "⚠️ Por favor verifica tu WhatsApp pulsando 'Enviar Código OTP'.";
+      feedback.textContent = "⚠️ Por favor verifica tu WhatsApp pulsando 'Enviar Código de Seguridad'.";
       feedback.classList.remove("hidden");
       btnSendWaOtp.focus();
       return;

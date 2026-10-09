@@ -3,8 +3,11 @@ import Redis from "ioredis";
 import { normalizePhone } from "../db";
 import { sendTransactionalEmail } from "./email";
 
-const EVOLUTION_API_URL = process.env.EVOLUTION_URL || process.env.EVOLUTION_API_URL || "http://evolution:8085";
-const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || "481c8c43-0023-4028-bad5-9d1355a3674c";
+const rawKey = process.env.EVOLUTION_API_KEY || "";
+const EVOLUTION_API_KEY = (rawKey && !rawKey.startsWith("${")) ? rawKey : "481c8c43-0023-4028-bad5-9d1355a3674c";
+
+const rawUrl = process.env.EVOLUTION_URL || process.env.EVOLUTION_API_URL || "";
+const EVOLUTION_API_URL = (rawUrl && !rawUrl.startsWith("${")) ? rawUrl : "http://evolution:8085";
 
 // Redis / Valkey Client with In-Memory Map Fallback
 let redisClient: Redis | null = null;
