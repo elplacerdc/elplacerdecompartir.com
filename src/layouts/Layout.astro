@@ -110,5 +110,16 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
     {!isCorset && <Header />}
     <slot />
     {!isCorset && <Footer />}
+    <script is:inline>
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref') || params.get('r');
+        if (ref) {
+          const cleanRef = ref.trim().toLowerCase();
+          localStorage.setItem('affiliate_ref', cleanRef);
+          document.cookie = 'affiliate_ref=' + encodeURIComponent(cleanRef) + '; path=/; max-age=2592000; SameSite=Lax';
+        }
+      } catch (e) {}
+    </script>
   </body>
 </html>

@@ -87,6 +87,13 @@ const isAuthenticated = verifyAdminSessionToken(token);
 
             <div class="flex flex-wrap items-center gap-2.5">
               <button 
+                id="btn-create-ticket-top" 
+                class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] hover:brightness-110 transition-all flex items-center gap-1.5 shadow-md"
+                title="Generar entrada o cortesía 100%"
+              >
+                <span>🎟️</span> + Crear Pase / Cortesía 100%
+              </button>
+              <button 
                 id="btn-change-password-modal" 
                 class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#250e29] border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
                 title="Cambiar contraseña de acceso"
@@ -110,6 +117,39 @@ const isAuthenticated = verifyAdminSessionToken(token);
             </div>
           </div>
 
+          <!-- Filtro por Etiquetas / Segmentos -->
+          <div class="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-[#1c081e] border border-[#c5a059]/25 shadow-sm text-xs">
+            <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold mr-1">Filtrar Vistas:</span>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm"
+              data-tag="todos"
+            >
+              Todos
+            </button>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
+              data-tag="elplacerdc"
+            >
+              🍷 El Placer DC
+            </button>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
+              data-tag="corset"
+            >
+              🔒 The Corset Society
+            </button>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
+              data-tag="aliados"
+            >
+              🤝 Aliados & Centro Cultural
+            </button>
+          </div>
+
           <!-- KPI Metrics Grid (100% Clickeables e interactivas) -->
           <div>
             <div class="flex items-center justify-between mb-3">
@@ -126,7 +166,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               >
                 <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Total Leads</span>
                 <span id="kpi-leads" class="text-2xl sm:text-3xl font-serif font-bold text-[#ead397] group-hover:text-white transition-colors">...</span>
-                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Ver lista y añadir →</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Directorio unificado →</span>
               </div>
 
               <!-- KPI 2: Embajadores -->
@@ -149,12 +189,12 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 <span class="text-[10px] text-[#c5a059] block mt-1 underline">Ver todos los pases →</span>
               </div>
 
-              <!-- KPI 4: Pendientes Efectivo / Reserva 40% -->
+              <!-- KPI 4: Pendientes Efectivo / Bre-B -->
               <div 
                 id="card-kpi-pending-cash" 
                 class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#2b1021] to-[#1c081e] border border-[#ffb74d]/40 hover:border-[#ffb74d] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
               >
-                <span class="text-[11px] uppercase tracking-wider text-[#ffb74d] block mb-1">Pendientes Efectivo</span>
+                <span class="text-[11px] uppercase tracking-wider text-[#ffb74d] block mb-1">Pendientes Efectivo / Bre-B</span>
                 <span id="kpi-pending-cash" class="text-2xl sm:text-3xl font-serif font-bold text-[#ffb74d] group-hover:text-white transition-colors">...</span>
                 <span class="text-[10px] text-[#ffb74d] block mt-1 underline">Validar cobros →</span>
               </div>
@@ -176,7 +216,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               >
                 <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Recaudación COP</span>
                 <span id="kpi-revenue" class="text-lg sm:text-xl font-serif font-bold text-[#ead397] group-hover:text-white transition-colors">...</span>
-                <span class="text-[10px] text-[#c5a059] block mt-1">Seguridad Baiosfera</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Ver desglose financiero →</span>
               </div>
 
             </div>
@@ -238,7 +278,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               </div>
 
               <p class="text-center text-xs text-[#f7f4ee]/70">
-                Apunta la cámara al código QR de la credencial. Se valida <strong class="text-[#ead397]">automáticamente</strong> sin tocar nada ni copiar/pegar.
+                Apunta la cámara al código QR de la credencial. Se valida <strong class="text-[#ead397]">automáticamente</strong> y se abre en ventana emergente sin copiar ni pegar.
               </p>
             </div>
 
@@ -261,7 +301,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               </form>
             </div>
 
-            <!-- Resultado del Escaneo In-Place con Feedback Háptico / Visual -->
+            <!-- Inline feedback fallback -->
             <div id="checkin-result" class="hidden p-4 rounded-2xl text-sm transition-all duration-300"></div>
           </div>
 
@@ -285,7 +325,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 </div>
               </div>
 
-              <div class="overflow-x-auto max-h-72">
+              <div class="overflow-x-auto max-h-80">
                 <table class="w-full text-left text-xs">
                   <thead class="sticky top-0 bg-[#1c081e] border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
                     <tr>
@@ -303,7 +343,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               </div>
             </div>
 
-            <!-- Leads Table Card -->
+            <!-- Leads Table Card con Modalidad, Origen y Posible VIP -->
             <div class="p-6 rounded-3xl bg-[#1c081e] border border-[#c5a059]/30 space-y-4 shadow-xl">
               <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
                 <div>
@@ -320,18 +360,19 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 </div>
               </div>
 
-              <div class="overflow-x-auto max-h-72">
+              <div class="overflow-x-auto max-h-80">
                 <table class="w-full text-left text-xs">
                   <thead class="sticky top-0 bg-[#1c081e] border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
                     <tr>
                       <th class="py-2.5 px-2">Nombre / Alias</th>
-                      <th class="py-2.5 px-2">WhatsApp</th>
+                      <th class="py-2.5 px-2">Modalidad</th>
                       <th class="py-2.5 px-2">Origen</th>
+                      <th class="py-2.5 px-2 text-center">VIP</th>
                       <th class="py-2.5 px-2 text-right">Acción</th>
                     </tr>
                   </thead>
                   <tbody id="leads-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
-                    <tr><td colspan="4" class="py-4 text-center text-[#f7f4ee]/40">Cargando registros...</td></tr>
+                    <tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">Cargando registros...</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -350,11 +391,11 @@ const isAuthenticated = verifyAdminSessionToken(token);
     <!-- Backdrop oscuro con blur -->
     <div id="drawer-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"></div>
 
-    <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
-      <div class="w-screen max-w-3xl bg-[#1c081e] border-l border-[#c5a059]/40 shadow-2xl flex flex-col">
+    <div class="fixed inset-y-0 right-0 max-w-full flex w-full sm:max-w-3xl">
+      <div class="w-full bg-[#1c081e] border-l border-[#c5a059]/40 shadow-2xl flex flex-col">
         
         <!-- Drawer Header -->
-        <div class="p-6 border-b border-[#c5a059]/25 flex items-center justify-between bg-[#250e29]">
+        <div class="p-4 sm:p-6 border-b border-[#c5a059]/25 flex items-center justify-between bg-[#250e29]">
           <div>
             <span id="drawer-badge" class="text-[10px] uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Gestión Interactiva</span>
             <h2 id="drawer-title" class="text-xl font-serif font-bold text-[#ead397]">Detalle de Registros</h2>
@@ -368,7 +409,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
         </div>
 
         <!-- Drawer Search / Action Bar -->
-        <div class="p-4 border-b border-[#c5a059]/15 flex items-center justify-between gap-3 bg-[#140816]">
+        <div class="p-3 sm:p-4 border-b border-[#c5a059]/15 flex items-center justify-between gap-3 bg-[#140816]">
           <input 
             type="text" 
             id="drawer-search" 
@@ -384,10 +425,49 @@ const isAuthenticated = verifyAdminSessionToken(token);
         </div>
 
         <!-- Drawer Content Area (Scrollable Table & Form) -->
-        <div id="drawer-content" class="flex-1 overflow-y-auto p-6 space-y-4">
+        <div id="drawer-content" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           <!-- Dynamically populated -->
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESULTADO DE ESCÁNER QR EN POPUP DISMISSIBLE -->
+  <div id="modal-qr-result" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full max-w-md p-6 sm:p-8 rounded-3xl bg-[#250e29] border-2 border-[#c5a059] shadow-2xl space-y-5 text-center">
+      <div id="qr-modal-icon" class="text-5xl">✨</div>
+      <div>
+        <h3 id="qr-modal-title" class="text-2xl font-serif font-bold text-[#ead397]">Acceso Concedido</h3>
+        <p id="qr-modal-subtitle" class="text-xs text-[#f7f4ee]/70 mt-1">Verificación biométrica y de credencial en puerta</p>
+      </div>
+      
+      <div id="qr-modal-body" class="p-4 rounded-2xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-left space-y-2 text-[#f7f4ee]">
+        <!-- Dynamic attendee details -->
+      </div>
+
+      <button 
+        type="button" 
+        id="btn-close-qr-modal" 
+        class="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-lg"
+      >
+        Cerrar / Continuar Escaneando
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: DESGLOSE FINANCIERO Y RECAUDACIÓN (COP) -->
+  <div id="modal-financial" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5 text-left max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <div>
+          <span class="text-[10px] uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Tesorería & Facturación</span>
+          <h3 class="text-xl font-serif font-bold text-[#ead397]">Desglose de Recaudación (COP)</h3>
+        </div>
+        <button id="modal-financial-close" class="text-sm text-[#f7f4ee]/70 hover:text-white p-2">✕</button>
+      </div>
+      <div id="financial-modal-content" class="space-y-4 text-xs">
+        <!-- Populated by JS -->
       </div>
     </div>
   </div>
@@ -417,9 +497,9 @@ const isAuthenticated = verifyAdminSessionToken(token);
     </div>
   </div>
 
-  <!-- MODAL: CREACIÓN MANUAL GENÉRICA -->
+  <!-- MODAL: CREACIÓN MANUAL GENÉRICA / 100% DESCUENTO -->
   <div id="modal-crud-create" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-    <div class="w-full max-w-lg p-6 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5">
+    <div class="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
         <h3 id="modal-crud-title" class="text-lg font-serif font-bold text-[#ead397]">Añadir Nuevo Registro</h3>
         <button id="modal-crud-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
@@ -429,7 +509,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <!-- Populated by JS -->
         </div>
         <div id="crud-create-status" class="hidden p-3 rounded-lg text-xs"></div>
-        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110">
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
           Guardar Registro
         </button>
       </form>
@@ -442,6 +522,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
   // State Store
   let cachedMetrics: any = null;
   let activeDrawerType: "leads" | "affiliates" | "tickets" | "pending_cash" | "checkins" | null = null;
+  let activeTagFilter = "todos";
   let videoStream: MediaStream | null = null;
   let qrScanActive = false;
   let scanCooldown = false;
@@ -452,6 +533,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
   const loginError = document.getElementById("login-error");
   const btnLogout = document.getElementById("btn-logout");
   const btnRefresh = document.getElementById("btn-refresh");
+  const btnCreateTicketTop = document.getElementById("btn-create-ticket-top");
 
   // KPIs
   const kpiLeads = document.getElementById("kpi-leads");
@@ -467,6 +549,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
   const cardTickets = document.getElementById("card-kpi-tickets");
   const cardPendingCash = document.getElementById("card-kpi-pending-cash");
   const cardCheckins = document.getElementById("card-kpi-checkins");
+  const cardRevenue = document.getElementById("card-kpi-revenue");
 
   // Scanner Elements
   const tabCameraScan = document.getElementById("tab-camera-scan");
@@ -480,6 +563,19 @@ const isAuthenticated = verifyAdminSessionToken(token);
   const inputTicketHash = document.getElementById("input-ticket-hash") as HTMLInputElement;
   const btnCheckinSubmit = document.getElementById("btn-checkin-submit") as HTMLButtonElement;
   const checkinResult = document.getElementById("checkin-result");
+
+  // QR Modal Popup
+  const modalQrResult = document.getElementById("modal-qr-result");
+  const qrModalIcon = document.getElementById("qr-modal-icon");
+  const qrModalTitle = document.getElementById("qr-modal-title");
+  const qrModalSubtitle = document.getElementById("qr-modal-subtitle");
+  const qrModalBody = document.getElementById("qr-modal-body");
+  const btnCloseQrModal = document.getElementById("btn-close-qr-modal");
+
+  // Financial Modal
+  const modalFinancial = document.getElementById("modal-financial");
+  const modalFinancialClose = document.getElementById("modal-financial-close");
+  const financialModalContent = document.getElementById("financial-modal-content");
 
   // Drawer Elements
   const drawerContainer = document.getElementById("drawer-container");
@@ -513,6 +609,46 @@ const isAuthenticated = verifyAdminSessionToken(token);
   // Tables
   const affiliatesTableBody = document.getElementById("affiliates-table-body");
   const leadsTableBody = document.getElementById("leads-table-body");
+
+  // Tag filter buttons
+  document.querySelectorAll(".tag-filter-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tag-filter-btn").forEach((b) => {
+        b.className = "tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold";
+      });
+      btn.className = "tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm";
+      activeTagFilter = btn.getAttribute("data-tag") || "todos";
+      
+      if (cachedMetrics) {
+        renderLeadsTable(filterByTag(cachedMetrics.leads));
+        renderAffiliatesTable(cachedMetrics.affiliates);
+        if (activeDrawerType) renderDrawer(activeDrawerType);
+      }
+    });
+  });
+
+  function filterByTag(items: any[]) {
+    if (activeTagFilter === "todos") return items;
+    if (activeTagFilter === "elplacerdc") {
+      return items.filter((item) => {
+        const org = (item.origen || "").toLowerCase();
+        return org === "web" || org.includes("elplacerdc") || org.includes("centro_cultural") || org === "general";
+      });
+    }
+    if (activeTagFilter === "corset") {
+      return items.filter((item) => {
+        const org = (item.origen || "").toLowerCase();
+        return item.corset_vip === true || org.includes("corset") || org.includes("luna_llena");
+      });
+    }
+    if (activeTagFilter === "aliados") {
+      return items.filter((item) => {
+        const org = (item.origen || "").toLowerCase();
+        return org.includes("aliado") || org.includes("impacto") || org.includes("sitio");
+      });
+    }
+    return items;
+  }
 
   // 1. LOGIN HANDLER
   loginForm?.addEventListener("submit", async (e) => {
@@ -567,12 +703,17 @@ const isAuthenticated = verifyAdminSessionToken(token);
       if (kpiLeads) kpiLeads.textContent = data.counts.totalLeads.toString();
       if (kpiAffiliates) kpiAffiliates.textContent = data.counts.totalAffiliates.toString();
       if (kpiTickets) kpiTickets.textContent = data.counts.totalTickets.toString();
-      if (kpiPendingCash) kpiPendingCash.textContent = data.counts.pendingCash.toString();
+      if (kpiPendingCash) {
+        const breCount = data.counts.pendingBreB || 0;
+        kpiPendingCash.textContent = breCount > 0 
+          ? `${data.counts.pendingCash} (${breCount} Bre-B)` 
+          : data.counts.pendingCash.toString();
+      }
       if (kpiCheckins) kpiCheckins.textContent = data.counts.totalCheckins.toString();
       if (kpiRevenue) kpiRevenue.textContent = `$${Number(data.counts.totalRevenue).toLocaleString("es-CO")}`;
 
       renderAffiliatesTable(data.affiliates);
-      renderLeadsTable(data.leads);
+      renderLeadsTable(filterByTag(data.leads));
 
       // If drawer is open, re-render it
       if (activeDrawerType) {
@@ -594,7 +735,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
     affiliatesTableBody.innerHTML = affiliates.slice(0, 10).map((a) => `
       <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-affiliate-id="${a.id}">
         <td class="py-2.5 px-2 font-mono text-[#ead397] font-semibold">${a.alias}</td>
-        <td class="py-2.5 px-2">${a.whatsapp || a.email || "—"}</td>
+        <td class="py-2.5 px-2 font-mono text-[11px]">${a.whatsapp || a.email || "—"}</td>
         <td class="py-2.5 px-2 text-center font-mono">${a.clicks || 0}</td>
         <td class="py-2.5 px-2 text-center font-mono text-[#81c784]">${a.referidos_pagados || 0}</td>
         <td class="py-2.5 px-2 text-right">
@@ -609,20 +750,26 @@ const isAuthenticated = verifyAdminSessionToken(token);
   function renderLeadsTable(leads: any[]) {
     if (!leadsTableBody) return;
     if (leads.length === 0) {
-      leadsTableBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-[#f7f4ee]/40">No hay leads registrados aún.</td></tr>`;
+      leadsTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">No hay leads registrados con este filtro.</td></tr>`;
       return;
     }
 
-    leadsTableBody.innerHTML = leads.slice(0, 10).map((l) => `
-      <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-lead-id="${l.id}">
-        <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
-        <td class="py-2.5 px-2 font-mono text-[11px]">${l.whatsapp || l.email || "—"}</td>
-        <td class="py-2.5 px-2 text-[10px] text-[#ead397]">${l.origen || "general"}</td>
-        <td class="py-2.5 px-2 text-right">
-          <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}">Eliminar</button>
-        </td>
-      </tr>
-    `).join("");
+    leadsTableBody.innerHTML = leads.slice(0, 10).map((l) => {
+      const isVip = l.is_possible_vip || l.corset_vip;
+      return `
+        <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-lead-id="${l.id}">
+          <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
+          <td class="py-2.5 px-2 text-[11px] capitalize text-[#ead397]">${l.rol ? l.rol.replace('_', ' ') : "general"}</td>
+          <td class="py-2.5 px-2 text-[10px] text-[#f7f4ee]/70">${l.origen || "web"}</td>
+          <td class="py-2.5 px-2 text-center">
+            ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 VIP</span>' : '—'}
+          </td>
+          <td class="py-2.5 px-2 text-right">
+            <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}">Eliminar</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
 
     bindDeleteButtons();
   }
@@ -671,38 +818,119 @@ const isAuthenticated = verifyAdminSessionToken(token);
   cardPendingCash?.addEventListener("click", () => openDrawer("pending_cash"));
   cardCheckins?.addEventListener("click", () => openDrawer("checkins"));
 
+  // Open Financial Breakdown Modal
+  cardRevenue?.addEventListener("click", () => {
+    if (!cachedMetrics || !cachedMetrics.financial) return;
+    const fin = cachedMetrics.financial;
+    if (financialModalContent) {
+      financialModalContent.innerHTML = `
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/40 text-center">
+            <span class="text-[10px] text-[#f7f4ee]/70 uppercase block mb-1">Total Acumulado</span>
+            <span class="text-xl font-bold font-serif text-[#ead397]">$${fin.totalRevenue.toLocaleString("es-CO")} COP</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/40 text-center">
+            <span class="text-[10px] text-[#f7f4ee]/70 uppercase block mb-1">Esta Semana</span>
+            <span class="text-xl font-bold font-serif text-[#81c784]">$${fin.currentWeek.toLocaleString("es-CO")} COP</span>
+          </div>
+          <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/40 text-center">
+            <span class="text-[10px] text-[#f7f4ee]/70 uppercase block mb-1">Fin de Semana</span>
+            <span class="text-xl font-bold font-serif text-[#ffb74d]">$${fin.currentWeekend.toLocaleString("es-CO")} COP</span>
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-2">
+          <h4 class="font-bold text-[#ead397] uppercase tracking-wider text-[11px]">Recaudación por Evento</h4>
+          <div class="p-3 rounded-xl bg-[#140816] border border-[#c5a059]/20 divide-y divide-[#c5a059]/10">
+            ${fin.perEvent.length === 0 ? '<p class="text-[#f7f4ee]/50 text-center py-2">Sin ingresos aún.</p>' : fin.perEvent.map((ev: any) => `
+              <div class="py-2 flex items-center justify-between">
+                <div>
+                  <span class="font-semibold text-white capitalize">${ev.evento.replace('_', ' ')}</span>
+                  <span class="text-[10px] text-[#f7f4ee]/50 ml-2">(${ev.count} entradas)</span>
+                </div>
+                <span class="font-mono font-bold text-[#ead397]">$${ev.total.toLocaleString("es-CO")} COP</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-2">
+          <h4 class="font-bold text-[#ead397] uppercase tracking-wider text-[11px]">Recaudación Mensual</h4>
+          <div class="p-3 rounded-xl bg-[#140816] border border-[#c5a059]/20 divide-y divide-[#c5a059]/10">
+            ${fin.perMonth.length === 0 ? '<p class="text-[#f7f4ee]/50 text-center py-2">Sin registros mensuales.</p>' : fin.perMonth.map((m: any) => `
+              <div class="py-2 flex items-center justify-between">
+                <span class="font-mono text-white">${m.month}</span>
+                <span class="font-mono font-bold text-[#ead397]">$${m.total.toLocaleString("es-CO")} COP</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+    modalFinancial?.classList.remove("hidden");
+  });
+
+  modalFinancialClose?.addEventListener("click", () => modalFinancial?.classList.add("hidden"));
+
   function renderDrawer(type: string) {
     if (!drawerContent || !cachedMetrics) return;
     const filter = (drawerSearch?.value || "").toLowerCase().trim();
 
     if (type === "leads") {
-      if (drawerBadge) drawerBadge.textContent = "Comunidad & Registros";
-      if (drawerTitle) drawerTitle.textContent = `Gestión de Leads (${cachedMetrics.leads.length})`;
-      
-      const filtered = cachedMetrics.leads.filter((l: any) => 
+      if (drawerBadge) drawerBadge.textContent = "Directorio Unificado & Comunidad";
+      const filteredLeads = filterByTag(cachedMetrics.leads).filter((l: any) => 
         (l.alias_nombre || "").toLowerCase().includes(filter) ||
         (l.whatsapp || "").toLowerCase().includes(filter) ||
-        (l.email || "").toLowerCase().includes(filter)
+        (l.email || "").toLowerCase().includes(filter) ||
+        (l.rol || "").toLowerCase().includes(filter) ||
+        (l.origen || "").toLowerCase().includes(filter)
       );
+
+      if (drawerTitle) drawerTitle.textContent = `Directorio de Contactos (${filteredLeads.length})`;
 
       drawerContent.innerHTML = `
         <div class="space-y-3">
-          ${filtered.map((l: any) => `
-            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex items-center justify-between gap-4">
-              <div class="space-y-1">
-                <div class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Invitado"}</div>
-                <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
-                <div class="text-[11px] text-[#f7f4ee]/50">Rol: ${l.rol || "otro"} • Ciudad: ${l.ciudad || "Bogotá"} • Origen: ${l.origen || "general"}</div>
+          ${filteredLeads.map((l: any) => {
+            const isVip = l.is_possible_vip || l.corset_vip;
+            return `
+              <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Invitado"}</span>
+                    ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 Posible VIP</span>' : ''}
+                    ${l.affiliate_alias ? `<span class="px-2 py-0.5 rounded-full bg-[#8E4A8C]/30 text-[#f3e5f5] text-[10px] font-mono">Embajador: @${l.affiliate_alias}</span>` : ''}
+                  </div>
+                  <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
+                  <div class="text-[11px] text-[#f7f4ee]/60">
+                    Modalidad: <strong class="text-[#ead397] capitalize">${l.rol || "general"}</strong> • Origen: <strong>${l.origen || "web"}</strong> • Entradas emitidas: <strong>${l.tickets_count || 0}</strong>
+                  </div>
+                  ${l.affiliate_alias ? `
+                    <div class="text-[10px] text-[#c5a059]">
+                      Stats Embajador: ${l.affiliate_clicks || 0} Clics | ${l.affiliate_referrals || 0} Referidos Pagados | ${l.affiliate_tickets_won || 0} Pases Ganados
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-center">
+                  <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}" data-lead-name="${l.alias_nombre || ''}">
+                    + Asignar Pase
+                  </button>
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}">
+                    🗑️ Borrar
+                  </button>
+                </div>
               </div>
-              <div class="flex items-center gap-2">
-                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}">
-                  🗑️ Borrar
-                </button>
-              </div>
-            </div>
-          `).join("")}
+            `;
+          }).join("")}
         </div>
       `;
+
+      // Bind lead ticket assign button
+      document.querySelectorAll(".btn-create-ticket-for-lead").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const leadId = btn.getAttribute("data-lead-id");
+          openCrudModal("tickets", leadId);
+        });
+      });
     }
 
     if (type === "affiliates") {
@@ -718,13 +946,13 @@ const isAuthenticated = verifyAdminSessionToken(token);
       drawerContent.innerHTML = `
         <div class="space-y-3">
           ${filtered.map((a: any) => `
-            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex items-center justify-between gap-4">
+            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="space-y-1">
                 <div class="font-bold text-[#ead397] text-sm">@${a.alias} <span class="text-xs font-normal text-[#f7f4ee]/60">(${a.nombre || ""})</span></div>
                 <div class="text-xs text-[#f7f4ee]/80 font-mono">Contacto: ${a.whatsapp || a.email || "—"}</div>
                 <div class="text-[11px] text-[#c5a059]">Clics: ${a.clicks || 0} • Ventas Pagadas: ${a.referidos_pagados || 0} • Pases Ganados: ${a.entradas_ganadas || 0}</div>
               </div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 self-end sm:self-center">
                 <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}">
                   🗑️ Borrar
                 </button>
@@ -738,9 +966,9 @@ const isAuthenticated = verifyAdminSessionToken(token);
     if (type === "tickets" || type === "pending_cash" || type === "checkins") {
       let list = cachedMetrics.tickets;
       if (type === "pending_cash") {
-        list = list.filter((t: any) => t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo");
-        if (drawerBadge) drawerBadge.textContent = "Gestión de Cobros";
-        if (drawerTitle) drawerTitle.textContent = `Pendientes Efectivo / Separación 40% (${list.length})`;
+        list = list.filter((t: any) => t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion");
+        if (drawerBadge) drawerBadge.textContent = "Gestión de Cobros & Bre-B";
+        if (drawerTitle) drawerTitle.textContent = `Pendientes Efectivo / Bre-B (${list.length})`;
       } else if (type === "checkins") {
         list = list.filter((t: any) => t.estado === "asistido");
         if (drawerBadge) drawerBadge.textContent = "Acceso en Puerta";
@@ -760,22 +988,24 @@ const isAuthenticated = verifyAdminSessionToken(token);
       drawerContent.innerHTML = `
         <div class="space-y-3">
           ${filtered.map((t: any) => {
-            const isPending = t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo";
+            const isPending = t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion";
             return `
               <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="space-y-1">
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-bold text-[#ead397] text-sm">${t.alias_nombre || "Invitado"}</span>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${t.estado === 'asistido' ? 'bg-[#2e7d32]/30 text-[#81c784]' : isPending ? 'bg-[#f57c00]/30 text-[#ffb74d]' : 'bg-[#c5a059]/20 text-[#ead397]'}">
                       ${t.estado}
                     </span>
+                    ${t.is_bre_b ? '<span class="px-2 py-0.5 rounded-full bg-[#8E4A8C]/30 text-[#f3e5f5] text-[10px] font-bold border border-[#8E4A8C]/50">⚡ Bre-B</span>' : ''}
+                    ${t.tipo_pago === 'cortesia_100' ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/30 text-[#ead397] text-[10px] font-bold">100% Cortesía</span>' : ''}
                   </div>
-                  <div class="text-xs text-[#f7f4ee]/80 font-mono">Evento: ${t.evento} • Pase: ${t.tipo_entrada} • Monto: $${Number(t.monto_pagado).toLocaleString("es-CO")}</div>
+                  <div class="text-xs text-[#f7f4ee]/80 font-mono">Evento: ${t.evento} • Pase: ${t.tipo_entrada} • Monto: $${Number(t.monto_pagado).toLocaleString("es-CO")} (${t.metodo_pago})</div>
                   <div class="text-[10px] text-[#c5a059] font-mono break-all">Hash: ${t.ticket_hash}</div>
                 </div>
                 <div class="flex items-center gap-2 self-end sm:self-center">
                   ${isPending ? `
-                    <button type="button" class="btn-mark-paid px-3 py-1.5 rounded-lg bg-[#2e7d32] text-white text-xs font-bold hover:brightness-110" data-ticket-id="${t.id}">
+                    <button type="button" class="btn-mark-paid px-3 py-1.5 rounded-lg bg-[#2e7d32] text-white text-xs font-bold hover:brightness-110 shadow-sm" data-ticket-id="${t.id}">
                       ✓ Confirmar Pago
                     </button>
                   ` : ''}
@@ -793,7 +1023,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
       document.querySelectorAll(".btn-mark-paid").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = btn.getAttribute("data-ticket-id");
-          if (!confirm("¿Confirmar que este pago fue recibido en efectivo/cuenta?")) return;
+          if (!confirm("¿Confirmar que este pago fue recibido en efectivo / Bre-B / cuenta bancaria?")) return;
           try {
             const res = await fetch("/api/admin/records", {
               method: "PUT",
@@ -860,15 +1090,16 @@ const isAuthenticated = verifyAdminSessionToken(token);
     }
   });
 
-  // 7. MODAL AÑADIR REGISTRO MANUALMENTE (CRUD)
+  // 7. MODAL AÑADIR REGISTRO MANUALMENTE / CORTESÍA 100%
   drawerBtnAddNew?.addEventListener("click", () => openCrudModal(activeDrawerType || "leads"));
+  btnCreateTicketTop?.addEventListener("click", () => openCrudModal("tickets"));
   btnAddAffiliateModal?.addEventListener("click", () => openCrudModal("affiliates"));
   btnAddLeadModal?.addEventListener("click", () => openCrudModal("leads"));
   modalCrudClose?.addEventListener("click", () => modalCrudCreate?.classList.add("hidden"));
 
   let currentCrudEntity = "lead";
 
-  function openCrudModal(type: string) {
+  function openCrudModal(type: string, optionalLeadId?: string | null) {
     if (!crudFieldsContainer || !modalCrudTitle) return;
     modalCrudCreate?.classList.remove("hidden");
     if (crudCreateStatus) crudCreateStatus.classList.add("hidden");
@@ -892,41 +1123,78 @@ const isAuthenticated = verifyAdminSessionToken(token);
       `;
     } else if (type === "tickets" || type === "pending_cash") {
       currentCrudEntity = "ticket";
-      modalCrudTitle.textContent = "Nuevo Pase / Reserva Manual";
+      modalCrudTitle.textContent = "Nuevo Pase / Cortesía 100%";
       crudFieldsContainer.innerHTML = `
+        <div class="p-3 rounded-xl bg-[#140816] border border-[#c5a059]/40 flex items-center justify-between gap-2">
+          <div>
+            <span class="text-[11px] font-bold text-[#ead397] block">Generador Rápido de Cortesía 100%</span>
+            <span class="text-[10px] text-[#f7f4ee]/70">Pase liberado de costo ($0 COP) con confirmación inmediata</span>
+          </div>
+          <button type="button" id="btn-apply-cortesia" class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] text-xs font-bold uppercase tracking-wider whitespace-nowrap shadow-sm">
+            Aplicar 100% Descuento
+          </button>
+        </div>
+
         <div>
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Evento</label>
-          <input type="text" id="crud-evento" value="luna_llena" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          <select id="crud-evento" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="luna_llena">Noche de Luna Llena (Halloween)</option>
+            <option value="sitio_9_oct">Inauguración Sitio Licorera (9 Oct)</option>
+            <option value="impacto_10_oct">Impacto Producciones (10 Oct)</option>
+          </select>
         </div>
         <div>
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Tipo de Pase</label>
           <select id="crud-tipo-entrada" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
-            <option value="general">General ($120.000)</option>
-            <option value="pareja">Pareja ($200.000)</option>
-            <option value="vip_individual">VIP Individual ($350.000)</option>
-            <option value="vip_pareja">VIP Pareja ($500.000)</option>
+            <option value="pareja">Pareja ($100.000)</option>
+            <option value="single">Single (Hombre Solo - $120.000)</option>
+            <option value="unicornio">Unicornio (Mujer Sola - $30.000)</option>
+            <option value="vip_membresia">Membresía Anual VIP ($199.000)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Modalidad de Pago</label>
+          <select id="crud-tipo-pago" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="total_100">Pago Total 100%</option>
+            <option value="reserva_40">Separación 40% (Saldo en puerta)</option>
+            <option value="cortesia_100">Cortesía 100% (Invitación Oficial)</option>
           </select>
         </div>
         <div>
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Monto Pagado (COP)</label>
-          <input type="number" id="crud-monto" value="120000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          <input type="number" id="crud-monto" value="100000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
         </div>
         <div>
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Método de Pago</label>
           <select id="crud-metodo" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
-            <option value="efectivo">Efectivo</option>
-            <option value="transferencia">Transferencia Bancaria</option>
+            <option value="efectivo">Efectivo en Puerta</option>
+            <option value="bre_b">Bre-B (Transferencia Directa)</option>
+            <option value="transferencia">Transferencia Bancolombia / Nequi</option>
             <option value="dlocal_go">dLocal Go</option>
+            <option value="cortesia">Cortesía / Dirección</option>
           </select>
         </div>
         <div>
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Estado</label>
           <select id="crud-estado" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
-            <option value="pagado">Pagado</option>
+            <option value="pagado">Pagado (Aprobado)</option>
             <option value="pendiente">Pendiente (Reserva Efectivo)</option>
+            <option value="asistido">Asistido (Ingresó)</option>
           </select>
         </div>
+        ${optionalLeadId ? `<input type="hidden" id="crud-lead-id" value="${optionalLeadId}" />` : ''}
       `;
+
+      document.getElementById("btn-apply-cortesia")?.addEventListener("click", () => {
+        const tipoPago = document.getElementById("crud-tipo-pago") as HTMLSelectElement;
+        const monto = document.getElementById("crud-monto") as HTMLInputElement;
+        const metodo = document.getElementById("crud-metodo") as HTMLSelectElement;
+        const estado = document.getElementById("crud-estado") as HTMLSelectElement;
+        if (tipoPago) tipoPago.value = "cortesia_100";
+        if (monto) monto.value = "0";
+        if (metodo) metodo.value = "cortesia";
+        if (estado) estado.value = "pagado";
+      });
     } else {
       currentCrudEntity = "lead";
       modalCrudTitle.textContent = "Nuevo Lead Manual";
@@ -944,12 +1212,21 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <input type="email" id="crud-email" placeholder="correo@ejemplo.com" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
         </div>
         <div>
-          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Rol</label>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Modalidad / Rol</label>
           <select id="crud-rol" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
-            <option value="hombre_solo">Hombre Solo</option>
-            <option value="mujer_sola">Mujer Sola</option>
-            <option value="pareja">Pareja</option>
+            <option value="pareja">👫 Pareja</option>
+            <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
+            <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
             <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Origen</label>
+          <select id="crud-origen" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="web">El Placer DC (Web)</option>
+            <option value="the_corset">The Corset Society (VIP)</option>
+            <option value="aliado_centro_cultural">Aliados / Centro Cultural</option>
+            <option value="admin_manual">Creado Manualmente</option>
           </select>
         </div>
       `;
@@ -966,24 +1243,36 @@ const isAuthenticated = verifyAdminSessionToken(token);
       const waInput = document.getElementById("crud-wa") as HTMLInputElement;
       payloadData = { alias: aliasInput.value, nombre: nombreInput.value, whatsapp: waInput.value };
     } else if (currentCrudEntity === "ticket") {
-      const evInput = document.getElementById("crud-evento") as HTMLInputElement;
+      const evInput = document.getElementById("crud-evento") as HTMLSelectElement;
       const tipoInput = document.getElementById("crud-tipo-entrada") as HTMLSelectElement;
+      const tipoPagoInput = document.getElementById("crud-tipo-pago") as HTMLSelectElement;
       const montoInput = document.getElementById("crud-monto") as HTMLInputElement;
       const metodoInput = document.getElementById("crud-metodo") as HTMLSelectElement;
       const estadoInput = document.getElementById("crud-estado") as HTMLSelectElement;
+      const leadIdInput = document.getElementById("crud-lead-id") as HTMLInputElement | null;
       payloadData = {
         evento: evInput.value,
         tipo_entrada: tipoInput.value,
+        tipo_pago: tipoPagoInput.value,
         monto_pagado: montoInput.value,
         metodo_pago: metodoInput.value,
         estado: estadoInput.value,
+        lead_id: leadIdInput?.value || null,
       };
     } else {
       const aliasInput = document.getElementById("crud-alias-nombre") as HTMLInputElement;
       const waInput = document.getElementById("crud-wa") as HTMLInputElement;
       const emailInput = document.getElementById("crud-email") as HTMLInputElement;
       const rolInput = document.getElementById("crud-rol") as HTMLSelectElement;
-      payloadData = { alias_nombre: aliasInput.value, whatsapp: waInput.value, email: emailInput.value, rol: rolInput.value };
+      const origenInput = document.getElementById("crud-origen") as HTMLSelectElement;
+      payloadData = { 
+        alias_nombre: aliasInput.value, 
+        whatsapp: waInput.value, 
+        email: emailInput.value, 
+        rol: rolInput.value,
+        origen: origenInput.value,
+        corset_vip: origenInput.value === "the_corset"
+      };
     }
 
     try {
@@ -1109,19 +1398,11 @@ const isAuthenticated = verifyAdminSessionToken(token);
     }
 
     await validateCheckin(raw);
-
-    // Cooldown 3s before next scan
-    setTimeout(() => {
-      scanCooldown = false;
-    }, 3000);
   }
 
-  // 9. CHECK-IN DISPATCHER
+  // 9. CHECK-IN DISPATCHER WITH DISMISSIBLE MODAL POPUP
   async function validateCheckin(rawCode: string) {
-    if (!checkinResult) return;
-
-    checkinResult.className = "p-4 rounded-2xl text-xs bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397] block";
-    checkinResult.textContent = `Validando código: ${rawCode.substring(0, 30)}...`;
+    if (!modalQrResult) return;
 
     try {
       const res = await fetch("/api/admin/checkin", {
@@ -1133,33 +1414,66 @@ const isAuthenticated = verifyAdminSessionToken(token);
 
       if (data.success) {
         if (data.already_checked_in) {
-          checkinResult.className = "p-5 rounded-2xl text-xs bg-[#f57c00]/25 border border-[#f57c00]/60 text-[#ffb74d] block shadow-lg animate-pulse";
-          checkinResult.innerHTML = `
-            <div class="font-bold text-base flex items-center gap-2">⚠️ Entrada Previamente Utilizada</div>
-            <div class="mt-2 text-sm font-semibold text-white">Titular: ${data.ticket.titular} (${data.ticket.whatsapp || ""})</div>
-            <div class="text-xs opacity-90 mt-1">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
-          `;
+          if (qrModalIcon) qrModalIcon.textContent = "⚠️";
+          if (qrModalTitle) qrModalTitle.textContent = "Entrada Previamente Utilizada";
+          if (qrModalSubtitle) qrModalSubtitle.textContent = "Este pase ya fue validado en el ingreso anteriormente.";
+          if (qrModalBody) {
+            qrModalBody.innerHTML = `
+              <div class="space-y-1.5 font-sans">
+                <div><span class="text-[#c5a059] font-bold">Titular:</span> ${data.ticket.titular}</div>
+                <div><span class="text-[#c5a059] font-bold">WhatsApp:</span> ${data.ticket.whatsapp || "No registrado"}</div>
+                <div><span class="text-[#c5a059] font-bold">Evento:</span> ${data.ticket.evento}</div>
+                <div><span class="text-[#c5a059] font-bold">Pase:</span> ${data.ticket.tipo_entrada} (${data.ticket.tipo_pago})</div>
+                <div class="text-[10px] text-[#ffb74d] font-mono break-all pt-1">Hash: ${data.ticket.ticket_hash || rawCode}</div>
+              </div>
+            `;
+          }
         } else {
-          checkinResult.className = "p-5 rounded-2xl text-xs bg-[#2e7d32]/35 border border-[#4caf50]/70 text-[#81c784] block shadow-lg";
-          checkinResult.innerHTML = `
-            <div class="font-bold text-base flex items-center gap-2">✨ ¡Acceso Concedido! Entrada Válida</div>
-            <div class="mt-2 text-sm font-semibold text-white">Titular: ${data.ticket.titular} (${data.ticket.whatsapp || ""})</div>
-            <div class="text-xs opacity-90 mt-1">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
-          `;
+          if (qrModalIcon) qrModalIcon.textContent = "✨";
+          if (qrModalTitle) qrModalTitle.textContent = "¡Acceso Concedido!";
+          if (qrModalSubtitle) qrModalSubtitle.textContent = "Entrada válida y registrada para el evento.";
+          if (qrModalBody) {
+            qrModalBody.innerHTML = `
+              <div class="space-y-1.5 font-sans">
+                <div><span class="text-[#81c784] font-bold">Titular:</span> ${data.ticket.titular}</div>
+                <div><span class="text-[#81c784] font-bold">WhatsApp:</span> ${data.ticket.whatsapp || "No registrado"}</div>
+                <div><span class="text-[#81c784] font-bold">Evento:</span> ${data.ticket.evento}</div>
+                <div><span class="text-[#81c784] font-bold">Pase:</span> ${data.ticket.tipo_entrada} (${data.ticket.tipo_pago})</div>
+                <div class="text-[10px] text-[#81c784] font-mono break-all pt-1">Hash: ${data.ticket.ticket_hash || rawCode}</div>
+              </div>
+            `;
+          }
           loadMetrics();
         }
       } else {
-        checkinResult.className = "p-5 rounded-2xl text-xs bg-[#b71c1c]/35 border border-[#ef5350]/70 text-[#ef5350] block shadow-lg";
-        checkinResult.innerHTML = `
-          <div class="font-bold text-base">❌ Entrada Inválida / No Encontrada</div>
-          <div class="mt-1">${data.error || "El código escaneado no corresponde a ningún ticket registrado."}</div>
-        `;
+        if (qrModalIcon) qrModalIcon.textContent = "❌";
+        if (qrModalTitle) qrModalTitle.textContent = "Entrada Inválida";
+        if (qrModalSubtitle) qrModalSubtitle.textContent = "Código no encontrado o revocado.";
+        if (qrModalBody) {
+          qrModalBody.innerHTML = `
+            <div class="text-[#ef5350]">
+              <p>${data.error || "El código escaneado no coincide con ningún pase registrado en la base de datos."}</p>
+              <p class="font-mono text-[10px] text-[#f7f4ee]/50 mt-1 break-all">${rawCode}</p>
+            </div>
+          `;
+        }
       }
+
+      modalQrResult.classList.remove("hidden");
     } catch (e: any) {
-      checkinResult.className = "p-4 rounded-2xl text-xs bg-[#b71c1c]/35 border border-[#ef5350]/70 text-[#ef5350] block";
-      checkinResult.textContent = "❌ Error de conexión al validar entrada";
+      if (qrModalIcon) qrModalIcon.textContent = "❌";
+      if (qrModalTitle) qrModalTitle.textContent = "Error de Conexión";
+      if (qrModalSubtitle) qrModalSubtitle.textContent = "No se pudo contactar el servidor de validación.";
+      if (qrModalBody) qrModalBody.textContent = "Revisa tu conexión a internet e intenta nuevamente.";
+      modalQrResult.classList.remove("hidden");
     }
   }
+
+  // Dismiss QR Modal
+  btnCloseQrModal?.addEventListener("click", () => {
+    modalQrResult?.classList.add("hidden");
+    scanCooldown = false;
+  });
 
   // Manual Check-in Form Handler
   checkinForm?.addEventListener("submit", async (e) => {

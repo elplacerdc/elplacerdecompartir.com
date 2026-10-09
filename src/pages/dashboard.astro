@@ -10,14 +10,11 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
       
       <!-- Header -->
       <div class="text-center mb-12">
-        <span class="inline-block py-1 px-3 rounded-full bg-[#c5a059]/10 border border-[#c5a059]/30 text-[#ead397] text-xs uppercase tracking-[0.25em] font-medium mb-3">
-          Programa Oficial de Embajadores
-        </span>
         <h1 class="text-3xl sm:text-4xl font-serif font-bold text-[#ead397] tracking-wide">
           Panel de Control de Embajador
         </h1>
         <p class="text-sm text-[#f7f4ee]/70 mt-2 max-w-xl mx-auto">
-          Monitorea el alcance de tu enlace, tus registros generados y el estado de tus recompensas VIP.
+          Monitorea el alcance de tu enlace, tus registros generados y el estado de tus entradas gratuitas ganadas.
         </p>
       </div>
 
@@ -76,9 +73,9 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <span class="text-xs uppercase tracking-[0.2em] text-[#c5a059] font-bold block mb-1">Incentivo Exclusivo</span>
-              <h3 class="text-lg font-serif font-bold text-[#ead397]">Regla de Recompensas: 3 Membresías = 1 Entrada VIP</h3>
+              <h3 class="text-lg font-serif font-bold text-[#ead397]">Regla de Recompensas: 3 Compras = 1 Entrada Gratuita</h3>
               <p class="text-xs text-[#f7f4ee]/70 mt-1 max-w-lg">
-                Por cada 3 compras de membresía anual VIP generadas con tu enlace, el sistema activa automáticamente un cupón de entrada 100% gratuita para el próximo evento de gala.
+                Por cada 3 compras de entradas o membresías generadas con tu enlace, el sistema activa automáticamente un cupón de entrada 100% gratuita para eventos oficiales de ElPlacerDC o veladas VIP de The Corset Society.
               </p>
             </div>
             <div id="reward-badge-container" class="text-right">
@@ -128,7 +125,16 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               rel="noopener noreferrer" 
               class="px-5 py-3 rounded-lg text-xs uppercase tracking-wider font-bold bg-[#2e7d32] text-[#f7f4ee] hover:bg-[#388e3c] transition-all flex items-center justify-center gap-2 whitespace-nowrap"
             >
-              Compartir WhatsApp
+              Compartir por WhatsApp
+            </a>
+            <a 
+              id="btn-share-x" 
+              href="#" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="px-5 py-3 rounded-lg text-xs uppercase tracking-wider font-bold bg-[#050505] text-[#f7f4ee] border border-[#c5a059]/40 hover:bg-[#c5a059]/20 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              Compartir por X
             </a>
           </div>
 
@@ -154,6 +160,35 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               </button>
             </div>
             <p id="code-update-feedback" class="text-xs mt-2 min-h-[16px]"></p>
+          </div>
+        </div>
+
+        <!-- Section: Registros Acreditados a tu Enlace -->
+        <div class="p-6 sm:p-8 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-4">
+          <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+            <div>
+              <h3 class="text-lg font-serif font-bold text-[#ead397]">Registros Acreditados</h3>
+              <p class="text-xs text-[#f7f4ee]/60">Personas que ingresaron y se registraron en la comunidad a través de tu enlace exclusivo.</p>
+            </div>
+            <span id="referred-leads-count" class="text-xs font-mono px-3 py-1 rounded-full bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30 font-bold">0</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead>
+                <tr class="text-[#f7f4ee]/50 border-b border-[#c5a059]/10">
+                  <th class="py-2.5 px-3">Alias Acreditado</th>
+                  <th class="py-2.5 px-3">Modalidad</th>
+                  <th class="py-2.5 px-3">Ciudad</th>
+                  <th class="py-2.5 px-3 text-right">Fecha</th>
+                </tr>
+              </thead>
+              <tbody id="referred-leads-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/80 font-mono">
+                <tr>
+                  <td colspan="4" class="py-4 text-center text-[#f7f4ee]/40 font-sans">No hay registros acreditados aún. Comparte tu enlace para comenzar a sumar.</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -219,6 +254,31 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         if (btnShareWa) {
           const waMsg = encodeURIComponent(`Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
           btnShareWa.href = `https://wa.me/?text=${waMsg}`;
+        }
+
+        const btnShareX = document.getElementById("btn-share-x") as HTMLAnchorElement | null;
+        if (btnShareX) {
+          const xMsg = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
+          btnShareX.href = `https://twitter.com/intent/tweet?text=${xMsg}`;
+        }
+
+        const referredLeadsBody = document.getElementById("referred-leads-body");
+        const referredLeadsCount = document.getElementById("referred-leads-count");
+        if (stats.referredLeads && stats.referredLeads.length > 0) {
+          if (referredLeadsCount) referredLeadsCount.textContent = stats.referredLeads.length.toString();
+          if (referredLeadsBody) {
+            referredLeadsBody.innerHTML = stats.referredLeads.map((l: any) => `
+              <tr>
+                <td class="py-2.5 px-3 font-semibold text-[#ead397]">${l.alias_nombre || 'Anónimo'}</td>
+                <td class="py-2.5 px-3 text-[#f7f4ee]/70 capitalize font-sans">${l.rol ? l.rol.replace('_', ' ') : 'General'}</td>
+                <td class="py-2.5 px-3 text-[#f7f4ee]/70 font-sans">${l.ciudad || 'Bogotá'}</td>
+                <td class="py-2.5 px-3 text-right text-[#f7f4ee]/50 text-[11px]">${new Date(l.created_at).toLocaleDateString('es-CO')}</td>
+              </tr>
+            `).join('');
+          }
+        } else if (referredLeadsBody) {
+          if (referredLeadsCount) referredLeadsCount.textContent = "0";
+          referredLeadsBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-[#f7f4ee]/40 font-sans">No hay registros acreditados aún. Comparte tu enlace para comenzar a sumar.</td></tr>`;
         }
 
         // Calculate progress to next ticket

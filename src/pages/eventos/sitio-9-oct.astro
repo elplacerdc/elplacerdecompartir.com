@@ -61,7 +61,7 @@ import Layout from "../../layouts/Layout.astro";
             <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
               WhatsApp <span class="text-[#b84a39]">*</span>
             </label>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2">
               <input 
                 type="tel" 
                 name="whatsapp" 
@@ -73,7 +73,7 @@ import Layout from "../../layouts/Layout.astro";
               <button 
                 type="button" 
                 id="btn-send-wa-otp" 
-                class="px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 whitespace-nowrap"
+                class="w-full sm:w-auto px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 whitespace-nowrap text-center"
               >
                 Enviar Código
               </button>

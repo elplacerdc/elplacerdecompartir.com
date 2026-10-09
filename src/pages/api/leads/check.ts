@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { findLeadByContact } from "../../../db";
+import { findLeadByContact, ensureAffiliateCode } from "../../../db";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -16,6 +16,11 @@ export const POST: APIRoute = async ({ request }) => {
     const lead = await findLeadByContact(email, whatsapp);
 
     if (lead) {
+      let affiliateCode = "";
+      try {
+        affiliateCode = await ensureAffiliateCode(lead.alias_nombre || "embajador", lead.whatsapp, lead.email);
+      } catch (e) {}
+
       return new Response(
         JSON.stringify({
           exists: true,
@@ -27,6 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
             rol: lead.rol,
             ciudad: lead.ciudad,
             corset_vip: lead.corset_vip,
+            affiliate_code: affiliateCode,
           },
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }

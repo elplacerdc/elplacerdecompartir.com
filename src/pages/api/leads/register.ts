@@ -21,7 +21,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     }
 
-    const affiliateRef = cookies.get("affiliate_ref")?.value;
+    const affiliateRef = (body.ref || body.afiliado_id || cookies.get("affiliate_ref")?.value || "")
+      .toString()
+      .trim()
+      .toLowerCase() || undefined;
     const targetChannel = corset_vip ? "corset" : "elplacerdc";
 
     const result = await upsertLead(

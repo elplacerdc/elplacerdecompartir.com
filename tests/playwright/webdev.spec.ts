@@ -12,11 +12,12 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(h1).toContainText("El arte de compartir");
 
     // Header Navigation Links & Badges
-    await expect(page.getByRole("link", { name: "Manifiesto de Libertad" }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Centro Cultural/i }).first()).toBeVisible();
     await expect(page.getByText("Nuevo").first()).toBeVisible(); // Badge Nuevo
     await expect(page.getByRole("link", { name: /The Corset Society/i }).first()).toBeVisible(); // Candado
     await expect(page.getByText("Comunidad").first()).toBeVisible();
+    await page.getByRole("button", { name: "Comunidad" }).hover();
+    await expect(page.getByRole("link", { name: /Próximos Eventos/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /Luna Llena/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: "Panel Embajadores" }).first()).toBeVisible(); // Botón dedicado
 
@@ -40,11 +41,12 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.getByText("Gana como Embajador de El Placer de Compartir")).toBeVisible();
     await expect(page.getByRole("link", { name: "OBTENER MI ENLACE DE EMBAJADOR" })).toBeVisible();
 
-    // LeadForm with verification controls
+    // LeadForm with 2-phase progressive registration controls
     await expect(page.getByText("ENTRADA A LA COMUNIDAD")).toBeVisible();
     await expect(page.getByPlaceholder("Ej: 310 123 4567")).toBeVisible();
     await expect(page.locator("#btn-send-wa-otp")).toBeVisible();
-    await expect(page.getByPlaceholder("Tu alias o nombre discreto")).toBeVisible();
+    await expect(page.getByPlaceholder("Tu alias o nombre discreto")).toBeAttached();
+    await expect(page.locator("#lead-remaining-fields")).toHaveClass(/hidden/);
   });
 
   test("Centro Cultural: Growth Copywriting, Buttons, Alianzas and Ambassador Section", async ({ page }) => {
@@ -94,7 +96,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     // 4. Test Clickable Metric opens Drawer
     await page.click("#card-kpi-leads");
     await expect(page.locator("#drawer-container")).toBeVisible();
-    await expect(page.locator("#drawer-title")).toContainText("Gestión de Leads");
+    await expect(page.locator("#drawer-title")).toContainText("Directorio de Contactos");
     await page.click("#drawer-close");
     await expect(page.locator("#drawer-container")).toBeHidden();
   });

@@ -83,115 +83,121 @@ const {
       <p id="wa-verified-badge" class="hidden text-xs text-[#81c784] font-medium mt-1">✓ WhatsApp verificado</p>
     </div>
 
-    <!-- Email with Real-time OTP (Optional in community, Required in VIP) -->
-    <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Correo Electrónico {isVip ? <span class="text-[#c5a059]">(Requerido para membresía VIP *)</span> : <span class="text-[#f7f4ee]/40">(Opcional)</span>}
-      </label>
-      <div class="flex flex-col sm:flex-row gap-2">
-        <input
-          type="email"
-          name="email"
-          id="input-email"
-          required={isVip}
-          placeholder="ejemplo@correo.com"
-          class="flex-1 px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
-        />
-        {isVip && (
-          <button
-            type="button"
-            id="btn-send-email-otp"
-            class="w-full sm:w-auto px-4 py-3 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all text-center"
-          >
-            Enviar Código
-          </button>
-        )}
-      </div>
+    <!-- Box para usuario existente detectado -->
+    <div id="lead-existing-box" class="hidden p-5 rounded-xl bg-[#c5a059]/15 border border-[#c5a059]/40 space-y-4"></div>
 
-      <!-- Inline OTP verification box for Email -->
-      <div id="email-otp-box" class="hidden mt-2 p-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 space-y-2">
-        <div class="flex items-center gap-2">
+    <!-- Campos adicionales para registro nuevo (desplegados solo tras verificar número y comprobar que no existe) -->
+    <div id="lead-remaining-fields" class="hidden space-y-5">
+      <!-- Email with Real-time OTP (Optional in community, Required in VIP) -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+          Correo Electrónico {isVip ? <span class="text-[#c5a059]">(Requerido para membresía VIP *)</span> : <span class="text-[#f7f4ee]/40">(Opcional)</span>}
+        </label>
+        <div class="flex flex-col sm:flex-row gap-2">
           <input
-            type="text"
-            id="input-email-otp"
-            maxlength="6"
-            placeholder="Código (6 dígitos)"
-            class="w-36 px-3 py-1.5 text-center font-mono tracking-widest text-sm rounded bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] focus:border-[#c5a059]"
+            type="email"
+            name="email"
+            id="input-email"
+            required={isVip}
+            placeholder="ejemplo@correo.com"
+            class="flex-1 px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
           />
-          <button
-            type="button"
-            id="btn-verify-email-otp"
-            class="px-3 py-1.5 text-xs font-bold uppercase rounded bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397]"
-          >
-            Verificar
-          </button>
-          <span id="email-otp-status" class="text-xs text-[#ead397]"></span>
+          {isVip && (
+            <button
+              type="button"
+              id="btn-send-email-otp"
+              class="w-full sm:w-auto px-4 py-3 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all text-center"
+            >
+              Enviar Código
+            </button>
+          )}
         </div>
+
+        <!-- Inline OTP verification box for Email -->
+        <div id="email-otp-box" class="hidden mt-2 p-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 space-y-2">
+          <div class="flex items-center gap-2">
+            <input
+              type="text"
+              id="input-email-otp"
+              maxlength="6"
+              placeholder="Código (6 dígitos)"
+              class="w-36 px-3 py-1.5 text-center font-mono tracking-widest text-sm rounded bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] focus:border-[#c5a059]"
+            />
+            <button
+              type="button"
+              id="btn-verify-email-otp"
+              class="px-3 py-1.5 text-xs font-bold uppercase rounded bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397]"
+            >
+              Verificar
+            </button>
+            <span id="email-otp-status" class="text-xs text-[#ead397]"></span>
+          </div>
+        </div>
+        <p id="email-verified-badge" class="hidden text-xs text-[#81c784] font-medium mt-1">✓ Correo verificado</p>
       </div>
-      <p id="email-verified-badge" class="hidden text-xs text-[#81c784] font-medium mt-1">✓ Correo verificado</p>
-    </div>
 
-    <!-- Pseudónimo -->
-    <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Pseudónimo <span class="text-[#b84a39]">*</span>
-      </label>
-      <input
-        type="text"
-        name="alias_nombre"
-        id="input-alias"
-        required
-        placeholder="Tu alias o nombre discreto"
-        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
-      />
-    </div>
+      <!-- Pseudónimo -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+          Pseudónimo <span class="text-[#b84a39]">*</span>
+        </label>
+        <input
+          type="text"
+          name="alias_nombre"
+          id="input-alias"
+          required
+          placeholder="Tu alias o nombre discreto"
+          class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        />
+      </div>
 
-    <!-- Rol / Identidad con Emojis Canónicos -->
-    <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Modalidad de Asistencia o Participación <span class="text-[#b84a39]">*</span>
-      </label>
-      <select
-        name="rol"
-        id="input-rol"
-        class="w-full px-4 py-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      <!-- Rol / Identidad con Emojis Canónicos -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+          Modalidad de Asistencia o Participación <span class="text-[#b84a39]">*</span>
+        </label>
+        <select
+          name="rol"
+          id="input-rol"
+          class="w-full px-4 py-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+        >
+          <option value="pareja">👫 Pareja</option>
+          <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
+          <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
+        </select>
+      </div>
+
+      <!-- Ciudad -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+          Ciudad
+        </label>
+        <select
+          name="ciudad"
+          id="input-ciudad"
+          class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+        >
+          <option value="Bogotá">Bogotá</option>
+          <option value="Medellín">Medellín</option>
+          <option value="Otra">Otra ciudad</option>
+        </select>
+      </div>
+
+      <!-- Feedback Message -->
+      <div id="form-feedback" class="hidden text-sm p-4 rounded-lg"></div>
+
+      <button
+        type="submit"
+        id="submit-btn"
+        class={`w-full py-4 rounded-lg font-serif font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
+          isVip
+            ? "bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
+            : "bg-[#b84a39] text-[#f7f4ee] hover:bg-[#a03d2e] shadow-[0_0_15px_rgba(184,74,57,0.3)]"
+        }`}
       >
-        <option value="pareja">👫 Pareja</option>
-        <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
-        <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
-      </select>
+        {isVip ? "Solicitar Admisión VIP" : "Unirme al Círculo"}
+      </button>
     </div>
-
-    <!-- Ciudad -->
-    <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-        Ciudad
-      </label>
-      <select
-        name="ciudad"
-        id="input-ciudad"
-        class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
-      >
-        <option value="Bogotá">Bogotá</option>
-        <option value="Medellín">Medellín</option>
-        <option value="Otra">Otra ciudad</option>
-      </select>
-    </div>
-
-    <!-- Feedback Message -->
-    <div id="form-feedback" class="hidden text-sm p-4 rounded-lg"></div>
-
-    <button
-      type="submit"
-      id="submit-btn"
-      class={`w-full py-4 rounded-lg font-serif font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
-        isVip
-          ? "bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
-          : "bg-[#b84a39] text-[#f7f4ee] hover:bg-[#a03d2e] shadow-[0_0_15px_rgba(184,74,57,0.3)]"
-      }`}
-    >
-      {isVip ? "Solicitar Admisión VIP" : "Unirme al Círculo"}
-    </button>
   </form>
 </div>
 
@@ -204,6 +210,8 @@ const {
   const inputCiudad = document.getElementById("input-ciudad") as HTMLSelectElement;
   const formFeedback = document.getElementById("form-feedback") as HTMLElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+  const leadExistingBox = document.getElementById("lead-existing-box") as HTMLElement;
+  const leadRemainingFields = document.getElementById("lead-remaining-fields") as HTMLElement;
 
   const btnSendWaOtp = document.getElementById("btn-send-wa-otp") as HTMLButtonElement;
   const waOtpBox = document.getElementById("wa-otp-box") as HTMLElement;
@@ -222,6 +230,15 @@ const {
   let waVerified = false;
   let emailVerified = false;
   const isVip = (document.querySelector('input[name="corset_vip"]') as HTMLInputElement)?.value === "true";
+
+  // Capture URL affiliate parameter on mount if present
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refQuery = urlParams.get("ref") || urlParams.get("r");
+    if (refQuery) {
+      localStorage.setItem("affiliate_ref", refQuery.trim().toLowerCase());
+    }
+  } catch (e) {}
 
   // Real-time WA OTP Send
   btnSendWaOtp?.addEventListener("click", async () => {
@@ -261,7 +278,7 @@ const {
     }
   });
 
-  // Real-time WA OTP Verify
+  // Real-time WA OTP Verify & Anti-Duplicate Check Gate
   btnVerifyWaOtp?.addEventListener("click", async () => {
     const whatsapp = inputWhatsapp.value.trim();
     const code = inputWaOtp.value.trim();
@@ -288,6 +305,61 @@ const {
         btnSendWaOtp.classList.add("hidden");
         inputWhatsapp.readOnly = true;
         waVerifiedBadge.classList.remove("hidden");
+
+        // 2. Prevenir Doble Registro: Verificar si ya existe en Base de Datos
+        try {
+          const checkRes = await fetch("/api/leads/check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ whatsapp }),
+          });
+          const checkData = await checkRes.json();
+
+          if (checkData.exists && checkData.lead) {
+            const existing = checkData.lead;
+            localStorage.setItem("ambassador_session_phone", whatsapp);
+            const affiliateCode = existing.affiliate_code || "embajador";
+            const shareUrl = `https://elplacerdecompartir.com/?ref=${affiliateCode}`;
+            const waMsg = encodeURIComponent(`Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
+            const xMsg = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
+
+            leadExistingBox.innerHTML = `
+              <div class="flex items-center gap-2 text-sm font-serif font-bold text-[#ead397]">
+                <span>✓</span> Registro Previo Confirmado
+              </div>
+              <p class="text-xs text-[#f7f4ee]/90 leading-relaxed">
+                Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu número ya se encuentra registrado activamente en nuestra comunidad en modalidad <strong class="text-[#ead397] capitalize">${existing.rol ? existing.rol.replace('_', ' ') : 'General'}</strong>.
+              </p>
+              <p class="text-[11px] text-[#f7f4ee]/70">
+                Tu perfil ya está activo y protegido. No es necesario registrarte de nuevo. Tu enlace de embajador oficial es:
+              </p>
+              <div class="p-2.5 bg-[#0a0608] rounded border border-[#c5a059]/40 text-xs font-mono text-[#ead397] select-all">
+                ${shareUrl}
+              </div>
+              <div class="pt-2 border-t border-[#c5a059]/20 flex flex-wrap gap-2">
+                <a href="/dashboard" class="px-4 py-2 rounded-lg bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all">
+                  Ir a mi Panel de Embajador →
+                </a>
+                <a href="https://wa.me/?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-lg bg-[#2e7d32] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#388e3c] transition-all">
+                  Compartir por WhatsApp
+                </a>
+                <a href="https://twitter.com/intent/tweet?text=${xMsg}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-lg bg-[#050505] border border-[#c5a059]/40 text-[#ead397] text-xs font-bold uppercase tracking-wider hover:bg-[#c5a059]/20 transition-all">
+                  Compartir por X
+                </a>
+              </div>
+            `;
+            leadExistingBox.classList.remove("hidden");
+            leadRemainingFields.classList.add("hidden");
+            return;
+          }
+        } catch (checkErr) {
+          console.warn("[Check Lead Err]:", checkErr);
+        }
+
+        // Si NO existe: Desplegar casillas para completar datos y registrar
+        leadExistingBox.classList.add("hidden");
+        leadRemainingFields.classList.remove("hidden");
+        inputAlias?.focus();
       } else {
         waOtpStatus.textContent = "Código incorrecto";
         btnVerifyWaOtp.disabled = false;
@@ -410,6 +482,7 @@ const {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...payload,
+          ref: localStorage.getItem("affiliate_ref") || undefined,
           verified: true,
           corset_vip: isVip,
         }),
@@ -425,10 +498,17 @@ const {
 
         let affiliateMsg = "";
         if (data.affiliate_code) {
-          affiliateMsg = `<div class="mt-3 p-3 bg-[#140816] rounded border border-[#c5a059]/40 text-xs text-left">
-            <span class="text-[#ead397] font-semibold">Tu Enlace de Embajador:</span> 
-            <code class="text-[#c5a059] block mt-1 select-all font-mono">https://elplacerdecompartir.com/?ref=${data.affiliate_code}</code>
-            <a href="/dashboard" class="inline-block mt-2 text-[#ead397] underline font-medium">Ir a mi Panel de Embajador (Sesión Iniciada) →</a>
+          const shareUrl = `https://elplacerdecompartir.com/?ref=${data.affiliate_code}`;
+          const waMsg = encodeURIComponent(`Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
+          const xMsg = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
+          affiliateMsg = `<div class="mt-3 p-3 bg-[#140816] rounded border border-[#c5a059]/40 text-xs text-left space-y-2">
+            <span class="text-[#ead397] font-semibold block">Tu Enlace de Embajador:</span> 
+            <code class="text-[#c5a059] block select-all font-mono">${shareUrl}</code>
+            <div class="pt-1 flex flex-wrap gap-2">
+              <a href="/dashboard" class="inline-block px-3 py-1.5 rounded bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397]">Ir al Panel de Embajador →</a>
+              <a href="https://wa.me/?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="inline-block px-3 py-1.5 rounded bg-[#2e7d32] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#388e3c]">Compartir por WhatsApp</a>
+              <a href="https://twitter.com/intent/tweet?text=${xMsg}" target="_blank" rel="noopener noreferrer" class="inline-block px-3 py-1.5 rounded bg-[#050505] border border-[#c5a059]/40 text-[#ead397] text-xs font-bold uppercase tracking-wider hover:bg-[#c5a059]/20">Compartir por X</a>
+            </div>
           </div>`;
         }
 

@@ -463,6 +463,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
   leadsCount: number;
   purchasesCount: number;
   freeTicketsEarned: number;
+  referredLeads: Array<{ alias_nombre: string | null; rol: string | null; ciudad: string | null; created_at: Date }>;
 } | null> {
   const client = await pool.connect();
   try {
@@ -511,12 +512,21 @@ export async function getAffiliateStats(identifier: string): Promise<{
     if (res.rows.length === 0) return null;
     const row = res.rows[0];
 
-    // Count leads referring this alias
+    // Count and list leads referring this alias (privacy-safe: only alias, rol, ciudad, date)
     const leadsRes = await client.query(
       `SELECT COUNT(*)::int AS cnt FROM leads WHERE LOWER(afiliado_id) = $1`,
       [row.alias.toLowerCase()]
     );
     const leadsCount = leadsRes.rows[0]?.cnt || 0;
+
+    const referredLeadsRes = await client.query(
+      `SELECT alias_nombre, rol, ciudad, created_at 
+       FROM leads 
+       WHERE LOWER(afiliado_id) = $1 
+       ORDER BY created_at DESC 
+       LIMIT 50`,
+      [row.alias.toLowerCase()]
+    );
 
     return {
       alias: row.alias,
@@ -527,6 +537,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
       leadsCount,
       purchasesCount: row.referidos_pagados || 0,
       freeTicketsEarned: row.entradas_ganadas || 0,
+      referredLeads: referredLeadsRes.rows,
     };
   } finally {
     client.release();

@@ -44,6 +44,38 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "No se pudo vincular el perfil de invitado." }), { status: 500 });
     }
 
+    // 1.1 Validar filtro de proporción 1:3 para hombres solos (Single)
+    if (tipo_entrada === "single") {
+      const clientRatio = await pool.connect();
+      try {
+        const countsRes = await clientRatio.query(
+          `SELECT 
+             COUNT(*) FILTER (WHERE tipo_entrada = 'pareja' AND estado != 'cancelado') as parejas,
+             COUNT(*) FILTER (WHERE tipo_entrada = 'single' AND estado != 'cancelado') as singles
+           FROM event_tickets
+           WHERE evento = 'luna_llena'`
+        );
+        const parejas = parseInt(countsRes.rows[0]?.parejas || "0", 10);
+        const singles = parseInt(countsRes.rows[0]?.singles || "0", 10);
+        const maxSinglesAllowed = Math.floor(parejas / 3);
+
+        if (singles >= maxSinglesAllowed) {
+          return new Response(
+            JSON.stringify({
+              error: `Cupos de pase Single temporalmente agotados por política de aforo y proporción (máximo 1 hombre solo por cada 3 parejas confirmadas). Actualmente hay ${parejas} parejas y ${singles} singles registrados. Has quedado registrado en nuestra lista de espera prioritaria.`,
+              waitlist: true,
+              parejas,
+              singles,
+              maxAllowed: maxSinglesAllowed,
+            }),
+            { status: 422, headers: { "Content-Type": "application/json" } }
+          );
+        }
+      } finally {
+        clientRatio.release();
+      }
+    }
+
     const isDigitalGateway = metodo_pago === "pasarela_digital" || metodo_pago === "dlocal_go";
 
     // 2. Insert or Reuse pending ticket (Idempotency lock: avoid multi-click duplication within 60s)
