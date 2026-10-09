@@ -138,7 +138,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
             <p class="text-xs text-[#f7f4ee]/60 mb-3">Puedes cambiar tu alias para que tu enlace sea más memorable y exclusivo (mínimo 3 caracteres alfanuméricos).</p>
             <div class="flex flex-col sm:flex-row gap-3">
               <div class="flex items-center flex-1 bg-[#0a0608] border border-[#c5a059]/30 rounded-lg px-3">
-                <span class="text-xs text-[#f7f4ee]/40 font-mono">elplacerdc.com/?ref=</span>
+                <span class="text-xs text-[#f7f4ee]/40 font-mono">elplacerdecompartir.com/?ref=</span>
                 <input 
                   type="text" 
                   id="input-new-code" 
@@ -212,7 +212,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         if (metricPurchases) metricPurchases.textContent = stats.purchasesCount.toString();
         if (metricTickets) metricTickets.textContent = stats.freeTicketsEarned.toString();
 
-        const shareUrl = `https://elplacerdc.com/?ref=${stats.alias}`;
+        const shareUrl = `https://elplacerdecompartir.com/?ref=${stats.alias}`;
         if (currentShareUrl) currentShareUrl.value = shareUrl;
         if (inputNewCode) inputNewCode.value = stats.alias;
 
@@ -297,7 +297,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
 
       if (data.success) {
         currentAlias = data.newCode;
-        if (currentShareUrl) currentShareUrl.value = `https://elplacerdc.com/?ref=${currentAlias}`;
+        if (currentShareUrl) currentShareUrl.value = `https://elplacerdecompartir.com/?ref=${currentAlias}`;
         if (codeUpdateFeedback) {
           codeUpdateFeedback.className = "text-xs mt-2 text-[#81c784]";
           codeUpdateFeedback.textContent = "✓ Código actualizado exitosamente";

@@ -4,16 +4,16 @@
 /* Custom Smooth Transitions and Noir Accents */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 6rem;
+  scroll-padding-top: 4.75rem;
   color-scheme: dark;
 }
 
 [id] {
-  scroll-margin-top: 6rem;
+  scroll-margin-top: 4.75rem;
 }
 
 body {
-  background-color: var(--color-elplacer-midnight-plum, #180a22);
+  background-color: var(--color-elplacer-midnight-plum, #200d28);
   color: var(--color-elplacer-ivory, #f7f4ee);
   font-family: var(--font-elplacer-body, 'Inter', system-ui, sans-serif);
   overflow-x: hidden;

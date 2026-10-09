@@ -307,6 +307,7 @@ export async function notifyNewTicket(
     `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()}\n` +
     `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n\n` +
     `🔐 *Accede a tu credencial digital con código QR scannable:*\n${ticketUrl}\n\n` +
+    `🛡️ *Seguridad y Confianza:* Tu transacción ha sido procesada de manera segura a nombre de *Baiosfera* (nuestro operador tecnológico y fiduciario oficial).\n\n` +
     `📍 *Lugar:* Centro Cultural El Placer de Compartir, Bogotá. Presenta tu credencial digital en puerta.\n\n` +
     `_«El acceso se concede, no se anuncia.»_\n\n` +
     `🏛️ *Dirección & Producción • The Corset Society*`;
@@ -338,6 +339,9 @@ export async function notifyNewTicket(
             <a href="${ticketUrl}" style="background-color: #c5a059; color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Ver Credencial Digital con QR</a>
           </div>
           <p style="font-size: 12px; color: #aaa;">Recuerda presentar el código QR scannable de tu credencial al ingresar. Ubicación: Centro Cultural El Placer de Compartir, Bogotá.</p>
+          <div style="margin-top: 20px; padding: 10px; background-color: #1a0b1c; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 6px; text-align: center;">
+            <p style="margin: 0; font-size: 11px; color: #ead397;">🛡️ <strong>Seguridad Transaccional:</strong> Pagos y transacciones procesadas con seguridad a nombre de <strong>Baiosfera</strong>.</p>
+          </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.3); margin: 30px 0;" />
         <p style="font-size: 11px; color: #888;">El acceso se concede, no se anuncia. Bogotá, Colombia.</p>

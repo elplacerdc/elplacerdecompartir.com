@@ -1,296 +1,1188 @@
 ---
-// src/pages/admin/index.astro - Dashboard de Administración y Control General
+// src/pages/admin/index.astro - Dashboard de Administración y Control General Single-Page Luxury
 import Layout from "../../layouts/Layout.astro";
+import { verifyAdminSessionToken } from "../../services/adminAuth";
+
+const token = Astro.cookies.get("admin_token")?.value;
+const isAuthenticated = verifyAdminSessionToken(token);
 ---
 
 <Layout title="Panel de Administración — El Placer de Compartir" isCorset={false}>
-  <main class="min-h-screen bg-[#0d050f] text-[#f7f4ee] py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-7xl mx-auto space-y-10">
+  <main class="min-h-screen bg-[#140816] text-[#f7f4ee] py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto space-y-8">
 
-      <!-- Header -->
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#c5a059]/25 pb-6 gap-4">
-        <div>
-          <span class="inline-block py-1 px-3 rounded-full bg-[#c5a059]/10 border border-[#c5a059]/30 text-[#ead397] text-xs uppercase tracking-[0.2em] font-medium mb-2">
-            Dirección & Control General
-          </span>
-          <h1 class="text-3xl font-serif font-bold text-[#ead397]">
-            Dashboard de Administración
-          </h1>
-          <p class="text-xs text-[#f7f4ee]/70 mt-1">
-            Métricas de la comunidad, gestión de embajadores y validación de asistencias QR.
-          </p>
+      {!isAuthenticated ? (
+        <!-- Luxury Password Gate Modal/Card -->
+        <div class="min-h-[70vh] flex items-center justify-center">
+          <div class="w-full max-w-md p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#250e29] to-[#1c081e] border border-[#c5a059]/40 shadow-[0_12px_45px_rgba(0,0,0,0.6)] text-center space-y-6">
+            <div class="w-16 h-16 mx-auto rounded-full bg-[#c5a059]/15 border border-[#c5a059]/40 flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(197,160,89,0.3)]">
+              🔒
+            </div>
+
+            <div>
+              <span class="text-[10px] uppercase tracking-[0.25em] text-[#ead397] font-semibold block mb-1">
+                Acceso Restringido • Dirección
+              </span>
+              <h1 class="text-2xl font-serif font-bold text-[#f7f4ee]">
+                Panel de Administración
+              </h1>
+              <p class="text-xs text-[#f7f4ee]/70 mt-2">
+                Ingresa la contraseña de seguridad para gestionar métricas, validar accesos QR y administrar la comunidad.
+              </p>
+            </div>
+
+            <form id="login-form" class="space-y-4 text-left">
+              <div>
+                <label for="admin-password-input" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1.5">
+                  Contraseña Maestra
+                </label>
+                <input 
+                  type="password" 
+                  id="admin-password-input" 
+                  required
+                  placeholder="••••••••••••" 
+                  class="w-full px-4 py-3 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-[#ead397] text-sm focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059]"
+                  autofocus
+                />
+              </div>
+
+              <div id="login-error" class="hidden p-3 rounded-lg bg-[#b71c1c]/25 border border-[#ef5350]/50 text-xs text-[#ef5350] text-center"></div>
+
+              <button 
+                type="submit" 
+                id="btn-login-submit"
+                class="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-lg transition-all"
+              >
+                Acceder al Panel
+              </button>
+            </form>
+
+            <p class="text-[11px] text-[#f7f4ee]/40">
+              El acceso no autorizado está estrictamente monitoreado y registrado.
+            </p>
+          </div>
         </div>
+      ) : (
+        <!-- Dashboard Single-Page Luxury Activo -->
+        <div class="space-y-8">
+          
+          <!-- Header Bar -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#c5a059]/25 pb-6 gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="py-1 px-3 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-[#ead397] text-[10px] uppercase tracking-[0.2em] font-semibold">
+                  Dirección & Control General
+                </span>
+                <span class="text-xs text-[#81c784] font-medium flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Sesión Activa
+                </span>
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-serif font-bold text-[#ead397]">
+                Dashboard de Administración
+              </h1>
+              <p class="text-xs text-[#f7f4ee]/70 mt-1">
+                Haz clic en cualquier tarjeta o fila para abrir el panel de gestión interactivo sin recargar la página.
+              </p>
+            </div>
 
-        <div class="flex items-center gap-3">
-          <button 
-            id="btn-refresh" 
-            class="px-4 py-2 rounded-lg text-xs font-serif font-bold uppercase tracking-wider bg-[#140816] border border-[#c5a059]/30 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
-          >
-            <span>↻</span> Actualizar Datos
-          </button>
-          <a 
-            href="/dashboard" 
-            class="px-4 py-2 rounded-lg text-xs font-serif font-semibold uppercase tracking-wider bg-[#c5a059] text-[#0d050f] hover:bg-[#ead397] transition-all"
-          >
-            Panel Embajadores →
-          </a>
-        </div>
-      </div>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button 
+                id="btn-change-password-modal" 
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#250e29] border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
+                title="Cambiar contraseña de acceso"
+              >
+                <span>🔑</span> Cambiar Clave
+              </button>
+              <button 
+                id="btn-refresh" 
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#250e29] border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
+                title="Actualizar datos en tiempo real"
+              >
+                <span>↻</span> Actualizar
+              </button>
+              <button 
+                id="btn-logout" 
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#3a111b] border border-[#ef5350]/40 text-[#ef5350] hover:bg-[#ef5350]/20 transition-all"
+                title="Cerrar sesión segura"
+              >
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
 
-      <!-- KPI Metrics Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
-          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Total Leads</span>
-          <span id="kpi-leads" class="text-3xl font-serif font-bold text-[#ead397]">...</span>
-          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Registros totales</span>
-        </div>
-
-        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
-          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Embajadores</span>
-          <span id="kpi-affiliates" class="text-3xl font-serif font-bold text-[#c5a059]">...</span>
-          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Afiliados activos</span>
-        </div>
-
-        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
-          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Clics en Links</span>
-          <span id="kpi-clicks" class="text-3xl font-serif font-bold text-[#81c784]">...</span>
-          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Interacciones</span>
-        </div>
-
-        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
-          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Pases Emitidos</span>
-          <span id="kpi-tickets" class="text-3xl font-serif font-bold text-[#e57373]">...</span>
-          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Tickets y reservas</span>
-        </div>
-
-        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center col-span-2 md:col-span-1">
-          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Asistencias QR</span>
-          <span id="kpi-checkins" class="text-3xl font-serif font-bold text-[#ba68c8]">...</span>
-          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Validadas en puerta</span>
-        </div>
-      </div>
-
-      <!-- QR Scanner & Check-in Desk Section -->
-      <div class="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#250F22] via-[#140816] to-[#1E0A1A] border border-[#c5a059]/50 shadow-xl space-y-6">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-[#c5a059]/20 pb-4">
+          <!-- KPI Metrics Grid (100% Clickeables e interactivas) -->
           <div>
-            <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Control de Acceso Físico</span>
-            <h2 class="text-xl font-serif font-bold text-[#ead397]">Validador de Asistencia y Escáner QR</h2>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold">Métricas Globales (Toca una tarjeta para ver detalle y gestionar)</span>
+              <span class="text-[11px] text-[#f7f4ee]/50 italic">Single-Page Interactivo</span>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+              
+              <!-- KPI 1: Leads -->
+              <div 
+                id="card-kpi-leads" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Total Leads</span>
+                <span id="kpi-leads" class="text-2xl sm:text-3xl font-serif font-bold text-[#ead397] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Ver lista y añadir →</span>
+              </div>
+
+              <!-- KPI 2: Embajadores -->
+              <div 
+                id="card-kpi-affiliates" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Embajadores</span>
+                <span id="kpi-affiliates" class="text-2xl sm:text-3xl font-serif font-bold text-[#c5a059] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Ver afiliados →</span>
+              </div>
+
+              <!-- KPI 3: Pases Emitidos -->
+              <div 
+                id="card-kpi-tickets" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Pases Emitidos</span>
+                <span id="kpi-tickets" class="text-2xl sm:text-3xl font-serif font-bold text-[#e57373] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Ver todos los pases →</span>
+              </div>
+
+              <!-- KPI 4: Pendientes Efectivo / Reserva 40% -->
+              <div 
+                id="card-kpi-pending-cash" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#2b1021] to-[#1c081e] border border-[#ffb74d]/40 hover:border-[#ffb74d] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#ffb74d] block mb-1">Pendientes Efectivo</span>
+                <span id="kpi-pending-cash" class="text-2xl sm:text-3xl font-serif font-bold text-[#ffb74d] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#ffb74d] block mt-1 underline">Validar cobros →</span>
+              </div>
+
+              <!-- KPI 5: Asistencias QR -->
+              <div 
+                id="card-kpi-checkins" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Asistencias QR</span>
+                <span id="kpi-checkins" class="text-2xl sm:text-3xl font-serif font-bold text-[#81c784] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#81c784] block mt-1 underline">Historial en puerta →</span>
+              </div>
+
+              <!-- KPI 6: Recaudación Total -->
+              <div 
+                id="card-kpi-revenue" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Recaudación COP</span>
+                <span id="kpi-revenue" class="text-lg sm:text-xl font-serif font-bold text-[#ead397] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1">Seguridad Baiosfera</span>
+              </div>
+
+            </div>
           </div>
-          <span class="text-xs text-[#81c784] font-medium flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Terminal de recepción lista
-          </span>
+
+          <!-- Escáner QR de Cámara Automático & Control de Acceso -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#280f2d] via-[#1e0a22] to-[#250d28] border border-[#c5a059]/40 shadow-2xl space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#c5a059]/20 pb-4">
+              <div>
+                <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Control de Acceso Físico en Puerta</span>
+                <h2 class="text-xl sm:text-2xl font-serif font-bold text-[#ead397]">Validador de Asistencia y Escáner QR</h2>
+              </div>
+
+              <!-- Tabs de Modo de Escaneo -->
+              <div class="flex items-center gap-2 bg-[#0e0410] p-1.5 rounded-xl border border-[#c5a059]/30">
+                <button 
+                  type="button" 
+                  id="tab-camera-scan" 
+                  class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059] text-[#0e0410] transition-all"
+                >
+                  📷 Escáner Cámara Celular
+                </button>
+                <button 
+                  type="button" 
+                  id="tab-manual-scan" 
+                  class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#f7f4ee]/70 hover:text-white transition-all"
+                >
+                  ⌨️ Manual por Código
+                </button>
+              </div>
+            </div>
+
+            <!-- Panel 1: Escáner con Cámara Automático (Móvil / Web) -->
+            <div id="panel-camera-scanner" class="space-y-4">
+              <div class="max-w-md mx-auto relative rounded-2xl overflow-hidden border-2 border-[#c5a059]/60 shadow-[0_0_25px_rgba(197,160,89,0.25)] bg-[#0a040b]">
+                <video id="qr-video-stream" class="w-full h-72 sm:h-80 object-cover" autoplay playsinline muted></video>
+                
+                <!-- Retícula de escaneo visual -->
+                <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  <div class="w-56 h-56 border-2 border-[#c5a059] rounded-2xl relative shadow-[0_0_20px_rgba(197,160,89,0.4)] animate-pulse">
+                    <span class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#ead397]"></span>
+                    <span class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#ead397]"></span>
+                    <span class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#ead397]"></span>
+                    <span class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#ead397]"></span>
+                  </div>
+                </div>
+
+                <div id="camera-loading-overlay" class="absolute inset-0 bg-[#0a040b] flex flex-col items-center justify-center p-4 text-center space-y-3">
+                  <span class="text-3xl">📷</span>
+                  <p class="text-xs text-[#ead397]">Iniciando cámara del dispositivo...</p>
+                  <button 
+                    type="button" 
+                    id="btn-start-camera" 
+                    class="px-4 py-2 rounded-xl bg-[#c5a059] text-[#0a040b] text-xs font-bold uppercase tracking-wider"
+                  >
+                    Activar Cámara
+                  </button>
+                </div>
+              </div>
+
+              <p class="text-center text-xs text-[#f7f4ee]/70">
+                Apunta la cámara al código QR de la credencial. Se valida <strong class="text-[#ead397]">automáticamente</strong> sin tocar nada ni copiar/pegar.
+              </p>
+            </div>
+
+            <!-- Panel 2: Ingreso Manual -->
+            <div id="panel-manual-scanner" class="hidden">
+              <form id="checkin-form" class="flex flex-col sm:flex-row gap-3">
+                <input 
+                  type="text" 
+                  id="input-ticket-hash" 
+                  placeholder="Pega o escribe el Ticket Hash o código QR (ej: ELPLACERDC-EVENT-c188...)" 
+                  class="flex-1 px-4 py-3 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-[#ead397] font-mono text-sm placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059]"
+                />
+                <button 
+                  type="submit" 
+                  id="btn-checkin-submit" 
+                  class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-md transition-all whitespace-nowrap"
+                >
+                  Validar Asistencia
+                </button>
+              </form>
+            </div>
+
+            <!-- Resultado del Escaneo In-Place con Feedback Háptico / Visual -->
+            <div id="checkin-result" class="hidden p-4 rounded-2xl text-sm transition-all duration-300"></div>
+          </div>
+
+          <!-- Tablas Resumen Rápidas con Botón de Creación Manual -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Embajadores Table Card -->
+            <div class="p-6 rounded-3xl bg-[#1c081e] border border-[#c5a059]/30 space-y-4 shadow-xl">
+              <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+                <div>
+                  <h3 class="text-lg font-serif font-bold text-[#ead397]">Embajadores Oficiales</h3>
+                  <span class="text-xs text-[#f7f4ee]/60">Clic en un embajador para ver o editar</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button 
+                    id="btn-add-affiliate-modal" 
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 hover:bg-[#c5a059]/30 transition-all"
+                  >
+                    + Nuevo Embajador
+                  </button>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto max-h-72">
+                <table class="w-full text-left text-xs">
+                  <thead class="sticky top-0 bg-[#1c081e] border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
+                    <tr>
+                      <th class="py-2.5 px-2">Alias</th>
+                      <th class="py-2.5 px-2">Contacto</th>
+                      <th class="py-2.5 px-2 text-center">Clics</th>
+                      <th class="py-2.5 px-2 text-center">Ventas</th>
+                      <th class="py-2.5 px-2 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="affiliates-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
+                    <tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">Cargando embajadores...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Leads Table Card -->
+            <div class="p-6 rounded-3xl bg-[#1c081e] border border-[#c5a059]/30 space-y-4 shadow-xl">
+              <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+                <div>
+                  <h3 class="text-lg font-serif font-bold text-[#ead397]">Registros Recientes (Leads)</h3>
+                  <span class="text-xs text-[#f7f4ee]/60">Clic en un lead para ver ficha o eliminar</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button 
+                    id="btn-add-lead-modal" 
+                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 hover:bg-[#c5a059]/30 transition-all"
+                  >
+                    + Nuevo Lead
+                  </button>
+                </div>
+              </div>
+
+              <div class="overflow-x-auto max-h-72">
+                <table class="w-full text-left text-xs">
+                  <thead class="sticky top-0 bg-[#1c081e] border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
+                    <tr>
+                      <th class="py-2.5 px-2">Nombre / Alias</th>
+                      <th class="py-2.5 px-2">WhatsApp</th>
+                      <th class="py-2.5 px-2">Origen</th>
+                      <th class="py-2.5 px-2 text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="leads-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
+                    <tr><td colspan="4" class="py-4 text-center text-[#f7f4ee]/40">Cargando registros...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+
         </div>
-
-        <form id="checkin-form" class="flex flex-col sm:flex-row gap-3">
-          <input 
-            type="text" 
-            id="input-ticket-hash" 
-            placeholder="Pega o escanea el Ticket Hash o código QR (ej: ELPLACERDC-EVENT-c188...)" 
-            class="flex-1 px-4 py-3 rounded-xl bg-[#0a0608] border border-[#c5a059]/40 text-[#ead397] font-mono text-sm placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059]"
-            autofocus
-            required
-          />
-          <button 
-            type="submit" 
-            id="btn-checkin-submit" 
-            class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-md transition-all whitespace-nowrap"
-          >
-            Validar Asistencia
-          </button>
-        </form>
-
-        <div id="checkin-result" class="hidden p-4 rounded-xl text-sm transition-all"></div>
-      </div>
-
-      <!-- Tables Grid: Embajadores y Leads -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        <!-- Affiliates Table -->
-        <div class="p-6 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-serif font-bold text-[#ead397]">Embajadores Oficiales</h3>
-            <span class="text-xs text-[#c5a059] font-mono" id="affiliates-count-label">0 embajadores</span>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
-                <tr>
-                  <th class="py-2.5 px-2">Alias / Código</th>
-                  <th class="py-2.5 px-2">Contacto</th>
-                  <th class="py-2.5 px-2 text-center">Clics</th>
-                  <th class="py-2.5 px-2 text-center">Ventas</th>
-                  <th class="py-2.5 px-2 text-center">Entradas</th>
-                </tr>
-              </thead>
-              <tbody id="affiliates-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
-                <tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">Cargando embajadores...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Recent Leads Table -->
-        <div class="p-6 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-serif font-bold text-[#ead397]">Últimos Registros (Leads)</h3>
-            <span class="text-xs text-[#c5a059] font-mono" id="leads-count-label">0 registros</span>
-          </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-              <thead class="border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
-                <tr>
-                  <th class="py-2.5 px-2">Nombre / Alias</th>
-                  <th class="py-2.5 px-2">WhatsApp</th>
-                  <th class="py-2.5 px-2">Rol</th>
-                  <th class="py-2.5 px-2">Canal / Tags</th>
-                  <th class="py-2.5 px-2 text-right">Fecha</th>
-                </tr>
-              </thead>
-              <tbody id="leads-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
-                <tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">Cargando registros...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </div>
+      )}
 
     </div>
   </main>
+
+  <!-- MODAL / DRAWER INTERACTIVO (SINGLE-PAGE) PARA DETALLE Y GESTIÓN CRUD -->
+  <div id="drawer-container" class="hidden fixed inset-0 z-50 overflow-hidden">
+    <!-- Backdrop oscuro con blur -->
+    <div id="drawer-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div class="w-screen max-w-3xl bg-[#1c081e] border-l border-[#c5a059]/40 shadow-2xl flex flex-col">
+        
+        <!-- Drawer Header -->
+        <div class="p-6 border-b border-[#c5a059]/25 flex items-center justify-between bg-[#250e29]">
+          <div>
+            <span id="drawer-badge" class="text-[10px] uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Gestión Interactiva</span>
+            <h2 id="drawer-title" class="text-xl font-serif font-bold text-[#ead397]">Detalle de Registros</h2>
+          </div>
+          <button 
+            id="drawer-close" 
+            class="p-2 rounded-xl text-[#f7f4ee]/70 hover:text-white hover:bg-white/10 transition-colors text-lg"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Drawer Search / Action Bar -->
+        <div class="p-4 border-b border-[#c5a059]/15 flex items-center justify-between gap-3 bg-[#140816]">
+          <input 
+            type="text" 
+            id="drawer-search" 
+            placeholder="Buscar por nombre, teléfono, hash..." 
+            class="flex-1 px-3.5 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] placeholder-[#f7f4ee]/40 focus:outline-none focus:border-[#c5a059]"
+          />
+          <button 
+            id="drawer-btn-add-new" 
+            class="px-4 py-2 rounded-xl bg-[#c5a059] text-[#0a050c] text-xs font-bold uppercase tracking-wider hover:brightness-110 whitespace-nowrap shadow-sm"
+          >
+            + Añadir
+          </button>
+        </div>
+
+        <!-- Drawer Content Area (Scrollable Table & Form) -->
+        <div id="drawer-content" class="flex-1 overflow-y-auto p-6 space-y-4">
+          <!-- Dynamically populated -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CAMBIAR CONTRASEÑA ADMIN -->
+  <div id="modal-password" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-md p-6 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <h3 class="text-lg font-serif font-bold text-[#ead397]">Cambiar Contraseña Maestra</h3>
+        <button id="modal-password-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
+      </div>
+
+      <form id="form-change-password" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider mb-1">Contraseña Actual</label>
+          <input type="password" id="input-cur-pwd" required class="w-full px-4 py-2.5 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-sm text-[#ead397] focus:outline-none focus:border-[#c5a059]" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider mb-1">Nueva Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="input-new-pwd" minlength="6" required class="w-full px-4 py-2.5 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-sm text-[#ead397] focus:outline-none focus:border-[#c5a059]" />
+        </div>
+        <div id="change-pwd-status" class="hidden p-3 rounded-lg text-xs"></div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110">
+          Guardar Nueva Contraseña
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREACIÓN MANUAL GENÉRICA -->
+  <div id="modal-crud-create" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-lg p-6 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <h3 id="modal-crud-title" class="text-lg font-serif font-bold text-[#ead397]">Añadir Nuevo Registro</h3>
+        <button id="modal-crud-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
+      </div>
+      <form id="form-crud-create" class="space-y-4">
+        <div id="crud-fields-container" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+        <div id="crud-create-status" class="hidden p-3 rounded-lg text-xs"></div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110">
+          Guardar Registro
+        </button>
+      </form>
+    </div>
+  </div>
+
 </Layout>
 
 <script>
-  const kpiLeads = document.getElementById("kpi-leads");
-  const kpiAffiliates = document.getElementById("kpi-affiliates");
-  const kpiClicks = document.getElementById("kpi-clicks");
-  const kpiTickets = document.getElementById("kpi-tickets");
-  const kpiCheckins = document.getElementById("kpi-checkins");
+  // State Store
+  let cachedMetrics: any = null;
+  let activeDrawerType: "leads" | "affiliates" | "tickets" | "pending_cash" | "checkins" | null = null;
+  let videoStream: MediaStream | null = null;
+  let qrScanActive = false;
+  let scanCooldown = false;
+
+  // DOM Elements
+  const loginForm = document.getElementById("login-form") as HTMLFormElement;
+  const adminPasswordInput = document.getElementById("admin-password-input") as HTMLInputElement;
+  const loginError = document.getElementById("login-error");
+  const btnLogout = document.getElementById("btn-logout");
   const btnRefresh = document.getElementById("btn-refresh");
 
+  // KPIs
+  const kpiLeads = document.getElementById("kpi-leads");
+  const kpiAffiliates = document.getElementById("kpi-affiliates");
+  const kpiTickets = document.getElementById("kpi-tickets");
+  const kpiPendingCash = document.getElementById("kpi-pending-cash");
+  const kpiCheckins = document.getElementById("kpi-checkins");
+  const kpiRevenue = document.getElementById("kpi-revenue");
+
+  // KPI Cards (Clickable)
+  const cardLeads = document.getElementById("card-kpi-leads");
+  const cardAffiliates = document.getElementById("card-kpi-affiliates");
+  const cardTickets = document.getElementById("card-kpi-tickets");
+  const cardPendingCash = document.getElementById("card-kpi-pending-cash");
+  const cardCheckins = document.getElementById("card-kpi-checkins");
+
+  // Scanner Elements
+  const tabCameraScan = document.getElementById("tab-camera-scan");
+  const tabManualScan = document.getElementById("tab-manual-scan");
+  const panelCameraScanner = document.getElementById("panel-camera-scanner");
+  const panelManualScanner = document.getElementById("panel-manual-scanner");
+  const qrVideoStream = document.getElementById("qr-video-stream") as HTMLVideoElement;
+  const cameraLoadingOverlay = document.getElementById("camera-loading-overlay");
+  const btnStartCamera = document.getElementById("btn-start-camera");
   const checkinForm = document.getElementById("checkin-form") as HTMLFormElement;
   const inputTicketHash = document.getElementById("input-ticket-hash") as HTMLInputElement;
   const btnCheckinSubmit = document.getElementById("btn-checkin-submit") as HTMLButtonElement;
-  const checkinResult = document.getElementById("checkin-result") as HTMLElement;
+  const checkinResult = document.getElementById("checkin-result");
 
+  // Drawer Elements
+  const drawerContainer = document.getElementById("drawer-container");
+  const drawerBackdrop = document.getElementById("drawer-backdrop");
+  const drawerClose = document.getElementById("drawer-close");
+  const drawerTitle = document.getElementById("drawer-title");
+  const drawerBadge = document.getElementById("drawer-badge");
+  const drawerSearch = document.getElementById("drawer-search") as HTMLInputElement;
+  const drawerBtnAddNew = document.getElementById("drawer-btn-add-new");
+  const drawerContent = document.getElementById("drawer-content");
+
+  // Password Modal
+  const btnChangePasswordModal = document.getElementById("btn-change-password-modal");
+  const modalPassword = document.getElementById("modal-password");
+  const modalPasswordClose = document.getElementById("modal-password-close");
+  const formChangePassword = document.getElementById("form-change-password") as HTMLFormElement;
+  const inputCurPwd = document.getElementById("input-cur-pwd") as HTMLInputElement;
+  const inputNewPwd = document.getElementById("input-new-pwd") as HTMLInputElement;
+  const changePwdStatus = document.getElementById("change-pwd-status");
+
+  // CRUD Modal
+  const modalCrudCreate = document.getElementById("modal-crud-create");
+  const modalCrudClose = document.getElementById("modal-crud-close");
+  const modalCrudTitle = document.getElementById("modal-crud-title");
+  const formCrudCreate = document.getElementById("form-crud-create") as HTMLFormElement;
+  const crudFieldsContainer = document.getElementById("crud-fields-container");
+  const crudCreateStatus = document.getElementById("crud-create-status");
+  const btnAddAffiliateModal = document.getElementById("btn-add-affiliate-modal");
+  const btnAddLeadModal = document.getElementById("btn-add-lead-modal");
+
+  // Tables
   const affiliatesTableBody = document.getElementById("affiliates-table-body");
   const leadsTableBody = document.getElementById("leads-table-body");
-  const affiliatesCountLabel = document.getElementById("affiliates-count-label");
-  const leadsCountLabel = document.getElementById("leads-count-label");
 
+  // 1. LOGIN HANDLER
+  loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pwd = adminPasswordInput.value.trim();
+    if (!pwd) return;
+
+    try {
+      const res = await fetch("/api/admin/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.reload();
+      } else {
+        if (loginError) {
+          loginError.textContent = data.error || "Contraseña incorrecta";
+          loginError.classList.remove("hidden");
+        }
+      }
+    } catch (e: any) {
+      if (loginError) {
+        loginError.textContent = "Error al conectar con el servidor";
+        loginError.classList.remove("hidden");
+      }
+    }
+  });
+
+  // 2. LOGOUT HANDLER
+  btnLogout?.addEventListener("click", async () => {
+    await fetch("/api/admin/auth/logout", { method: "POST" });
+    window.location.reload();
+  });
+
+  // 3. LOAD METRICS IN-PLACE
   async function loadMetrics() {
     try {
       const res = await fetch("/api/admin/metrics");
+      if (res.status === 401) {
+        if (btnLogout) {
+          window.location.reload();
+        }
+        return;
+      }
       const data = await res.json();
+      if (!data.success) return;
 
-      if (data.success) {
-        if (kpiLeads) kpiLeads.textContent = data.counts.totalLeads.toString();
-        if (kpiAffiliates) kpiAffiliates.textContent = data.counts.totalAffiliates.toString();
-        if (kpiClicks) kpiClicks.textContent = data.counts.totalClicks.toString();
-        if (kpiTickets) kpiTickets.textContent = data.counts.totalTickets.toString();
-        if (kpiCheckins) kpiCheckins.textContent = data.counts.totalCheckins.toString();
+      cachedMetrics = data;
 
-        if (affiliatesCountLabel) affiliatesCountLabel.textContent = `${data.affiliates.length} activos`;
-        if (leadsCountLabel) leadsCountLabel.textContent = `${data.leads.length} recientes`;
+      if (kpiLeads) kpiLeads.textContent = data.counts.totalLeads.toString();
+      if (kpiAffiliates) kpiAffiliates.textContent = data.counts.totalAffiliates.toString();
+      if (kpiTickets) kpiTickets.textContent = data.counts.totalTickets.toString();
+      if (kpiPendingCash) kpiPendingCash.textContent = data.counts.pendingCash.toString();
+      if (kpiCheckins) kpiCheckins.textContent = data.counts.totalCheckins.toString();
+      if (kpiRevenue) kpiRevenue.textContent = `$${Number(data.counts.totalRevenue).toLocaleString("es-CO")}`;
 
-        // Render Affiliates
-        if (affiliatesTableBody) {
-          if (data.affiliates.length === 0) {
-            affiliatesTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">No hay embajadores registrados aún.</td></tr>`;
-          } else {
-            affiliatesTableBody.innerHTML = data.affiliates.map((a: any) => `
-              <tr class="hover:bg-[#1f0b24]/40 transition-colors">
-                <td class="py-2.5 px-2 font-mono text-[#ead397] font-semibold">${a.alias}</td>
-                <td class="py-2.5 px-2">${a.whatsapp || a.email || "—"}</td>
-                <td class="py-2.5 px-2 text-center font-mono">${a.clicks}</td>
-                <td class="py-2.5 px-2 text-center font-mono text-[#81c784]">${a.referidos_pagados}</td>
-                <td class="py-2.5 px-2 text-center font-mono text-[#ead397] font-bold">${a.entradas_ganadas}</td>
-              </tr>
-            `).join("");
-          }
-        }
+      renderAffiliatesTable(data.affiliates);
+      renderLeadsTable(data.leads);
 
-        // Render Leads
-        if (leadsTableBody) {
-          if (data.leads.length === 0) {
-            leadsTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">No hay leads registrados aún.</td></tr>`;
-          } else {
-            leadsTableBody.innerHTML = data.leads.map((l: any) => {
-              const tags = (l.metadata?.tags || []).join(", ") || l.origen || "general";
-              const dateStr = new Date(l.created_at).toLocaleDateString("es-CO", { month: "short", day: "numeric" });
-              return `
-                <tr class="hover:bg-[#1f0b24]/40 transition-colors">
-                  <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
-                  <td class="py-2.5 px-2 font-mono text-[11px]">${l.whatsapp || "—"}</td>
-                  <td class="py-2.5 px-2 text-[11px] uppercase">${l.rol || "otro"}</td>
-                  <td class="py-2.5 px-2 text-[10px] text-[#ead397]">${tags}</td>
-                  <td class="py-2.5 px-2 text-right text-[11px] text-[#f7f4ee]/50 font-mono">${dateStr}</td>
-                </tr>
-              `;
-            }).join("");
-          }
-        }
-
+      // If drawer is open, re-render it
+      if (activeDrawerType) {
+        renderDrawer(activeDrawerType);
       }
     } catch (e) {
-      console.error("Error loading admin metrics:", e);
+      console.error("[Admin Metrics Err]:", e);
     }
   }
 
-  // QR Check-in form handler
-  checkinForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const raw = inputTicketHash.value.trim();
-    if (!raw) return;
+  // 4. RENDER HOMEPAGE TABLES WITH DELETE ACTIONS
+  function renderAffiliatesTable(affiliates: any[]) {
+    if (!affiliatesTableBody) return;
+    if (affiliates.length === 0) {
+      affiliatesTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">No hay embajadores registrados aún.</td></tr>`;
+      return;
+    }
 
-    btnCheckinSubmit.disabled = true;
-    btnCheckinSubmit.textContent = "Validando...";
+    affiliatesTableBody.innerHTML = affiliates.slice(0, 10).map((a) => `
+      <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-affiliate-id="${a.id}">
+        <td class="py-2.5 px-2 font-mono text-[#ead397] font-semibold">${a.alias}</td>
+        <td class="py-2.5 px-2">${a.whatsapp || a.email || "—"}</td>
+        <td class="py-2.5 px-2 text-center font-mono">${a.clicks || 0}</td>
+        <td class="py-2.5 px-2 text-center font-mono text-[#81c784]">${a.referidos_pagados || 0}</td>
+        <td class="py-2.5 px-2 text-right">
+          <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="affiliate" data-id="${a.id}">Eliminar</button>
+        </td>
+      </tr>
+    `).join("");
+
+    bindDeleteButtons();
+  }
+
+  function renderLeadsTable(leads: any[]) {
+    if (!leadsTableBody) return;
+    if (leads.length === 0) {
+      leadsTableBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-[#f7f4ee]/40">No hay leads registrados aún.</td></tr>`;
+      return;
+    }
+
+    leadsTableBody.innerHTML = leads.slice(0, 10).map((l) => `
+      <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-lead-id="${l.id}">
+        <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
+        <td class="py-2.5 px-2 font-mono text-[11px]">${l.whatsapp || l.email || "—"}</td>
+        <td class="py-2.5 px-2 text-[10px] text-[#ead397]">${l.origen || "general"}</td>
+        <td class="py-2.5 px-2 text-right">
+          <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}">Eliminar</button>
+        </td>
+      </tr>
+    `).join("");
+
+    bindDeleteButtons();
+  }
+
+  function bindDeleteButtons() {
+    document.querySelectorAll(".btn-delete-record").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const entity = btn.getAttribute("data-entity");
+        const id = btn.getAttribute("data-id");
+        if (!confirm(`¿Estás seguro de eliminar este registro de ${entity}?`)) return;
+
+        try {
+          const res = await fetch(`/api/admin/records?entity=${entity}&id=${id}`, { method: "DELETE" });
+          const data = await res.json();
+          if (data.success) {
+            loadMetrics();
+          } else {
+            alert(data.error || "No se pudo eliminar el registro");
+          }
+        } catch (err: any) {
+          alert("Error de conexión al eliminar");
+        }
+      });
+    });
+  }
+
+  // 5. DRAWER SINGLE-PAGE SYSTEM
+  function openDrawer(type: "leads" | "affiliates" | "tickets" | "pending_cash" | "checkins") {
+    activeDrawerType = type;
+    drawerContainer?.classList.remove("hidden");
+    renderDrawer(type);
+  }
+
+  function closeDrawer() {
+    activeDrawerType = null;
+    drawerContainer?.classList.add("hidden");
+  }
+
+  drawerBackdrop?.addEventListener("click", closeDrawer);
+  drawerClose?.addEventListener("click", closeDrawer);
+
+  cardLeads?.addEventListener("click", () => openDrawer("leads"));
+  cardAffiliates?.addEventListener("click", () => openDrawer("affiliates"));
+  cardTickets?.addEventListener("click", () => openDrawer("tickets"));
+  cardPendingCash?.addEventListener("click", () => openDrawer("pending_cash"));
+  cardCheckins?.addEventListener("click", () => openDrawer("checkins"));
+
+  function renderDrawer(type: string) {
+    if (!drawerContent || !cachedMetrics) return;
+    const filter = (drawerSearch?.value || "").toLowerCase().trim();
+
+    if (type === "leads") {
+      if (drawerBadge) drawerBadge.textContent = "Comunidad & Registros";
+      if (drawerTitle) drawerTitle.textContent = `Gestión de Leads (${cachedMetrics.leads.length})`;
+      
+      const filtered = cachedMetrics.leads.filter((l: any) => 
+        (l.alias_nombre || "").toLowerCase().includes(filter) ||
+        (l.whatsapp || "").toLowerCase().includes(filter) ||
+        (l.email || "").toLowerCase().includes(filter)
+      );
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filtered.map((l: any) => `
+            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex items-center justify-between gap-4">
+              <div class="space-y-1">
+                <div class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Invitado"}</div>
+                <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
+                <div class="text-[11px] text-[#f7f4ee]/50">Rol: ${l.rol || "otro"} • Ciudad: ${l.ciudad || "Bogotá"} • Origen: ${l.origen || "general"}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}">
+                  🗑️ Borrar
+                </button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (type === "affiliates") {
+      if (drawerBadge) drawerBadge.textContent = "Red de Embajadores";
+      if (drawerTitle) drawerTitle.textContent = `Embajadores Activos (${cachedMetrics.affiliates.length})`;
+
+      const filtered = cachedMetrics.affiliates.filter((a: any) =>
+        (a.alias || "").toLowerCase().includes(filter) ||
+        (a.nombre || "").toLowerCase().includes(filter) ||
+        (a.whatsapp || "").toLowerCase().includes(filter)
+      );
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filtered.map((a: any) => `
+            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex items-center justify-between gap-4">
+              <div class="space-y-1">
+                <div class="font-bold text-[#ead397] text-sm">@${a.alias} <span class="text-xs font-normal text-[#f7f4ee]/60">(${a.nombre || ""})</span></div>
+                <div class="text-xs text-[#f7f4ee]/80 font-mono">Contacto: ${a.whatsapp || a.email || "—"}</div>
+                <div class="text-[11px] text-[#c5a059]">Clics: ${a.clicks || 0} • Ventas Pagadas: ${a.referidos_pagados || 0} • Pases Ganados: ${a.entradas_ganadas || 0}</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}">
+                  🗑️ Borrar
+                </button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (type === "tickets" || type === "pending_cash" || type === "checkins") {
+      let list = cachedMetrics.tickets;
+      if (type === "pending_cash") {
+        list = list.filter((t: any) => t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo");
+        if (drawerBadge) drawerBadge.textContent = "Gestión de Cobros";
+        if (drawerTitle) drawerTitle.textContent = `Pendientes Efectivo / Separación 40% (${list.length})`;
+      } else if (type === "checkins") {
+        list = list.filter((t: any) => t.estado === "asistido");
+        if (drawerBadge) drawerBadge.textContent = "Acceso en Puerta";
+        if (drawerTitle) drawerTitle.textContent = `Asistencias Validadas (${list.length})`;
+      } else {
+        if (drawerBadge) drawerBadge.textContent = "Boletería & Pases";
+        if (drawerTitle) drawerTitle.textContent = `Pases Emitidos Totales (${list.length})`;
+      }
+
+      const filtered = list.filter((t: any) =>
+        (t.alias_nombre || "").toLowerCase().includes(filter) ||
+        (t.ticket_hash || "").toLowerCase().includes(filter) ||
+        (t.evento || "").toLowerCase().includes(filter) ||
+        (t.tipo_entrada || "").toLowerCase().includes(filter)
+      );
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filtered.map((t: any) => {
+            const isPending = t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo";
+            return `
+              <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-[#ead397] text-sm">${t.alias_nombre || "Invitado"}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${t.estado === 'asistido' ? 'bg-[#2e7d32]/30 text-[#81c784]' : isPending ? 'bg-[#f57c00]/30 text-[#ffb74d]' : 'bg-[#c5a059]/20 text-[#ead397]'}">
+                      ${t.estado}
+                    </span>
+                  </div>
+                  <div class="text-xs text-[#f7f4ee]/80 font-mono">Evento: ${t.evento} • Pase: ${t.tipo_entrada} • Monto: $${Number(t.monto_pagado).toLocaleString("es-CO")}</div>
+                  <div class="text-[10px] text-[#c5a059] font-mono break-all">Hash: ${t.ticket_hash}</div>
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-center">
+                  ${isPending ? `
+                    <button type="button" class="btn-mark-paid px-3 py-1.5 rounded-lg bg-[#2e7d32] text-white text-xs font-bold hover:brightness-110" data-ticket-id="${t.id}">
+                      ✓ Confirmar Pago
+                    </button>
+                  ` : ''}
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="ticket" data-id="${t.id}">
+                    🗑️ Borrar
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      // Bind mark paid
+      document.querySelectorAll(".btn-mark-paid").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-ticket-id");
+          if (!confirm("¿Confirmar que este pago fue recibido en efectivo/cuenta?")) return;
+          try {
+            const res = await fetch("/api/admin/records", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ entity: "ticket", id, updates: { estado: "pagado" } }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              loadMetrics();
+            } else {
+              alert(data.error || "No se pudo actualizar el pase");
+            }
+          } catch (e: any) {
+            alert("Error al confirmar pago");
+          }
+        });
+      });
+    }
+
+    bindDeleteButtons();
+  }
+
+  drawerSearch?.addEventListener("input", () => {
+    if (activeDrawerType) renderDrawer(activeDrawerType);
+  });
+
+  // 6. MODAL CAMBIO DE CONTRASEÑA
+  btnChangePasswordModal?.addEventListener("click", () => {
+    modalPassword?.classList.remove("hidden");
+    if (changePwdStatus) changePwdStatus.classList.add("hidden");
+  });
+  modalPasswordClose?.addEventListener("click", () => modalPassword?.classList.add("hidden"));
+
+  formChangePassword?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const cur = inputCurPwd.value;
+    const nxt = inputNewPwd.value;
+    if (!nxt || nxt.length < 6) return;
+
+    try {
+      const res = await fetch("/api/admin/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: cur, newPassword: nxt }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (changePwdStatus) {
+          changePwdStatus.className = "p-3 rounded-lg text-xs bg-[#2e7d32]/25 text-[#81c784] block";
+          changePwdStatus.textContent = "✓ Contraseña actualizada correctamente";
+        }
+        setTimeout(() => modalPassword?.classList.add("hidden"), 1500);
+      } else {
+        if (changePwdStatus) {
+          changePwdStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+          changePwdStatus.textContent = data.error || "Error al actualizar contraseña";
+        }
+      }
+    } catch (e: any) {
+      if (changePwdStatus) {
+        changePwdStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+        changePwdStatus.textContent = "Error de conexión";
+      }
+    }
+  });
+
+  // 7. MODAL AÑADIR REGISTRO MANUALMENTE (CRUD)
+  drawerBtnAddNew?.addEventListener("click", () => openCrudModal(activeDrawerType || "leads"));
+  btnAddAffiliateModal?.addEventListener("click", () => openCrudModal("affiliates"));
+  btnAddLeadModal?.addEventListener("click", () => openCrudModal("leads"));
+  modalCrudClose?.addEventListener("click", () => modalCrudCreate?.classList.add("hidden"));
+
+  let currentCrudEntity = "lead";
+
+  function openCrudModal(type: string) {
+    if (!crudFieldsContainer || !modalCrudTitle) return;
+    modalCrudCreate?.classList.remove("hidden");
+    if (crudCreateStatus) crudCreateStatus.classList.add("hidden");
+
+    if (type === "affiliates") {
+      currentCrudEntity = "affiliate";
+      modalCrudTitle.textContent = "Nuevo Embajador Oficial";
+      crudFieldsContainer.innerHTML = `
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Alias / Código de Afiliado *</label>
+          <input type="text" id="crud-alias" required placeholder="ej: laura-vip" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Nombre Completo</label>
+          <input type="text" id="crud-nombre" placeholder="Nombre completo" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">WhatsApp</label>
+          <input type="tel" id="crud-wa" placeholder="310 000 0000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+      `;
+    } else if (type === "tickets" || type === "pending_cash") {
+      currentCrudEntity = "ticket";
+      modalCrudTitle.textContent = "Nuevo Pase / Reserva Manual";
+      crudFieldsContainer.innerHTML = `
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Evento</label>
+          <input type="text" id="crud-evento" value="luna_llena" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Tipo de Pase</label>
+          <select id="crud-tipo-entrada" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="general">General ($120.000)</option>
+            <option value="pareja">Pareja ($200.000)</option>
+            <option value="vip_individual">VIP Individual ($350.000)</option>
+            <option value="vip_pareja">VIP Pareja ($500.000)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Monto Pagado (COP)</label>
+          <input type="number" id="crud-monto" value="120000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Método de Pago</label>
+          <select id="crud-metodo" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia Bancaria</option>
+            <option value="dlocal_go">dLocal Go</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Estado</label>
+          <select id="crud-estado" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="pagado">Pagado</option>
+            <option value="pendiente">Pendiente (Reserva Efectivo)</option>
+          </select>
+        </div>
+      `;
+    } else {
+      currentCrudEntity = "lead";
+      modalCrudTitle.textContent = "Nuevo Lead Manual";
+      crudFieldsContainer.innerHTML = `
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Alias / Nombre *</label>
+          <input type="text" id="crud-alias-nombre" required placeholder="Nombre o alias" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">WhatsApp</label>
+          <input type="tel" id="crud-wa" placeholder="310 000 0000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Email</label>
+          <input type="email" id="crud-email" placeholder="correo@ejemplo.com" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Rol</label>
+          <select id="crud-rol" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="hombre_solo">Hombre Solo</option>
+            <option value="mujer_sola">Mujer Sola</option>
+            <option value="pareja">Pareja</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      `;
+    }
+  }
+
+  formCrudCreate?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    let payloadData: any = {};
+
+    if (currentCrudEntity === "affiliate") {
+      const aliasInput = document.getElementById("crud-alias") as HTMLInputElement;
+      const nombreInput = document.getElementById("crud-nombre") as HTMLInputElement;
+      const waInput = document.getElementById("crud-wa") as HTMLInputElement;
+      payloadData = { alias: aliasInput.value, nombre: nombreInput.value, whatsapp: waInput.value };
+    } else if (currentCrudEntity === "ticket") {
+      const evInput = document.getElementById("crud-evento") as HTMLInputElement;
+      const tipoInput = document.getElementById("crud-tipo-entrada") as HTMLSelectElement;
+      const montoInput = document.getElementById("crud-monto") as HTMLInputElement;
+      const metodoInput = document.getElementById("crud-metodo") as HTMLSelectElement;
+      const estadoInput = document.getElementById("crud-estado") as HTMLSelectElement;
+      payloadData = {
+        evento: evInput.value,
+        tipo_entrada: tipoInput.value,
+        monto_pagado: montoInput.value,
+        metodo_pago: metodoInput.value,
+        estado: estadoInput.value,
+      };
+    } else {
+      const aliasInput = document.getElementById("crud-alias-nombre") as HTMLInputElement;
+      const waInput = document.getElementById("crud-wa") as HTMLInputElement;
+      const emailInput = document.getElementById("crud-email") as HTMLInputElement;
+      const rolInput = document.getElementById("crud-rol") as HTMLSelectElement;
+      payloadData = { alias_nombre: aliasInput.value, whatsapp: waInput.value, email: emailInput.value, rol: rolInput.value };
+    }
+
+    try {
+      const res = await fetch("/api/admin/records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entity: currentCrudEntity, data: payloadData }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (crudCreateStatus) {
+          crudCreateStatus.className = "p-3 rounded-lg text-xs bg-[#2e7d32]/25 text-[#81c784] block";
+          crudCreateStatus.textContent = "✓ Registro creado exitosamente";
+        }
+        setTimeout(() => {
+          modalCrudCreate?.classList.add("hidden");
+          loadMetrics();
+        }, 800);
+      } else {
+        if (crudCreateStatus) {
+          crudCreateStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+          crudCreateStatus.textContent = data.error || "Error al crear registro";
+        }
+      }
+    } catch (e: any) {
+      if (crudCreateStatus) {
+        crudCreateStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+        crudCreateStatus.textContent = "Error de conexión al crear";
+      }
+    }
+  });
+
+  // 8. ESCÁNER QR DE CÁMARA AUTOMÁTICO
+  tabCameraScan?.addEventListener("click", () => {
+    tabCameraScan.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059] text-[#0e0410] transition-all";
+    tabManualScan!.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-[#f7f4ee]/70 hover:text-white transition-all";
+    panelCameraScanner?.classList.remove("hidden");
+    panelManualScanner?.classList.add("hidden");
+    startCamera();
+  });
+
+  tabManualScan?.addEventListener("click", () => {
+    tabManualScan.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059] text-[#0e0410] transition-all";
+    tabCameraScan!.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-[#f7f4ee]/70 hover:text-white transition-all";
+    panelCameraScanner?.classList.add("hidden");
+    panelManualScanner?.classList.remove("hidden");
+    stopCamera();
+  });
+
+  btnStartCamera?.addEventListener("click", startCamera);
+
+  async function startCamera() {
+    try {
+      if (videoStream) {
+        stopCamera();
+      }
+
+      cameraLoadingOverlay?.classList.remove("hidden");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+
+      videoStream = stream;
+      if (qrVideoStream) {
+        qrVideoStream.srcObject = stream;
+        qrVideoStream.setAttribute("playsinline", "true");
+        await qrVideoStream.play();
+        cameraLoadingOverlay?.classList.add("hidden");
+        qrScanActive = true;
+        scanLoop();
+      }
+    } catch (err: any) {
+      console.warn("Camera access denied or failed:", err);
+      if (cameraLoadingOverlay) {
+        cameraLoadingOverlay.innerHTML = `
+          <span class="text-2xl text-[#ef5350]">⚠️</span>
+          <p class="text-xs text-[#ef5350]">No se pudo acceder a la cámara (${err.name || "Permiso denegado"}).</p>
+          <button type="button" id="btn-retry-camera" class="px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold">Reintentar</button>
+        `;
+        document.getElementById("btn-retry-camera")?.addEventListener("click", startCamera);
+      }
+    }
+  }
+
+  function stopCamera() {
+    qrScanActive = false;
+    if (videoStream) {
+      videoStream.getTracks().forEach((t) => t.stop());
+      videoStream = null;
+    }
+  }
+
+  // Scan detection loop with native BarcodeDetector API
+  async function scanLoop() {
+    if (!qrScanActive || !qrVideoStream) return;
+
+    if (!scanCooldown && qrVideoStream.readyState === qrVideoStream.HAVE_ENOUGH_DATA) {
+      if ("BarcodeDetector" in window) {
+        try {
+          const barcodeDetector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
+          const barcodes = await barcodeDetector.detect(qrVideoStream);
+          if (barcodes.length > 0 && barcodes[0].rawValue) {
+            handleDetectedCode(barcodes[0].rawValue);
+          }
+        } catch (e) {
+          // ignore detection frame error
+        }
+      }
+    }
+
+    if (qrScanActive) {
+      requestAnimationFrame(scanLoop);
+    }
+  }
+
+  async function handleDetectedCode(raw: string) {
+    if (scanCooldown) return;
+    scanCooldown = true;
+
+    // Haptic feedback if supported
+    if ("vibrate" in navigator) {
+      navigator.vibrate([100, 50, 100]);
+    }
+
+    await validateCheckin(raw);
+
+    // Cooldown 3s before next scan
+    setTimeout(() => {
+      scanCooldown = false;
+    }, 3000);
+  }
+
+  // 9. CHECK-IN DISPATCHER
+  async function validateCheckin(rawCode: string) {
+    if (!checkinResult) return;
+
+    checkinResult.className = "p-4 rounded-2xl text-xs bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397] block";
+    checkinResult.textContent = `Validando código: ${rawCode.substring(0, 30)}...`;
 
     try {
       const res = await fetch("/api/admin/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ticket_hash: raw }),
+        body: JSON.stringify({ ticket_hash: rawCode }),
       });
       const data = await res.json();
 
       if (data.success) {
         if (data.already_checked_in) {
-          checkinResult.className = "p-4 rounded-xl text-xs bg-[#f57c00]/20 border border-[#f57c00]/50 text-[#ffb74d] block";
+          checkinResult.className = "p-5 rounded-2xl text-xs bg-[#f57c00]/25 border border-[#f57c00]/60 text-[#ffb74d] block shadow-lg animate-pulse";
           checkinResult.innerHTML = `
-            <div class="font-bold text-sm">⚠️ Entrada Previamente Utilizada</div>
-            <div class="mt-1">Titular: <strong>${data.ticket.titular}</strong> (${data.ticket.whatsapp || ""})</div>
-            <div class="text-[11px] opacity-80 mt-0.5">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
+            <div class="font-bold text-base flex items-center gap-2">⚠️ Entrada Previamente Utilizada</div>
+            <div class="mt-2 text-sm font-semibold text-white">Titular: ${data.ticket.titular} (${data.ticket.whatsapp || ""})</div>
+            <div class="text-xs opacity-90 mt-1">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
           `;
         } else {
-          checkinResult.className = "p-4 rounded-xl text-xs bg-[#2e7d32]/25 border border-[#4caf50]/50 text-[#81c784] block";
+          checkinResult.className = "p-5 rounded-2xl text-xs bg-[#2e7d32]/35 border border-[#4caf50]/70 text-[#81c784] block shadow-lg";
           checkinResult.innerHTML = `
-            <div class="font-bold text-sm">✨ ¡Acceso Concedido! Asistencia Registrada</div>
-            <div class="mt-1">Titular: <strong>${data.ticket.titular}</strong> (${data.ticket.whatsapp || ""})</div>
-            <div class="text-[11px] opacity-80 mt-0.5">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
+            <div class="font-bold text-base flex items-center gap-2">✨ ¡Acceso Concedido! Entrada Válida</div>
+            <div class="mt-2 text-sm font-semibold text-white">Titular: ${data.ticket.titular} (${data.ticket.whatsapp || ""})</div>
+            <div class="text-xs opacity-90 mt-1">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
           `;
-          loadMetrics(); // Refresh KPIs immediately
+          loadMetrics();
         }
-        inputTicketHash.value = "";
-        inputTicketHash.focus();
       } else {
-        checkinResult.className = "p-4 rounded-xl text-xs bg-[#b71c1c]/25 border border-[#ef5350]/50 text-[#ef5350] block";
-        checkinResult.textContent = `❌ ${data.error || "No se pudo validar la entrada"}`;
+        checkinResult.className = "p-5 rounded-2xl text-xs bg-[#b71c1c]/35 border border-[#ef5350]/70 text-[#ef5350] block shadow-lg";
+        checkinResult.innerHTML = `
+          <div class="font-bold text-base">❌ Entrada Inválida / No Encontrada</div>
+          <div class="mt-1">${data.error || "El código escaneado no corresponde a ningún ticket registrado."}</div>
+        `;
       }
     } catch (e: any) {
-      checkinResult.className = "p-4 rounded-xl text-xs bg-[#b71c1c]/25 border border-[#ef5350]/50 text-[#ef5350] block";
-      checkinResult.textContent = `❌ Error de conexión al validar`;
-    } finally {
-      btnCheckinSubmit.disabled = false;
-      btnCheckinSubmit.textContent = "Validar Asistencia";
+      checkinResult.className = "p-4 rounded-2xl text-xs bg-[#b71c1c]/35 border border-[#ef5350]/70 text-[#ef5350] block";
+      checkinResult.textContent = "❌ Error de conexión al validar entrada";
     }
+  }
+
+  // Manual Check-in Form Handler
+  checkinForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const raw = inputTicketHash.value.trim();
+    if (!raw) return;
+    btnCheckinSubmit.disabled = true;
+    btnCheckinSubmit.textContent = "Validando...";
+    await validateCheckin(raw);
+    inputTicketHash.value = "";
+    btnCheckinSubmit.disabled = false;
+    btnCheckinSubmit.textContent = "Validar Asistencia";
   });
 
-  btnRefresh?.addEventListener("click", () => {
+  btnRefresh?.addEventListener("click", loadMetrics);
+
+  // Initialize only if authenticated dashboard is active
+  if (btnLogout) {
     loadMetrics();
-  });
 
-  loadMetrics();
+    // If mobile or permission ready, start camera on load
+    if (tabCameraScan && window.innerWidth < 768) {
+      startCamera();
+    }
+  }
 </script>

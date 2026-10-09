@@ -42,7 +42,7 @@ const {
       <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
         WhatsApp / Teléfono <span class="text-[#b84a39]">*</span>
       </label>
-      <div class="flex gap-2">
+      <div class="flex flex-col sm:flex-row gap-2">
         <input
           type="tel"
           name="whatsapp"
@@ -54,7 +54,7 @@ const {
         <button
           type="button"
           id="btn-send-wa-otp"
-          class="px-3 py-2 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all whitespace-nowrap"
+          class="w-full sm:w-auto px-4 py-3 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all text-center"
         >
           Enviar Código
         </button>
@@ -89,7 +89,7 @@ const {
       <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
         Correo Electrónico {isVip ? <span class="text-[#c5a059]">(Requerido para membresía VIP *)</span> : <span class="text-[#f7f4ee]/40">(Opcional)</span>}
       </label>
-      <div class="flex gap-2">
+      <div class="flex flex-col sm:flex-row gap-2">
         <input
           type="email"
           name="email"
@@ -102,7 +102,7 @@ const {
           <button
             type="button"
             id="btn-send-email-otp"
-            class="px-3 py-2 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all whitespace-nowrap"
+            class="w-full sm:w-auto px-4 py-3 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all text-center"
           >
             Enviar Código
           </button>
@@ -428,7 +428,7 @@ const {
         if (data.affiliate_code) {
           affiliateMsg = `<div class="mt-3 p-3 bg-[#140816] rounded border border-[#c5a059]/40 text-xs text-left">
             <span class="text-[#ead397] font-semibold">Tu Enlace de Embajador:</span> 
-            <code class="text-[#c5a059] block mt-1 select-all font-mono">https://elplacerdc.com/?ref=${data.affiliate_code}</code>
+            <code class="text-[#c5a059] block mt-1 select-all font-mono">https://elplacerdecompartir.com/?ref=${data.affiliate_code}</code>
             <a href="/dashboard" class="inline-block mt-2 text-[#ead397] underline font-medium">Ir a mi Panel de Embajador (Sesión Iniciada) →</a>
           </div>`;
         }

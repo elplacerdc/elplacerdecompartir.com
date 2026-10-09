@@ -1,7 +1,16 @@
 import type { APIRoute } from "astro";
 import { pool } from "../../../db";
+import { verifyAdminSessionToken } from "../../../services/adminAuth";
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+  const token = cookies.get("admin_token")?.value;
+  if (!verifyAdminSessionToken(token)) {
+    return new Response(JSON.stringify({ success: false, error: "No autorizado" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const client = await pool.connect();
   try {
     const body = await request.json();

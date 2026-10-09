@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { BasePage } from "./base-page";
 
 test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () => {
-  test("Homepage: Header, Hero, Dirección, Corset Section and LeadForm", async ({ page }) => {
+  test("Homepage: Header Badges, Hero, Dirección, Corset Section and LeadForm", async ({ page }) => {
     const base = new BasePage(page);
     await base.goto("/");
 
@@ -11,12 +11,14 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     const h1 = page.locator("h1");
     await expect(h1).toContainText("El arte de compartir");
 
-    // Header Navigation Links
+    // Header Navigation Links & Badges
     await expect(page.getByRole("link", { name: "Manifiesto de Libertad" }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Centro Cultural" }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "The Corset Society" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Centro Cultural/i }).first()).toBeVisible();
+    await expect(page.getByText("Nuevo").first()).toBeVisible(); // Badge Nuevo
+    await expect(page.getByRole("link", { name: /The Corset Society/i }).first()).toBeVisible(); // Candado
     await expect(page.getByText("Comunidad").first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "🌕 LUNA LLENA" }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Luna Llena/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: "Panel Embajadores" }).first()).toBeVisible(); // Botón dedicado
 
     // WhatsApp CTA with guided copy
     const waLink = page.locator('header a[href*="wa.me/573194194785"]');
@@ -41,7 +43,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     // LeadForm with OTP controls
     await expect(page.getByText("ENTRADA A LA COMUNIDAD")).toBeVisible();
     await expect(page.getByPlaceholder("Ej: 310 123 4567 o +57 310...")).toBeVisible();
-    await expect(page.getByRole("button", { name: "ENVIAR CÓDIGO" })).toBeVisible();
+    await expect(page.locator("#btn-send-wa-otp")).toBeVisible();
     await expect(page.getByPlaceholder("Tu alias o nombre discreto")).toBeVisible();
   });
 
@@ -70,12 +72,31 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.locator("option[value='alquiler_espacio_privado']")).toContainText("Veladas y Fantasías");
   });
 
-  test("Admin Dashboard: Luxury Desk, KPIs and QR Check-in Terminal", async ({ page }) => {
+  test("Admin Dashboard: Password Gate, Login, KPIs and QR Check-in Terminal", async ({ page }) => {
     const base = new BasePage(page);
     await base.goto("/admin");
-    await expect(page.locator("h1")).toContainText("Dashboard de Administración");
+
+    // 1. Unauthenticated Password Gate
+    await expect(page.locator("#admin-password-input")).toBeVisible();
+
+    // 2. Perform Login with default password
+    await page.fill("#admin-password-input", "AdminPlacer2026!*");
+    await page.click("#btn-login-submit");
+
+    // 3. Authenticated Dashboard Elements
+    await expect(page.locator("h1")).toContainText("Dashboard de Administración", { timeout: 10000 });
     await expect(page.getByText("Total Leads").first()).toBeVisible();
+    await expect(page.getByText("Embajadores").first()).toBeVisible();
+    await expect(page.getByText("Pases Emitidos").first()).toBeVisible();
+    await expect(page.getByText("Pendientes Efectivo").first()).toBeVisible();
     await expect(page.getByText("Validador de Asistencia y Escáner QR")).toBeVisible();
+
+    // 4. Test Clickable Metric opens Drawer
+    await page.click("#card-kpi-leads");
+    await expect(page.locator("#drawer-container")).toBeVisible();
+    await expect(page.locator("#drawer-title")).toContainText("Gestión de Leads");
+    await page.click("#drawer-close");
+    await expect(page.locator("#drawer-container")).toBeHidden();
   });
 
   test("Galería Centro Cultural: Snap Carousels, Lobby Zone and Videos", async ({ page }) => {
@@ -134,7 +155,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.getByText("Solicitud de Admisión VIP").first()).toBeVisible();
   });
 
-  test("Dashboard: Ambassador Metrics, Link Customization and Milestones", async ({ page }) => {
+  test("Dashboard: Ambassador Metrics, Link Customization and Canonical Domain", async ({ page }) => {
     const base = new BasePage(page);
     await base.goto("/dashboard");
 
@@ -148,6 +169,11 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.locator("#metric-leads")).toBeAttached();
     await expect(page.locator("#metric-purchases")).toBeAttached();
     await expect(page.locator("#metric-tickets")).toBeAttached();
+
+    // Verify canonical domain elplacerdecompartir.com is used (and NO elplacerdc.com)
+    const content = await page.content();
+    expect(content.includes("elplacerdc.com/?ref=")).toBe(false);
+    expect(content.includes("elplacerdecompartir.com/?ref=")).toBe(true);
   });
 
   test("Absolute Invariant: ZERO 'concierge' occurrences across all rendered HTML", async ({ page }) => {
@@ -160,10 +186,11 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
       "/the-corset-society",
       "/corset-vip",
       "/dashboard",
+      "/admin",
     ];
 
     for (const route of routes) {
-      await page.goto(route);
+      await page.goto(route, { waitUntil: "domcontentloaded" });
       const content = await page.content();
       const count = (content.match(/concierge/gi) || []).length;
       expect(count, `Found 'concierge' on route ${route}`).toBe(0);
