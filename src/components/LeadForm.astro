@@ -1,5 +1,5 @@
 ---
-// LeadForm.astro - Formulario con Perfilado Progresivo, Emojis de Rol y Detección de Conflictos
+// LeadForm.astro - Formulario con Perfilado Progresivo, OTP en Tiempo Real y Asignación de Embajador
 interface Props {
   isVip?: boolean;
   title?: string;
@@ -11,14 +11,14 @@ const {
   title = isVip ? "Solicitud de Membresía VIP" : "Acceso a la Comunidad", 
   subtitle = isVip
     ? "La admisión se evalúa rigurosamente. The Corset Society es un círculo privado de gala y ticket alto, con covers prémium y aforo estrictamente limitado como filtro natural de privacidad y confort."
-    : "Regístrate para recibir convocatorias privadas, talleres y accesos exclusivos a nuestro centro cultural." 
+    : "Regístrate para recibir convocatorias privadas, talleres y eventos de la comunidad en nuestro centro cultural." 
 } = Astro.props;
 ---
 
 <div class={`p-6 sm:p-10 rounded-2xl border transition-all duration-300 relative overflow-hidden ${
   isVip 
-    ? "bg-[#0a0608]/90 border-corset-gold/40 shadow-[0_0_30px_rgba(197,160,89,0.15)]" 
-    : "bg-[#250F22]/90 border-corset-gold/35 shadow-[0_4px_30px_rgba(89,31,38,0.25)]"
+    ? "bg-[#0a0608]/90 border-[#c5a059]/40 shadow-[0_0_30px_rgba(197,160,89,0.15)]" 
+    : "bg-[#250F22]/90 border-[#c5a059]/35 shadow-[0_4px_30px_rgba(89,31,38,0.25)]"
 }`}>
   <!-- Decorative Ambient Glow -->
   <div class={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none ${
@@ -26,10 +26,10 @@ const {
   }`}></div>
 
   <div class="mb-8">
-    <h3 class={`text-2xl font-serif font-bold tracking-wide uppercase ${isVip ? "text-corset-gold" : "text-corset-champagne"}`}>
+    <h3 class={`text-2xl font-serif font-bold tracking-wide uppercase ${isVip ? "text-[#c5a059]" : "text-[#ead397]"}`}>
       {title}
     </h3>
-    <p class="text-sm text-elplacer-ivory/70 mt-2 leading-relaxed">
+    <p class="text-sm text-[#f7f4ee]/70 mt-2 leading-relaxed">
       {subtitle}
     </p>
   </div>
@@ -37,41 +37,105 @@ const {
   <form id="lead-form" class="space-y-5">
     <input type="hidden" name="corset_vip" value={isVip ? "true" : "false"} />
 
-    <!-- WhatsApp Phone -->
+    <!-- WhatsApp Phone with Real-time OTP -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
-        WhatsApp / Teléfono <span class="text-elplacer-terracotta">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        WhatsApp / Teléfono <span class="text-[#b84a39]">*</span>
       </label>
-      <input
-        type="tel"
-        name="whatsapp"
-        id="input-whatsapp"
-        required
-        placeholder="Ej: 310 123 4567 o +57 310..."
-        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
-      />
-      <p class="text-[10px] text-elplacer-ivory/40 mt-1">Deducción automática Colombia (+57). Si usas número internacional, escribe con indicativo (+).</p>
+      <div class="flex gap-2">
+        <input
+          type="tel"
+          name="whatsapp"
+          id="input-whatsapp"
+          required
+          placeholder="Ej: 310 123 4567 o +57 310..."
+          class="flex-1 px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        />
+        <button
+          type="button"
+          id="btn-send-wa-otp"
+          class="px-3 py-2 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all whitespace-nowrap"
+        >
+          Enviar Código
+        </button>
+      </div>
+
+      <!-- Inline OTP verification box for WhatsApp -->
+      <div id="wa-otp-box" class="hidden mt-2 p-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 space-y-2">
+        <div class="flex items-center gap-2">
+          <input
+            type="text"
+            id="input-wa-otp"
+            maxlength="6"
+            placeholder="Código (6 dígitos)"
+            class="w-36 px-3 py-1.5 text-center font-mono tracking-widest text-sm rounded bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] focus:border-[#c5a059]"
+          />
+          <button
+            type="button"
+            id="btn-verify-wa-otp"
+            class="px-3 py-1.5 text-xs font-bold uppercase rounded bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397]"
+          >
+            Verificar
+          </button>
+          <span id="wa-otp-status" class="text-xs text-[#ead397]"></span>
+        </div>
+      </div>
+      <p id="wa-verified-badge" class="hidden text-xs text-[#81c784] font-medium mt-1">✓ WhatsApp verificado</p>
+      <p class="text-[10px] text-[#f7f4ee]/40 mt-1">Deducción automática Colombia (+57). Si usas número internacional, escribe con indicativo (+).</p>
     </div>
 
-    <!-- Email -->
+    <!-- Email with Real-time OTP (Optional in community, Required in VIP) -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
-        Correo Electrónico {isVip ? <span class="text-corset-gold">(Requerido para membresía VIP *)</span> : <span class="text-elplacer-ivory/40">(Opcional)</span>}
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Correo Electrónico {isVip ? <span class="text-[#c5a059]">(Requerido para membresía VIP *)</span> : <span class="text-[#f7f4ee]/40">(Opcional)</span>}
       </label>
-      <input
-        type="email"
-        name="email"
-        id="input-email"
-        required={isVip}
-        placeholder="ejemplo@correo.com"
-        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
-      />
+      <div class="flex gap-2">
+        <input
+          type="email"
+          name="email"
+          id="input-email"
+          required={isVip}
+          placeholder="ejemplo@correo.com"
+          class="flex-1 px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+        />
+        {isVip && (
+          <button
+            type="button"
+            id="btn-send-email-otp"
+            class="px-3 py-2 text-xs uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 transition-all whitespace-nowrap"
+          >
+            Enviar Código
+          </button>
+        )}
+      </div>
+
+      <!-- Inline OTP verification box for Email -->
+      <div id="email-otp-box" class="hidden mt-2 p-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 space-y-2">
+        <div class="flex items-center gap-2">
+          <input
+            type="text"
+            id="input-email-otp"
+            maxlength="6"
+            placeholder="Código (6 dígitos)"
+            class="w-36 px-3 py-1.5 text-center font-mono tracking-widest text-sm rounded bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] focus:border-[#c5a059]"
+          />
+          <button
+            type="button"
+            id="btn-verify-email-otp"
+            class="px-3 py-1.5 text-xs font-bold uppercase rounded bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397]"
+          >
+            Verificar
+          </button>
+          <span id="email-otp-status" class="text-xs text-[#ead397]"></span>
+        </div>
+      </div>
+      <p id="email-verified-badge" class="hidden text-xs text-[#81c784] font-medium mt-1">✓ Correo verificado</p>
     </div>
 
-    <!-- Alias / Nombre -->
+    <!-- Pseudónimo -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
-        Alias o Nombre de Pila <span class="text-elplacer-terracotta">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Pseudónimo <span class="text-[#b84a39]">*</span>
       </label>
       <input
         type="text"
@@ -79,19 +143,19 @@ const {
         id="input-alias"
         required
         placeholder="Tu alias o nombre discreto"
-        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
       />
     </div>
 
     <!-- Rol / Identidad con Emojis Canónicos -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
-        Modalidad de Asistencia o Participación <span class="text-elplacer-terracotta">*</span>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Modalidad de Asistencia o Participación <span class="text-[#b84a39]">*</span>
       </label>
       <select
         name="rol"
         id="input-rol"
-        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
       >
         <option value="pareja">👫 Pareja</option>
         <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
@@ -101,13 +165,13 @@ const {
 
     <!-- Ciudad -->
     <div>
-      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
         Ciudad
       </label>
       <select
         name="ciudad"
         id="input-ciudad"
-        class="w-full px-4 py-3 rounded-lg bg-corset-noir border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
+        class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
       >
         <option value="Bogotá">Bogotá</option>
         <option value="Medellín">Medellín</option>
@@ -116,29 +180,15 @@ const {
     </div>
 
     <!-- Feedback Message -->
-    <div id="form-feedback" class="hidden text-sm p-3 rounded-lg"></div>
-
-    <!-- OTP Section (Hidden initially) -->
-    <div id="otp-section" class="hidden">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-elplacer-ivory/80 mb-2">
-        Código de Verificación (Enviado a WhatsApp) <span class="text-elplacer-terracotta">*</span>
-      </label>
-      <input
-        type="text"
-        name="otp"
-        id="input-otp"
-        placeholder="Ej: 123456"
-        class="w-full px-4 py-3 rounded-lg bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all text-center tracking-[0.5em] font-mono"
-      />
-    </div>
+    <div id="form-feedback" class="hidden text-sm p-4 rounded-lg"></div>
 
     <button
       type="submit"
       id="submit-btn"
       class={`w-full py-4 rounded-lg font-serif font-bold uppercase tracking-widest text-sm transition-all shadow-md ${
         isVip
-          ? "bg-gradient-to-r from-corset-gold via-corset-champagne to-[#8a6d3b] text-corset-noir hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
-          : "bg-elplacer-terracotta text-elplacer-ivory hover:bg-[#a03d2e] shadow-[0_0_15px_rgba(184,74,57,0.3)]"
+          ? "bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)]"
+          : "bg-[#b84a39] text-[#f7f4ee] hover:bg-[#a03d2e] shadow-[0_0_15px_rgba(184,74,57,0.3)]"
       }`}
     >
       {isVip ? "Solicitar Admisión VIP" : "Unirme al Círculo"}
@@ -155,46 +205,200 @@ const {
   const inputCiudad = document.getElementById("input-ciudad") as HTMLSelectElement;
   const formFeedback = document.getElementById("form-feedback") as HTMLElement;
   const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
-  const otpSection = document.getElementById("otp-section") as HTMLElement;
-  const inputOtp = document.getElementById("input-otp") as HTMLInputElement;
 
-  let checking = false;
-  let otpSent = false;
+  const btnSendWaOtp = document.getElementById("btn-send-wa-otp") as HTMLButtonElement;
+  const waOtpBox = document.getElementById("wa-otp-box") as HTMLElement;
+  const inputWaOtp = document.getElementById("input-wa-otp") as HTMLInputElement;
+  const btnVerifyWaOtp = document.getElementById("btn-verify-wa-otp") as HTMLButtonElement;
+  const waOtpStatus = document.getElementById("wa-otp-status") as HTMLElement;
+  const waVerifiedBadge = document.getElementById("wa-verified-badge") as HTMLElement;
 
-  async function checkContact() {
+  const btnSendEmailOtp = document.getElementById("btn-send-email-otp") as HTMLButtonElement | null;
+  const emailOtpBox = document.getElementById("email-otp-box") as HTMLElement | null;
+  const inputEmailOtp = document.getElementById("input-email-otp") as HTMLInputElement | null;
+  const btnVerifyEmailOtp = document.getElementById("btn-verify-email-otp") as HTMLButtonElement | null;
+  const emailOtpStatus = document.getElementById("email-otp-status") as HTMLElement | null;
+  const emailVerifiedBadge = document.getElementById("email-verified-badge") as HTMLElement | null;
+
+  let waVerified = false;
+  let emailVerified = false;
+  const isVip = (document.querySelector('input[name="corset_vip"]') as HTMLInputElement)?.value === "true";
+
+  // Real-time WA OTP Send
+  btnSendWaOtp?.addEventListener("click", async () => {
     const whatsapp = inputWhatsapp.value.trim();
-    const email = inputEmail.value.trim();
+    if (!whatsapp) {
+      alert("Por favor ingresa tu número de WhatsApp");
+      inputWhatsapp.focus();
+      return;
+    }
 
-    if ((!whatsapp && !email) || checking) return;
-    checking = true;
+    btnSendWaOtp.disabled = true;
+    btnSendWaOtp.textContent = "Enviando...";
 
     try {
-      const res = await fetch("/api/leads/check", {
+      const res = await fetch("/api/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ whatsapp, email }),
+        body: JSON.stringify({ destination: whatsapp, channel: "whatsapp" }),
       });
       const data = await res.json();
 
-      if (data.exists && data.lead) {
-        if (!inputAlias.value && data.lead.alias_nombre) inputAlias.value = data.lead.alias_nombre;
-        if (!inputWhatsapp.value && data.lead.whatsapp) inputWhatsapp.value = data.lead.whatsapp;
-        if (!inputEmail.value && data.lead.email) inputEmail.value = data.lead.email;
-        if (data.lead.rol) inputRol.value = data.lead.rol;
-        if (data.lead.ciudad) inputCiudad.value = data.lead.ciudad;
+      if (data.success) {
+        waOtpBox.classList.remove("hidden");
+        btnSendWaOtp.textContent = "Reenviar";
+        btnSendWaOtp.disabled = false;
+        waOtpStatus.textContent = "Código enviado";
+        inputWaOtp.focus();
+      } else {
+        alert(data.error || "No se pudo enviar el código a WhatsApp");
+        btnSendWaOtp.textContent = "Enviar Código";
+        btnSendWaOtp.disabled = false;
       }
-    } catch (e) {
-      // Silent error - zero invasive messaging
-    } finally {
-      checking = false;
+    } catch (e: any) {
+      alert("Error al conectar para enviar código");
+      btnSendWaOtp.textContent = "Enviar Código";
+      btnSendWaOtp.disabled = false;
     }
-  }
+  });
 
-  inputWhatsapp?.addEventListener("blur", checkContact);
-  inputEmail?.addEventListener("blur", checkContact);
+  // Real-time WA OTP Verify
+  btnVerifyWaOtp?.addEventListener("click", async () => {
+    const whatsapp = inputWhatsapp.value.trim();
+    const code = inputWaOtp.value.trim();
 
+    if (!code || code.length < 4) {
+      alert("Ingresa el código de 6 dígitos");
+      return;
+    }
+
+    btnVerifyWaOtp.disabled = true;
+    btnVerifyWaOtp.textContent = "...";
+
+    try {
+      const res = await fetch("/api/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: whatsapp, code, channel: "whatsapp" }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        waVerified = true;
+        waOtpBox.classList.add("hidden");
+        btnSendWaOtp.classList.add("hidden");
+        inputWhatsapp.readOnly = true;
+        waVerifiedBadge.classList.remove("hidden");
+      } else {
+        waOtpStatus.textContent = "Código incorrecto";
+        btnVerifyWaOtp.disabled = false;
+        btnVerifyWaOtp.textContent = "Verificar";
+      }
+    } catch (e: any) {
+      alert("Error al verificar código");
+      btnVerifyWaOtp.disabled = false;
+      btnVerifyWaOtp.textContent = "Verificar";
+    }
+  });
+
+  // Real-time Email OTP Send (VIP)
+  btnSendEmailOtp?.addEventListener("click", async () => {
+    const email = inputEmail.value.trim();
+    if (!email) {
+      alert("Por favor ingresa tu correo electrónico");
+      inputEmail.focus();
+      return;
+    }
+
+    btnSendEmailOtp.disabled = true;
+    btnSendEmailOtp.textContent = "Enviando...";
+
+    try {
+      const res = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: email, channel: "email" }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        emailOtpBox?.classList.remove("hidden");
+        btnSendEmailOtp.textContent = "Reenviar";
+        btnSendEmailOtp.disabled = false;
+        if (emailOtpStatus) emailOtpStatus.textContent = "Código enviado";
+        inputEmailOtp?.focus();
+      } else {
+        alert(data.error || "No se pudo enviar el código al correo");
+        btnSendEmailOtp.textContent = "Enviar Código";
+        btnSendEmailOtp.disabled = false;
+      }
+    } catch (e: any) {
+      alert("Error al conectar para enviar código");
+      btnSendEmailOtp.textContent = "Enviar Código";
+      btnSendEmailOtp.disabled = false;
+    }
+  });
+
+  // Real-time Email OTP Verify
+  btnVerifyEmailOtp?.addEventListener("click", async () => {
+    const email = inputEmail.value.trim();
+    const code = inputEmailOtp?.value.trim();
+
+    if (!code || code.length < 4) {
+      alert("Ingresa el código de 6 dígitos");
+      return;
+    }
+
+    btnVerifyEmailOtp.disabled = true;
+    btnVerifyEmailOtp.textContent = "...";
+
+    try {
+      const res = await fetch("/api/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: email, code, channel: "email" }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        emailVerified = true;
+        emailOtpBox?.classList.add("hidden");
+        btnSendEmailOtp?.classList.add("hidden");
+        inputEmail.readOnly = true;
+        emailVerifiedBadge?.classList.remove("hidden");
+      } else {
+        if (emailOtpStatus) emailOtpStatus.textContent = "Código incorrecto";
+        btnVerifyEmailOtp.disabled = false;
+        btnVerifyEmailOtp.textContent = "Verificar";
+      }
+    } catch (e: any) {
+      alert("Error al verificar código");
+      btnVerifyEmailOtp.disabled = false;
+      btnVerifyEmailOtp.textContent = "Verificar";
+    }
+  });
+
+  // Form submission gate
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    // Check OTP verification
+    if (!waVerified) {
+      formFeedback.className = "text-sm p-4 rounded-lg bg-[#b84a39]/20 border border-[#b84a39]/40 text-[#ef5350]";
+      formFeedback.textContent = "⚠️ Por favor verifica tu número de WhatsApp antes de continuar pulsando 'Enviar Código'.";
+      formFeedback.classList.remove("hidden");
+      btnSendWaOtp.focus();
+      return;
+    }
+
+    if (isVip && !emailVerified) {
+      formFeedback.className = "text-sm p-4 rounded-lg bg-[#c5a059]/20 border border-[#c5a059]/40 text-[#ead397]";
+      formFeedback.textContent = "⚠️ Para membresía VIP es necesario verificar también tu correo electrónico.";
+      formFeedback.classList.remove("hidden");
+      btnSendEmailOtp?.focus();
+      return;
+    }
+
     submitBtn.disabled = true;
     submitBtn.textContent = "Procesando...";
 
@@ -202,54 +406,49 @@ const {
     const payload = Object.fromEntries(formData.entries());
 
     try {
-      if (!otpSent) {
-        // Send OTP first
-        const otpRes = await fetch("/api/otp/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ whatsapp: payload.whatsapp }),
-        });
-        const otpData = await otpRes.json();
-        
-        if (otpData.success) {
-          otpSent = true;
-          otpSection.classList.remove("hidden");
-          inputOtp.required = true;
-          formFeedback.className = "text-sm p-4 rounded-lg bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
-          formFeedback.textContent = "ℹ️ Hemos enviado un código de verificación a tu WhatsApp. Ingrésalo para continuar.";
-          formFeedback.classList.remove("hidden");
-          submitBtn.textContent = "Verificar y Completar";
-          submitBtn.disabled = false;
-        } else {
-          throw new Error(otpData.error || "Error al enviar código de verificación.");
-        }
-        return;
-      }
-
-      // If OTP sent, proceed with registration
       const res = await fetch("/api/leads/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...payload,
-          corset_vip: payload.corset_vip === "true",
+          verified: true,
+          corset_vip: isVip,
         }),
       });
       const data = await res.json();
 
       if (data.success) {
-        if (data.already_registered) {
-          formFeedback.className = "text-sm p-4 rounded-lg bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
-          formFeedback.textContent = `ℹ️ ${data.message || "Ya te encuentras registrado(a) en este canal."}`;
-        } else {
-          formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
-          formFeedback.textContent = "✨ ¡Registro confirmado exitosamente! Te hemos enviado los detalles a tus canales de contacto.";
-          form.reset();
-          otpSent = false;
-          otpSection.classList.add("hidden");
-          inputOtp.required = false;
+        // Auto-login ambassador session seamlessly
+        const submittedPhone = inputWhatsapp.value.trim();
+        if (submittedPhone) {
+          localStorage.setItem("ambassador_session_phone", submittedPhone);
         }
+
+        let affiliateMsg = "";
+        if (data.affiliate_code) {
+          affiliateMsg = `<div class="mt-3 p-3 bg-[#140816] rounded border border-[#c5a059]/40 text-xs text-left">
+            <span class="text-[#ead397] font-semibold">Tu Enlace de Embajador:</span> 
+            <code class="text-[#c5a059] block mt-1 select-all font-mono">https://elplacerdc.com/?ref=${data.affiliate_code}</code>
+            <a href="/dashboard" class="inline-block mt-2 text-[#ead397] underline font-medium">Ir a mi Panel de Embajador (Sesión Iniciada) →</a>
+          </div>`;
+        }
+
+        let vipNextAction = "";
+        if (isVip) {
+          vipNextAction = `
+            <div class="mt-4 p-3 bg-[#0a0608] rounded border border-[#c5a059]/40 text-center">
+              <p class="text-xs text-[#ead397] mb-2">Tu postulación VIP ha sido radicada. Puedes continuar a la activación de tu credencial oficial:</p>
+              <a href="/corset/checkout" class="inline-block px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                Proceder a Credencial VIP Anual ($199.000 COP) →
+              </a>
+            </div>
+          `;
+        }
+
+        formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
+        formFeedback.innerHTML = `✨ ¡Registro confirmado exitosamente! Te hemos enviado los detalles a tus canales de contacto.${affiliateMsg}${vipNextAction}`;
         formFeedback.classList.remove("hidden");
+        form.reset();
       } else {
         throw new Error(data.error || "Ocurrió un error al procesar.");
       }
@@ -257,13 +456,8 @@ const {
       formFeedback.className = "text-sm p-4 rounded-lg bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350]";
       formFeedback.textContent = err.message || "Error al conectar.";
       formFeedback.classList.remove("hidden");
-    } finally {
-      if (!otpSent) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Completado";
-      } else if (!submitBtn.disabled) {
-        submitBtn.textContent = "Verificar y Completar";
-      }
+      submitBtn.disabled = false;
+      submitBtn.textContent = isVip ? "Solicitar Admisión VIP" : "Unirme al Círculo";
     }
   });
 </script>

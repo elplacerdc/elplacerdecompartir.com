@@ -1,54 +1,284 @@
 ---
+// sitio-9-oct.astro - Evento Oficial ElPlacerDC
 import Layout from "../../layouts/Layout.astro";
 ---
 
 <Layout 
-  title="Evento Oficial: Sitio - Viernes 9 de Octubre | Centro Cultural"
-  description="Únete a nuestra experiencia oficial. Un espacio de encuentro, sensaciones y conexión libre de prejuicios en las nuevas instalaciones de nuestro centro cultural."
+  title="Evento Oficial ElPlacerDC — Viernes 9 de Octubre | Centro Cultural"
+  description="Tu oportunidad de conocer el nuevo lugar y Centro Cultural de ElPlacerDC en Bogotá. Velada sensorial, íntima y de libre conexión."
 >
   <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-12">
     
     <div class="text-center space-y-4">
-      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-corset-gold/20 text-corset-gold border border-corset-gold/40 inline-block mb-4">
-        Evento Oficial El Placer de Compartir
+      <span class="inline-block px-5 py-2 rounded-full text-xs font-serif font-bold uppercase tracking-wider bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 mb-2 whitespace-nowrap">
+        Evento Oficial ElPlacerDC
       </span>
-      <h1 class="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-elplacer-ivory">
-        Sitio - Viernes 9 de Octubre
+      <h1 class="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-[#f7f4ee]">
+        Viernes 9 de Octubre
       </h1>
-      <p class="text-lg text-elplacer-ivory/80 font-light max-w-2xl mx-auto">
-        Una velada sensorial, charlas descontracturadas y encuentro en comunidad.
+      <p class="text-base sm:text-lg text-[#f7f4ee]/85 font-light max-w-2xl mx-auto leading-relaxed">
+        Tu oportunidad única de conocer y recorrer las nuevas instalaciones de nuestro Centro Cultural en Bogotá. Una velada sensorial, íntima y concebida para conectar sin prejuicios ni presiones.
       </p>
     </div>
 
-    <div class="bg-[#250F22] rounded-3xl border border-corset-gold/40 shadow-lg overflow-hidden flex flex-col md:flex-row">
+    <div class="bg-[#250F22] rounded-3xl border border-[#c5a059]/40 shadow-xl overflow-hidden flex flex-col md:flex-row">
       <div class="md:w-1/2 p-6 flex justify-center items-center bg-[#1E0A1A]">
         <img 
           src="/media/eventos-elplacerdc/viernes-9-octubre-sitio.jpg" 
-          alt="Flyer Sitio 9 de Octubre" 
-          class="rounded-xl max-h-[600px] object-contain shadow-md border border-corset-gold/20"
+          alt="Flyer Viernes 9 de Octubre" 
+          class="rounded-xl max-h-[580px] object-contain shadow-md border border-[#c5a059]/20"
         />
       </div>
+      
       <div class="md:w-1/2 p-8 space-y-6 flex flex-col justify-center">
-        <h3 class="font-serif text-2xl font-bold text-corset-champagne">Reserva de Ingreso</h3>
-        <p class="text-sm text-elplacer-ivory/70 leading-relaxed font-light">
-          Para garantizar la comodidad de todos los asistentes y mantener el aforo ideal, requerimos que generes tu código de reserva gratuita. Presenta el código de barras o QR en la entrada.
-        </p>
-        
-        <div class="pt-4">
-          <a 
-            href="https://wa.me/573194194785?text=Hola,%20quiero%20reservar%20mi%20ingreso%20para%20el%20evento%20Sitio%20el%20viernes%209%20de%20octubre" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            class="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3 rounded-full bg-corset-gold text-elplacer-midnight-plum font-serif font-bold text-sm uppercase tracking-wider hover:bg-corset-champagne transition-all"
-          >
-            Reserva Gratuita (WhatsApp)
-          </a>
+        <div>
+          <h2 class="font-serif text-2xl font-bold text-[#ead397]">Reserva tu Pase Gratuito</h2>
+          <p class="text-xs text-[#f7f4ee]/70 mt-1 leading-relaxed font-light">
+            Aforo limitado. Completa tu reserva para recibir tu credencial con código QR en tu correo y confirmación en WhatsApp.
+          </p>
         </div>
-        <div class="text-center sm:text-left">
-          <a href="/centro-cultural" class="text-xs text-corset-gold hover:text-corset-champagne transition-colors underline underline-offset-2">← Volver a Centro Cultural</a>
+
+        <form id="event-reserve-form" class="space-y-4">
+          <input type="hidden" name="evento" value="sitio-9-oct" />
+
+          <!-- Pseudónimo -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
+              Pseudónimo o Nombre <span class="text-[#b84a39]">*</span>
+            </label>
+            <input 
+              type="text" 
+              name="alias_nombre" 
+              id="input-alias" 
+              required 
+              placeholder="Tu alias discreto" 
+              class="w-full px-3 py-2.5 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] text-xs placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059]"
+            />
+          </div>
+
+          <!-- WhatsApp con OTP -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
+              WhatsApp <span class="text-[#b84a39]">*</span>
+            </label>
+            <div class="flex gap-2">
+              <input 
+                type="tel" 
+                name="whatsapp" 
+                id="input-whatsapp" 
+                required 
+                placeholder="310 123 4567" 
+                class="flex-1 px-3 py-2.5 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] text-xs placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059]"
+              />
+              <button 
+                type="button" 
+                id="btn-send-wa-otp" 
+                class="px-3 py-2 text-[11px] uppercase tracking-wider font-semibold rounded-lg bg-[#c5a059]/20 hover:bg-[#c5a059]/30 text-[#ead397] border border-[#c5a059]/40 whitespace-nowrap"
+              >
+                Enviar Código
+              </button>
+            </div>
+            
+            <div id="wa-otp-box" class="hidden mt-2 p-2.5 rounded bg-[#140816] border border-[#c5a059]/30 flex items-center gap-2">
+              <input 
+                type="text" 
+                id="input-wa-otp" 
+                maxlength="6" 
+                placeholder="Código" 
+                class="w-24 px-2 py-1 text-center font-mono text-xs rounded bg-[#0a0608] border border-[#c5a059]/40 text-[#f7f4ee]"
+              />
+              <button 
+                type="button" 
+                id="btn-verify-wa-otp" 
+                class="px-3 py-1 text-[11px] uppercase font-bold rounded bg-[#c5a059] text-[#0a0608]"
+              >
+                Verificar
+              </button>
+              <span id="wa-otp-status" class="text-[10px] text-[#ead397]"></span>
+            </div>
+            <p id="wa-verified-badge" class="hidden text-[11px] text-[#81c784] mt-1 font-medium">✓ WhatsApp verificado</p>
+          </div>
+
+          <!-- Correo Electrónico (para QR) -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
+              Correo Electrónico (Para envío del QR) <span class="text-[#b84a39]">*</span>
+            </label>
+            <input 
+              type="email" 
+              name="email" 
+              id="input-email" 
+              required 
+              placeholder="tu@correo.com" 
+              class="w-full px-3 py-2.5 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] text-xs placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059]"
+            />
+          </div>
+
+          <!-- Rol / Modalidad -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
+              Modalidad de Asistencia <span class="text-[#b84a39]">*</span>
+            </label>
+            <select 
+              name="rol" 
+              class="w-full px-3 py-2.5 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] text-xs focus:outline-none focus:border-[#c5a059]"
+            >
+              <option value="pareja">👫 Pareja</option>
+              <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
+              <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
+            </select>
+          </div>
+
+          <div id="reserve-feedback" class="hidden text-xs p-3 rounded-lg"></div>
+
+          <button 
+            type="submit" 
+            id="btn-submit-reserve" 
+            class="w-full py-3.5 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059] text-[#050505] hover:brightness-110 shadow-md transition-all"
+          >
+            Confirmar Reserva & Generar Pase QR
+          </button>
+        </form>
+
+        <div class="text-center sm:text-left pt-2">
+          <a href="/centro-cultural" class="text-xs text-[#c5a059] hover:text-[#ead397] transition-colors underline underline-offset-2">← Volver a Centro Cultural</a>
         </div>
       </div>
     </div>
 
   </div>
 </Layout>
+
+<script>
+  const form = document.getElementById("event-reserve-form") as HTMLFormElement;
+  const inputWhatsapp = document.getElementById("input-whatsapp") as HTMLInputElement;
+  const btnSendWaOtp = document.getElementById("btn-send-wa-otp") as HTMLButtonElement;
+  const waOtpBox = document.getElementById("wa-otp-box") as HTMLElement;
+  const inputWaOtp = document.getElementById("input-wa-otp") as HTMLInputElement;
+  const btnVerifyWaOtp = document.getElementById("btn-verify-wa-otp") as HTMLButtonElement;
+  const waOtpStatus = document.getElementById("wa-otp-status") as HTMLElement;
+  const waVerifiedBadge = document.getElementById("wa-verified-badge") as HTMLElement;
+  const feedback = document.getElementById("reserve-feedback") as HTMLElement;
+  const submitBtn = document.getElementById("btn-submit-reserve") as HTMLButtonElement;
+
+  let waVerified = false;
+
+  btnSendWaOtp?.addEventListener("click", async () => {
+    const whatsapp = inputWhatsapp.value.trim();
+    if (!whatsapp) {
+      alert("Por favor ingresa tu número de WhatsApp");
+      return;
+    }
+
+    btnSendWaOtp.disabled = true;
+    btnSendWaOtp.textContent = "Enviando...";
+
+    try {
+      const res = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: whatsapp, channel: "whatsapp" }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        waOtpBox.classList.remove("hidden");
+        btnSendWaOtp.textContent = "Reenviar";
+        btnSendWaOtp.disabled = false;
+        waOtpStatus.textContent = "Código enviado";
+        inputWaOtp.focus();
+      } else {
+        alert(data.error || "No se pudo enviar el código");
+        btnSendWaOtp.disabled = false;
+        btnSendWaOtp.textContent = "Enviar Código";
+      }
+    } catch (e: any) {
+      alert("Error al enviar código");
+      btnSendWaOtp.disabled = false;
+      btnSendWaOtp.textContent = "Enviar Código";
+    }
+  });
+
+  btnVerifyWaOtp?.addEventListener("click", async () => {
+    const whatsapp = inputWhatsapp.value.trim();
+    const code = inputWaOtp.value.trim();
+
+    if (!code || code.length < 4) {
+      alert("Ingresa el código de 6 dígitos");
+      return;
+    }
+
+    btnVerifyWaOtp.disabled = true;
+    btnVerifyWaOtp.textContent = "...";
+
+    try {
+      const res = await fetch("/api/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: whatsapp, code, channel: "whatsapp" }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        waVerified = true;
+        waOtpBox.classList.add("hidden");
+        btnSendWaOtp.classList.add("hidden");
+        inputWhatsapp.readOnly = true;
+        waVerifiedBadge.classList.remove("hidden");
+      } else {
+        waOtpStatus.textContent = "Código inválido";
+        btnVerifyWaOtp.disabled = false;
+        btnVerifyWaOtp.textContent = "Verificar";
+      }
+    } catch (e: any) {
+      alert("Error de verificación");
+      btnVerifyWaOtp.disabled = false;
+      btnVerifyWaOtp.textContent = "Verificar";
+    }
+  });
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!waVerified) {
+      feedback.className = "text-xs p-3 rounded-lg bg-[#b84a39]/20 border border-[#b84a39]/40 text-[#ef5350]";
+      feedback.textContent = "⚠️ Por favor verifica tu WhatsApp pulsando 'Enviar Código'.";
+      feedback.classList.remove("hidden");
+      btnSendWaOtp.focus();
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Generando Reserva...";
+
+    const formData = new FormData(form);
+    const payload = Object.fromEntries(formData.entries());
+
+    try {
+      const res = await fetch("/api/eventos/reserva", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          verified: true,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        feedback.className = "text-xs p-3 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
+        feedback.innerHTML = `✨ ¡Reserva Confirmada! Tu Pase ID es <strong>${data.ticket_hash}</strong>. Hemos despachado el código QR de acceso a tu correo.`;
+        feedback.classList.remove("hidden");
+        form.reset();
+      } else {
+        throw new Error(data.error || "No se pudo completar la reserva");
+      }
+    } catch (err: any) {
+      feedback.className = "text-xs p-3 rounded-lg bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350]";
+      feedback.textContent = err.message || "Error al conectar.";
+      feedback.classList.remove("hidden");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Confirmar Reserva & Generar Pase QR";
+    }
+  });
+</script>

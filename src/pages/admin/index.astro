@@ -1,0 +1,296 @@
+---
+// src/pages/admin/index.astro - Dashboard de Administración y Control General
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Panel de Administración — El Placer de Compartir" isCorset={false}>
+  <main class="min-h-screen bg-[#0d050f] text-[#f7f4ee] py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto space-y-10">
+
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#c5a059]/25 pb-6 gap-4">
+        <div>
+          <span class="inline-block py-1 px-3 rounded-full bg-[#c5a059]/10 border border-[#c5a059]/30 text-[#ead397] text-xs uppercase tracking-[0.2em] font-medium mb-2">
+            Dirección & Control General
+          </span>
+          <h1 class="text-3xl font-serif font-bold text-[#ead397]">
+            Dashboard de Administración
+          </h1>
+          <p class="text-xs text-[#f7f4ee]/70 mt-1">
+            Métricas de la comunidad, gestión de embajadores y validación de asistencias QR.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button 
+            id="btn-refresh" 
+            class="px-4 py-2 rounded-lg text-xs font-serif font-bold uppercase tracking-wider bg-[#140816] border border-[#c5a059]/30 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
+          >
+            <span>↻</span> Actualizar Datos
+          </button>
+          <a 
+            href="/dashboard" 
+            class="px-4 py-2 rounded-lg text-xs font-serif font-semibold uppercase tracking-wider bg-[#c5a059] text-[#0d050f] hover:bg-[#ead397] transition-all"
+          >
+            Panel Embajadores →
+          </a>
+        </div>
+      </div>
+
+      <!-- KPI Metrics Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
+          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Total Leads</span>
+          <span id="kpi-leads" class="text-3xl font-serif font-bold text-[#ead397]">...</span>
+          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Registros totales</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
+          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Embajadores</span>
+          <span id="kpi-affiliates" class="text-3xl font-serif font-bold text-[#c5a059]">...</span>
+          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Afiliados activos</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
+          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Clics en Links</span>
+          <span id="kpi-clicks" class="text-3xl font-serif font-bold text-[#81c784]">...</span>
+          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Interacciones</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
+          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Pases Emitidos</span>
+          <span id="kpi-tickets" class="text-3xl font-serif font-bold text-[#e57373]">...</span>
+          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Tickets y reservas</span>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center col-span-2 md:col-span-1">
+          <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Asistencias QR</span>
+          <span id="kpi-checkins" class="text-3xl font-serif font-bold text-[#ba68c8]">...</span>
+          <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Validadas en puerta</span>
+        </div>
+      </div>
+
+      <!-- QR Scanner & Check-in Desk Section -->
+      <div class="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#250F22] via-[#140816] to-[#1E0A1A] border border-[#c5a059]/50 shadow-xl space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-[#c5a059]/20 pb-4">
+          <div>
+            <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Control de Acceso Físico</span>
+            <h2 class="text-xl font-serif font-bold text-[#ead397]">Validador de Asistencia y Escáner QR</h2>
+          </div>
+          <span class="text-xs text-[#81c784] font-medium flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Terminal de recepción lista
+          </span>
+        </div>
+
+        <form id="checkin-form" class="flex flex-col sm:flex-row gap-3">
+          <input 
+            type="text" 
+            id="input-ticket-hash" 
+            placeholder="Pega o escanea el Ticket Hash o código QR (ej: ELPLACERDC-EVENT-c188...)" 
+            class="flex-1 px-4 py-3 rounded-xl bg-[#0a0608] border border-[#c5a059]/40 text-[#ead397] font-mono text-sm placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059]"
+            autofocus
+            required
+          />
+          <button 
+            type="submit" 
+            id="btn-checkin-submit" 
+            class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-md transition-all whitespace-nowrap"
+          >
+            Validar Asistencia
+          </button>
+        </form>
+
+        <div id="checkin-result" class="hidden p-4 rounded-xl text-sm transition-all"></div>
+      </div>
+
+      <!-- Tables Grid: Embajadores y Leads -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Affiliates Table -->
+        <div class="p-6 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-serif font-bold text-[#ead397]">Embajadores Oficiales</h3>
+            <span class="text-xs text-[#c5a059] font-mono" id="affiliates-count-label">0 embajadores</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
+                <tr>
+                  <th class="py-2.5 px-2">Alias / Código</th>
+                  <th class="py-2.5 px-2">Contacto</th>
+                  <th class="py-2.5 px-2 text-center">Clics</th>
+                  <th class="py-2.5 px-2 text-center">Ventas</th>
+                  <th class="py-2.5 px-2 text-center">Entradas</th>
+                </tr>
+              </thead>
+              <tbody id="affiliates-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
+                <tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">Cargando embajadores...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Leads Table -->
+        <div class="p-6 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-serif font-bold text-[#ead397]">Últimos Registros (Leads)</h3>
+            <span class="text-xs text-[#c5a059] font-mono" id="leads-count-label">0 registros</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
+                <tr>
+                  <th class="py-2.5 px-2">Nombre / Alias</th>
+                  <th class="py-2.5 px-2">WhatsApp</th>
+                  <th class="py-2.5 px-2">Rol</th>
+                  <th class="py-2.5 px-2">Canal / Tags</th>
+                  <th class="py-2.5 px-2 text-right">Fecha</th>
+                </tr>
+              </thead>
+              <tbody id="leads-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
+                <tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">Cargando registros...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const kpiLeads = document.getElementById("kpi-leads");
+  const kpiAffiliates = document.getElementById("kpi-affiliates");
+  const kpiClicks = document.getElementById("kpi-clicks");
+  const kpiTickets = document.getElementById("kpi-tickets");
+  const kpiCheckins = document.getElementById("kpi-checkins");
+  const btnRefresh = document.getElementById("btn-refresh");
+
+  const checkinForm = document.getElementById("checkin-form") as HTMLFormElement;
+  const inputTicketHash = document.getElementById("input-ticket-hash") as HTMLInputElement;
+  const btnCheckinSubmit = document.getElementById("btn-checkin-submit") as HTMLButtonElement;
+  const checkinResult = document.getElementById("checkin-result") as HTMLElement;
+
+  const affiliatesTableBody = document.getElementById("affiliates-table-body");
+  const leadsTableBody = document.getElementById("leads-table-body");
+  const affiliatesCountLabel = document.getElementById("affiliates-count-label");
+  const leadsCountLabel = document.getElementById("leads-count-label");
+
+  async function loadMetrics() {
+    try {
+      const res = await fetch("/api/admin/metrics");
+      const data = await res.json();
+
+      if (data.success) {
+        if (kpiLeads) kpiLeads.textContent = data.counts.totalLeads.toString();
+        if (kpiAffiliates) kpiAffiliates.textContent = data.counts.totalAffiliates.toString();
+        if (kpiClicks) kpiClicks.textContent = data.counts.totalClicks.toString();
+        if (kpiTickets) kpiTickets.textContent = data.counts.totalTickets.toString();
+        if (kpiCheckins) kpiCheckins.textContent = data.counts.totalCheckins.toString();
+
+        if (affiliatesCountLabel) affiliatesCountLabel.textContent = `${data.affiliates.length} activos`;
+        if (leadsCountLabel) leadsCountLabel.textContent = `${data.leads.length} recientes`;
+
+        // Render Affiliates
+        if (affiliatesTableBody) {
+          if (data.affiliates.length === 0) {
+            affiliatesTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">No hay embajadores registrados aún.</td></tr>`;
+          } else {
+            affiliatesTableBody.innerHTML = data.affiliates.map((a: any) => `
+              <tr class="hover:bg-[#1f0b24]/40 transition-colors">
+                <td class="py-2.5 px-2 font-mono text-[#ead397] font-semibold">${a.alias}</td>
+                <td class="py-2.5 px-2">${a.whatsapp || a.email || "—"}</td>
+                <td class="py-2.5 px-2 text-center font-mono">${a.clicks}</td>
+                <td class="py-2.5 px-2 text-center font-mono text-[#81c784]">${a.referidos_pagados}</td>
+                <td class="py-2.5 px-2 text-center font-mono text-[#ead397] font-bold">${a.entradas_ganadas}</td>
+              </tr>
+            `).join("");
+          }
+        }
+
+        // Render Leads
+        if (leadsTableBody) {
+          if (data.leads.length === 0) {
+            leadsTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">No hay leads registrados aún.</td></tr>`;
+          } else {
+            leadsTableBody.innerHTML = data.leads.map((l: any) => {
+              const tags = (l.metadata?.tags || []).join(", ") || l.origen || "general";
+              const dateStr = new Date(l.created_at).toLocaleDateString("es-CO", { month: "short", day: "numeric" });
+              return `
+                <tr class="hover:bg-[#1f0b24]/40 transition-colors">
+                  <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
+                  <td class="py-2.5 px-2 font-mono text-[11px]">${l.whatsapp || "—"}</td>
+                  <td class="py-2.5 px-2 text-[11px] uppercase">${l.rol || "otro"}</td>
+                  <td class="py-2.5 px-2 text-[10px] text-[#ead397]">${tags}</td>
+                  <td class="py-2.5 px-2 text-right text-[11px] text-[#f7f4ee]/50 font-mono">${dateStr}</td>
+                </tr>
+              `;
+            }).join("");
+          }
+        }
+
+      }
+    } catch (e) {
+      console.error("Error loading admin metrics:", e);
+    }
+  }
+
+  // QR Check-in form handler
+  checkinForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const raw = inputTicketHash.value.trim();
+    if (!raw) return;
+
+    btnCheckinSubmit.disabled = true;
+    btnCheckinSubmit.textContent = "Validando...";
+
+    try {
+      const res = await fetch("/api/admin/checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_hash: raw }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        if (data.already_checked_in) {
+          checkinResult.className = "p-4 rounded-xl text-xs bg-[#f57c00]/20 border border-[#f57c00]/50 text-[#ffb74d] block";
+          checkinResult.innerHTML = `
+            <div class="font-bold text-sm">⚠️ Entrada Previamente Utilizada</div>
+            <div class="mt-1">Titular: <strong>${data.ticket.titular}</strong> (${data.ticket.whatsapp || ""})</div>
+            <div class="text-[11px] opacity-80 mt-0.5">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
+          `;
+        } else {
+          checkinResult.className = "p-4 rounded-xl text-xs bg-[#2e7d32]/25 border border-[#4caf50]/50 text-[#81c784] block";
+          checkinResult.innerHTML = `
+            <div class="font-bold text-sm">✨ ¡Acceso Concedido! Asistencia Registrada</div>
+            <div class="mt-1">Titular: <strong>${data.ticket.titular}</strong> (${data.ticket.whatsapp || ""})</div>
+            <div class="text-[11px] opacity-80 mt-0.5">Evento: ${data.ticket.evento} • Pase: ${data.ticket.tipo_entrada}</div>
+          `;
+          loadMetrics(); // Refresh KPIs immediately
+        }
+        inputTicketHash.value = "";
+        inputTicketHash.focus();
+      } else {
+        checkinResult.className = "p-4 rounded-xl text-xs bg-[#b71c1c]/25 border border-[#ef5350]/50 text-[#ef5350] block";
+        checkinResult.textContent = `❌ ${data.error || "No se pudo validar la entrada"}`;
+      }
+    } catch (e: any) {
+      checkinResult.className = "p-4 rounded-xl text-xs bg-[#b71c1c]/25 border border-[#ef5350]/50 text-[#ef5350] block";
+      checkinResult.textContent = `❌ Error de conexión al validar`;
+    } finally {
+      btnCheckinSubmit.disabled = false;
+      btnCheckinSubmit.textContent = "Validar Asistencia";
+    }
+  });
+
+  btnRefresh?.addEventListener("click", () => {
+    loadMetrics();
+  });
+
+  loadMetrics();
+</script>

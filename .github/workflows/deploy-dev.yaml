@@ -1,0 +1,20 @@
+name: Deploy WebDev to Zerops
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    name: Deploy to Zerops Development
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to Zerops WebDev
+        uses: zeropsio/actions@v1.0.2
+        with:
+          access-token: ${{ secrets.ZEROPS_TOKEN }}
+          service-id: ${{ secrets.ZEROPS_DEV_SERVICE_ID }}

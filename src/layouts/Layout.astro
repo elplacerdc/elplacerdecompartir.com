@@ -106,7 +106,7 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
       ]
     })} />
   </head>
-  <body class:list={[isCorset ? "bg-corset-noir" : "bg-elplacer-midnight-plum", "text-elplacer-ivory selection:bg-corset-gold selection:text-corset-noir min-h-[100dvh] w-full overflow-x-hidden antialiased"]}>
+  <body class:list={[isCorset ? "bg-[#050505]" : "bg-[#180A1A]", "text-[#f7f4ee] selection:bg-[#c5a059] selection:text-[#050505] min-h-[100dvh] w-full overflow-x-hidden antialiased"]}>
     {!isCorset && <Header />}
     <slot />
     {!isCorset && <Footer />}

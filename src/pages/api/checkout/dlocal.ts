@@ -6,21 +6,21 @@ export const POST: APIRoute = async ({ request, url }) => {
   
   const userId = formData.get("userId")?.toString() || "guest_" + Date.now();
   const userEmail = formData.get("userEmail")?.toString() || "guest@example.com";
-  const userName = formData.get("userName")?.toString() || "VIP Guest";
+  const userName = formData.get("userName")?.toString() || "Invitado VIP";
 
-  const orderId = `VIP_${userId}_${Date.now()}`;
+  const orderId = `CORSET_VIP_${userId}_${Date.now()}`;
   
   // Base URL for callbacks
   const baseUrl = `${url.protocol}//${url.host}`;
-  const successUrl = `${baseUrl}/the-corset-society?payment=success`;
-  const cancelUrl = `${baseUrl}/the-corset-society?payment=cancelled`;
+  const successUrl = `${baseUrl}/corset-vip?payment=success`;
+  const cancelUrl = `${baseUrl}/corset-vip?payment=cancelled`;
   const notificationUrl = `${baseUrl}/api/webhooks/dlocal`;
 
   try {
     const redirectUrl = await createPaymentLink({
-      amount: 99.00,
-      currency: "USD",
-      country: "CO", // Assuming Colombia based on project context, but can be updated or dynamic
+      amount: 199000.00,
+      currency: "COP",
+      country: "CO",
       payer: {
         name: userName,
         email: userEmail
@@ -33,7 +33,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 
     return Response.redirect(redirectUrl, 303);
   } catch (error: any) {
-    console.error("Checkout error:", error);
-    return new Response(`Error: ${error.message}`, { status: 500 });
+    console.error("VIP Checkout error:", error);
+    return new Response(`Error al procesar pago: ${error.message}`, { status: 500 });
   }
 };

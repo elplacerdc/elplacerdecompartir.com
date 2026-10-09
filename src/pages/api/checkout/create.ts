@@ -123,18 +123,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
               headers: { "Content-Type": "application/json" },
             });
           } else {
-            console.error("[dLocal Go Error Response]:", dlData);
+            console.error("[Digital Gateway Error Response]:", dlData);
             return new Response(JSON.stringify({ 
-              error: dlData.message || "No se pudo generar la sesión de pago digital con dLocal Go. Por favor intenta de nuevo." 
+              error: dlData.message || "No se pudo generar la sesión de pago digital. Por favor intenta de nuevo." 
             }), {
               status: 502,
               headers: { "Content-Type": "application/json" },
             });
           }
         } catch (e: any) {
-          console.error("[dLocal Gateway Fetch Error]:", e.message);
+          console.error("[Digital Gateway Fetch Error]:", e.message);
           return new Response(JSON.stringify({ 
-            error: "Error de comunicación con la pasarela dLocal Go. Por favor intenta de nuevo." 
+            error: "Error de comunicación con la pasarela de pagos. Por favor intenta de nuevo." 
           }), {
             status: 502,
             headers: { "Content-Type": "application/json" },
@@ -142,7 +142,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         }
       } else {
         return new Response(JSON.stringify({ 
-          error: "Pasarela dLocal Go no configurada en este entorno." 
+          error: "Pasarela digital de pagos no configurada en este entorno." 
         }), {
           status: 500,
           headers: { "Content-Type": "application/json" },

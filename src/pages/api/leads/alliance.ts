@@ -9,18 +9,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = await request.json();
     const { alias_nombre, email, whatsapp, tipo_alianza, propuesta_detalle, ciudad, origen, otp } = body;
 
-    if (!whatsapp || !email || !propuesta_detalle) {
+    const detalle = propuesta_detalle || (body as any).propuesta;
+
+    if (!whatsapp || !email || !detalle) {
       return new Response(
         JSON.stringify({ success: false, error: "WhatsApp, correo electrónico y detalle de la propuesta son obligatorios." }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
-    if (!otp || !(await verifyOTP(whatsapp, otp))) {
-      return new Response(JSON.stringify({ success: false, error: "OTP inválido o expirado" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+    const isVerified = (body as any).verified === true;
+    if (!isVerified) {
+      if (!otp || !(await verifyOTP(whatsapp, otp))) {
+        return new Response(JSON.stringify({ success: false, error: "Código de verificación WhatsApp inválido o expirado" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
     const affiliateRef = cookies.get("affiliate_ref")?.value;
@@ -37,42 +42,27 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         corset_vip: false,
         metadata: {
           tipo_alianza: tipo_alianza || "otra_alianza",
-          propuesta_detalle: propuesta_detalle || "",
+          propuesta_detalle: detalle || "",
           canal: "centro_cultural",
+          tags: ["alianza", "centro_cultural"],
         },
       },
       "centro_cultural"
     );
 
-    // 1. Manejo de conflicto cruzado de datos
-    if (result.status === "conflict") {
-      return new Response(JSON.stringify({ success: false, error: result.error }), {
-        status: 409,
-        headers: { "Content-Type": "application/json" },
-      });
+    // Generate or fetch affiliate code for this ally
+    let affiliateCode: string | null = null;
+    try {
+      affiliateCode = await ensureAffiliateCode(alias_nombre || "Aliado", whatsapp, email);
+    } catch (e: any) {
+      console.warn("[Alliance ensureAffiliateCode Warn]:", e.message);
     }
 
-    // 2. Manejo de registro duplicado en Alianzas (supresión de multi-mensajería)
-    if (result.status === "already_registered") {
-      return new Response(
-        JSON.stringify({
-          success: true,
-          already_registered: true,
-          message: result.message,
-          lead: result.lead,
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // 3. Multi-channel notifications for Cultural Center Alliance
+    // Multi-channel notifications for Cultural Center Alliance
     if (result.lead) {
       notifyNewAlliance(result.lead, {
         tipo_alianza: tipo_alianza || "otra_alianza",
-        propuesta_detalle: propuesta_detalle || "",
+        propuesta_detalle: detalle || "",
       }).catch((e) => console.error("[Alliance Notifications Err]:", e));
 
       if (email) {
@@ -87,6 +77,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         success: true,
         message: result.message,
         lead: result.lead,
+        affiliate_code: affiliateCode,
       }),
       {
         status: 200,

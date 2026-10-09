@@ -1,8 +1,8 @@
-import AmbassadorLink from "../components/AmbassadorLink.astro";
 ---
 // centro-cultural.astro - Landing Centro Cultural El Placer de Compartir
 import Layout from "../layouts/Layout.astro";
 import AllianceForm from "../components/AllianceForm.astro";
+import AmbassadorSection from "../components/AmbassadorSection.astro";
 ---
 
 <Layout 
@@ -10,36 +10,40 @@ import AllianceForm from "../components/AllianceForm.astro";
   description="Nuevo espacio cultural en Bogotá dedicado a talleres de parejas, BDSM ético, masajes tántricos, nudismo consciente, organizadores de eventos para adultos y dating auténtico."
 >
   <div class="pt-16 sm:pt-20 pb-16 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto space-y-16 sm:space-y-20">
-    <!-- Hero Section -->
+    
+    <!-- Hero Section con Diferenciación Radical Growth-Engine (No Bar Swinger / Sin Zonas Húmedas) -->
     <div class="text-center max-w-3xl mx-auto space-y-6 pt-6 sm:pt-10">
-      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-elplacer-terracotta/20 text-elplacer-terracotta border border-elplacer-terracotta/40 inline-block mb-4">
-        Espacio Multidisciplinario
+      <span class="inline-block px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#b84a39]/20 text-[#ead397] border border-[#c5a059]/40 mb-2">
+        Espacio Multidisciplinario • Bogotá
       </span>
-      <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-elplacer-ivory break-words">
+      <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-[#f7f4ee] break-words">
         Centro Cultural <br />
-        <span class="italic text-corset-gold">El Placer de Compartir</span>
+        <span class="italic text-[#c5a059]">El Placer de Compartir</span>
       </h1>
-      <p class="text-base sm:text-lg text-elplacer-ivory/80 font-light leading-relaxed">
-        Un espacio cultural multidisciplinario concebido para desmitificar el erotismo y celebrar el cuerpo sin tabúes comerciales ni mercantilización.
-      </p>
+      
+      <!-- Growth-Engine Positioning Copy Desencasillado -->
+      <div class="max-w-3xl mx-auto space-y-4 text-center">
+        <p class="text-base sm:text-lg text-[#f7f4ee]/90 font-light leading-relaxed">
+          El Centro Cultural de ElPlacerDC nace como un espacio seguro, lúcido y de alta estética concebido para una agenda semanal completa dirigida a comunidades de mente abierta.
+        </p>
+        <p class="text-sm sm:text-base text-[#f7f4ee]/80 leading-relaxed font-light">
+          Entre semana nuestras puertas están abiertas para talleres formativos, masajes tántricos, Shibari, arte sensorial y encuentros íntimos de comunidad. Los fines de semana acogemos las fiestas temáticas y veladas específicas —propias y de nuestros aliados—. Aquí el consentimiento lúcido prima sobre el consumo inmediato. Y para que lo tengas presente, no somos un bar swinger tradicional ni contamos con zonas húmedas.
+        </p>
+      </div>
+
+      <!-- Action Buttons Reordenados con Estilo Unificado -->
       <div class="pt-4 flex flex-wrap justify-center gap-3">
         <a 
-          href="#postulacion" 
-          class="px-5 py-2.5 rounded-full bg-corset-gold text-elplacer-midnight-plum font-serif font-bold text-xs uppercase tracking-wider hover:bg-corset-champagne transition-all"
-        >
-          Postularme como Aliado
-        </a>
-        <a 
           href="#proximos-eventos" 
-          class="px-5 py-2.5 rounded-full border border-corset-gold/40 text-corset-champagne font-serif font-semibold text-xs uppercase tracking-wider hover:bg-corset-gold/10 transition-all"
+          class="px-6 py-3 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] shadow-md transition-all"
         >
           Próximos Eventos
         </a>
         <a 
           href="/galeria-centro-cultural" 
-          class="px-5 py-2.5 rounded-full border border-corset-gold/40 text-corset-champagne font-serif font-semibold text-xs uppercase tracking-wider hover:bg-corset-gold/10 transition-all"
+          class="px-6 py-3 rounded-full border border-[#c5a059]/40 text-[#ead397] font-serif font-semibold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10 transition-all"
         >
-          Galería de Espacios
+          Galería de Espacios 🏛️
         </a>
       </div>
     </div>
@@ -47,22 +51,26 @@ import AllianceForm from "../components/AllianceForm.astro";
     <!-- Próximos Eventos -->
     <div id="proximos-eventos" class="space-y-8">
       <div class="text-center space-y-2">
-        <span class="text-xs uppercase tracking-widest text-corset-gold font-serif">Agenda</span>
-        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-elplacer-ivory">Próximos Eventos</h2>
+        <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#c5a059] font-serif border border-[#c5a059]/30 mb-2">
+          Agenda Exclusiva
+        </span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#f7f4ee]">Próximos Eventos</h2>
       </div>
 
-      <!-- Evento Propio: El Placer de Compartir -->
-      <a href="/eventos/sitio-9-oct" class="block group max-w-4xl mx-auto rounded-3xl bg-[#250F22] border border-corset-gold/40 shadow-[0_4px_35px_rgba(89,31,38,0.25)] hover:shadow-[0_4px_35px_rgba(197,160,89,0.4)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
+      <!-- Evento Propio: Oportunidad de conocer el nuevo lugar de ElPlacerDC -->
+      <a href="/eventos/sitio-9-oct" class="block group max-w-4xl mx-auto rounded-3xl bg-[#250F22] border border-[#c5a059]/40 shadow-[0_4px_35px_rgba(89,31,38,0.25)] hover:shadow-[0_4px_35px_rgba(197,160,89,0.4)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
         <div class="p-6 sm:p-8 space-y-4">
-          <span class="text-xs uppercase tracking-widest text-corset-gold font-serif font-bold">Evento Oficial</span>
-          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-corset-champagne group-hover:text-white transition-colors">
-            Sitio - Viernes 9 de Octubre
-          </h2>
-          <p class="text-xs sm:text-sm text-elplacer-ivory/80 leading-relaxed font-light">
-            Únete a nuestra experiencia oficial. Un espacio de encuentro, sensaciones y conexión libre de prejuicios en las nuevas instalaciones de nuestro centro cultural.
+          <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#c5a059] font-serif font-bold border border-[#c5a059]/30 mb-1">
+            Evento Oficial ElPlacerDC
+          </span>
+          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397] group-hover:text-white transition-colors">
+            Viernes 9 de Octubre
+          </h3>
+          <p class="text-xs sm:text-sm text-[#f7f4ee]/85 leading-relaxed font-light">
+            Tu gran <strong>oportunidad de conocer el nuevo lugar de ElPlacerDC</strong>. Un encuentro diseñado para explorar las nuevas instalaciones, compartir entre personas afines y disfrutar de una atmósfera de libertad sin presiones.
           </p>
           <div class="pt-2 flex flex-wrap gap-3">
-            <span class="px-5 py-2.5 rounded-full bg-corset-gold text-elplacer-midnight-plum font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-corset-champagne transition-all inline-block mb-4">
+            <span class="px-5 py-2.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-[#ead397] transition-all">
               Ver Detalles y Reservar
             </span>
           </div>
@@ -71,247 +79,147 @@ import AllianceForm from "../components/AllianceForm.astro";
           <img 
             src="/media/eventos-elplacerdc/viernes-9-octubre-sitio.jpg" 
             alt="Viernes 9 de Octubre" 
-            class="rounded-2xl max-h-[480px] w-full object-contain border border-corset-gold/30 shadow-lg group-hover:scale-105 transition-transform duration-500"
+            class="rounded-2xl max-h-[480px] w-full object-contain border border-[#c5a059]/30 shadow-lg group-hover:scale-105 transition-transform duration-500"
           />
         </div>
       </a>
 
-      <!-- Evento Aliado: Impacto Producciones -->
-      <a href="/eventos/impacto-10-oct" class="block group max-w-4xl mx-auto rounded-3xl bg-[#1E0A1A] border border-[#1877f2]/40 shadow-[0_4px_35px_rgba(24,119,242,0.15)] hover:shadow-[0_4px_35px_rgba(24,119,242,0.3)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
+      <!-- Evento Aliado: Impacto Producciones con Paleta Más Oscura y Elegante -->
+      <a href="/eventos/impacto-10-oct" class="block group max-w-4xl mx-auto rounded-3xl bg-[#1E0C24] border border-[#8E4A8C]/40 shadow-[0_4px_35px_rgba(142,74,140,0.2)] hover:shadow-[0_4px_35px_rgba(142,74,140,0.35)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
         <div class="p-6 sm:p-8 space-y-4">
-          <span class="text-xs uppercase tracking-widest text-[#1877f2] font-serif font-bold">Evento Aliado</span>
-          <h2 class="font-serif text-2xl sm:text-3xl font-bold text-elplacer-ivory group-hover:text-white transition-colors">
+          <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#f3e5f5] font-serif font-bold bg-[#8E4A8C]/20 border border-[#8E4A8C]/40 mb-1">
+            Evento Aliado
+          </span>
+          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#f3e5f5] group-hover:text-white transition-colors">
             Impacto Producciones - Sábado 10
-          </h2>
-          <p class="text-xs sm:text-sm text-elplacer-ivory/80 leading-relaxed font-light">
-            Nuestros aliados de Impacto Producciones se toman la casa. Una noche distinta con música, shows y performances en vivo.
+          </h3>
+          <p class="text-xs sm:text-sm text-[#f7f4ee]/80 leading-relaxed font-light">
+            Nuestros aliados de Impacto Producciones se toman la casa. Una noche distinta con música, shows y performances en vivo en nuestro escenario central.
           </p>
           <div class="pt-2 flex flex-wrap gap-3">
-            <span class="px-5 py-2.5 rounded-full bg-[#1877f2] text-white font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-[#1877f2]/80 transition-all inline-block mb-4">
+            <span class="px-5 py-2.5 rounded-full bg-[#8E4A8C] hover:bg-[#a35da1] text-white font-serif font-bold text-xs uppercase tracking-wider transition-all shadow-md">
               Ver Detalles y Reservar
             </span>
           </div>
         </div>
-        <div class="p-4 sm:p-6 flex justify-center bg-black/50">
+        <div class="p-4 sm:p-6 flex justify-center bg-black/40">
           <img 
             src="/media/eventos-aliados/sabado-10-octubre_impacto-producciones.jpg" 
             alt="Sábado 10 de Octubre" 
-            class="rounded-2xl max-h-[480px] w-full object-contain border border-[#1877f2]/30 shadow-lg group-hover:scale-105 transition-transform duration-500"
+            class="rounded-2xl max-h-[480px] w-full object-contain border border-[#8E4A8C]/30 shadow-lg group-hover:scale-105 transition-transform duration-500"
           />
         </div>
       </a>
 
-      <div class="text-center pt-4">
-        <a href="/eventos-realizados" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 text-xs font-medium transition-colors">
-          <span>Ver Eventos Anteriores</span>
-          <span>→</span>
+      <!-- Evento Luna Llena (The Corset Society) -->
+      <a href="/the-corset-society/luna-llena" class="block group max-w-4xl mx-auto rounded-3xl bg-[#0a0608] border border-[#c5a059]/50 shadow-[0_4px_35px_rgba(197,160,89,0.2)] hover:shadow-[0_4px_35px_rgba(197,160,89,0.4)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
+        <div class="p-6 sm:p-8 space-y-4">
+          <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#ead397] font-serif font-bold bg-[#c5a059]/20 border border-[#c5a059]/40 mb-1">
+            🌕 The Corset Society • Gala de Misterio
+          </span>
+          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397] group-hover:text-white transition-colors">
+            Noche de Luna Llena — Halloween
+          </h3>
+          <p class="text-xs sm:text-sm text-[#f7f4ee]/85 leading-relaxed font-light">
+            Máscarada exclusiva en nuestro Centro Cultural. Gala Noir, antifaces y misterio en las noches de luna llena. Tu asistencia incluye el primer año de membresía VIP gratis.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-3">
+            <span class="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-md">
+              Ver Tarifas y Reservar Entrada
+            </span>
+          </div>
+        </div>
+        <div class="p-4 sm:p-6 flex justify-center bg-[#050505]">
+          <img 
+            src="/media/corset-society/flyer_halloween_clean.jpg" 
+            alt="Noche de Luna Llena Halloween" 
+            class="rounded-2xl max-h-[480px] w-full object-contain border border-[#c5a059]/40 shadow-lg group-hover:scale-105 transition-transform duration-500"
+          />
+        </div>
+      </a>
+
+      <!-- Botón 'Postularme como Aliado' ubicado debajo de la sección de eventos -->
+      <div class="text-center pt-2">
+        <a 
+          href="#postulacion" 
+          class="inline-block px-8 py-3.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] shadow-md transition-all"
+        >
+          Postularme como Aliado
         </a>
       </div>
     </div>
-    </div>
 
-    <!-- Promoción Destacada de Afiliados (Ecosistema Completo) -->
-    <div class="p-6 sm:p-10 rounded-2xl bg-gradient-to-r from-[#240D20] via-[#35142E] to-[#240D20] border-2 border-corset-gold shadow-[0_0_35px_rgba(197,160,89,0.25)] text-center space-y-4">
-      <div class="inline-block px-3 py-1 rounded bg-corset-gold text-elplacer-midnight-plum font-serif font-bold text-xs uppercase tracking-wider">
-        Programa de Embajadores & Afiliados Global
-      </div>
-      <h2 class="font-serif text-2xl sm:text-4xl font-bold text-corset-champagne">
-        "Por cada 3 personas que invites y asistan, tu entrada es 100% GRATIS"
-      </h2>
-      <p class="text-xs sm:text-sm text-elplacer-ivory/80 max-w-2xl mx-auto font-light leading-relaxed">
-        Tu enlace de embajador es válido para <strong>todas las experiencias del ecosistema</strong> (Centro Cultural, veladas de comunidad y eventos de The Corset Society). Queda vinculado a tu cuenta para tu futuro panel de analíticas y recompensas.
-      </p>
-      
-      <!-- Generador de Link de Afiliado con Compartir Inmediato -->
-      <div class="pt-4 max-w-xl mx-auto space-y-4">
-        <div class="flex flex-col sm:flex-row gap-2">
-          <input 
-            type="text" 
-            id="affiliate-alias-input" 
-            placeholder="Tu alias o código de embajador" 
-            class="px-4 py-3 rounded-lg bg-[#1E0A1A] border border-corset-gold/40 text-sm text-elplacer-ivory flex-1 focus:outline-none focus:border-corset-gold"
-          />
-          <button 
-            id="generate-link-btn" 
-            type="button"
-            class="px-6 py-3 rounded-lg bg-corset-gold text-elplacer-midnight-plum font-serif font-bold text-xs uppercase tracking-wider hover:bg-corset-champagne transition-all"
-          >
-            Generar Enlace
-          </button>
-        </div>
-
-        <div id="generated-link-box" class="hidden p-5 rounded-xl bg-[#1E0A1A]/95 border border-corset-gold/40 text-left space-y-3">
-          <div>
-            <span class="text-[11px] uppercase tracking-wider text-corset-gold font-bold block">Tu Enlace Personal de Embajador:</span>
-            <span id="affiliate-link-display" class="text-xs sm:text-sm font-mono text-corset-champagne break-all select-all font-semibold"></span>
-          </div>
-
-          <!-- Social Share Buttons Row -->
-          <div class="pt-2 border-t border-corset-gold/20">
-            <span class="text-[10px] uppercase tracking-wider text-elplacer-ivory/60 block mb-2 font-medium">Compartir de inmediato en redes:</span>
-            <div class="flex flex-wrap gap-2">
-              <a 
-                id="share-whatsapp" 
-                href="#" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25d366]/20 hover:bg-[#25d366]/30 text-[#25d366] border border-[#25d366]/40 text-xs font-medium transition-colors"
-              >
-                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.587 1.776.88 2.788.88 3.18 0 5.767-2.587 5.768-5.766.001-3.181-2.585-5.766-5.766-5.766zm9.969 5.766c-.002 5.519-4.49 9.999-10.01 9.999-1.758 0-3.418-.465-4.885-1.275l-7.105 1.864 1.896-6.931c-.886-1.527-1.396-3.298-1.396-5.184.002-5.518 4.49-10.001 10.01-10.001 5.519 0 10.008 4.482 10.01 10.003z"/></svg>
-                <span>WhatsApp</span>
-              </a>
-
-              <a 
-                id="share-telegram" 
-                href="#" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#229ed9]/20 hover:bg-[#229ed9]/30 text-[#229ed9] border border-[#229ed9]/40 text-xs font-medium transition-colors"
-              >
-                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.536-.194 1.006.128.832.942z"/></svg>
-                <span>Telegram</span>
-              </a>
-
-              <a 
-                id="share-x" 
-                href="#" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-elplacer-ivory border border-white/20 text-xs font-medium transition-colors"
-              >
-                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                <span>X / Twitter</span>
-              </a>
-
-              <a 
-                id="share-facebook" 
-                href="#" 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#1877f2]/20 hover:bg-[#1877f2]/30 text-[#1877f2] border border-[#1877f2]/40 text-xs font-medium transition-colors"
-              >
-                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                <span>Facebook</span>
-              </a>
-
-              <button 
-                id="copy-link-btn" 
-                type="button" 
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-corset-gold/40 text-corset-champagne hover:bg-corset-gold/10 text-xs font-medium transition-colors"
-              >
-                📋 <span id="copy-btn-text">Copiar</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Actividades & Alianzas -->
+    <!-- Actividades & Alianzas con Párrafo Descriptivo Incorporado -->
     <div class="space-y-6">
-      <div class="text-center space-y-2">
-        <span class="text-xs uppercase tracking-widest text-corset-gold font-serif">Áreas de Colaboración & Talleres</span>
-        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-elplacer-ivory">Ecosistema Multidisciplinario</h2>
+      <div class="text-center space-y-3 max-w-3xl mx-auto">
+        <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#c5a059] font-serif border border-[#c5a059]/30 mb-1">
+          Áreas de Colaboración & Talleres
+        </span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#f7f4ee]">Ecosistema Multidisciplinario</h2>
+        
+        <!-- Párrafo descriptivo con eventos mente abierta y realizas masajes -->
+        <p class="text-xs sm:text-sm text-[#f7f4ee]/80 font-light leading-relaxed">
+          ¿Organizas eventos mente abierta, facilitas talleres de tantra o BDSM ético, realizas masajes o buscas una locación singular en Bogotá <strong>para tus fantasías</strong>? Déjanos tu propuesta para coordinar fechas y producción.
+        </p>
+        <div>
+          <a href="#postulacion" class="inline-flex items-center gap-1.5 text-xs text-[#ead397] hover:text-[#c5a059] underline font-medium">
+            Completar formulario de alianza directa →
+          </a>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="p-6 rounded-xl bg-[#250F22] border border-corset-gold/25 shadow-md space-y-3">
+        <div class="p-6 rounded-xl bg-[#250F22] border border-[#c5a059]/25 shadow-md space-y-3">
           <span class="text-2xl">🌿</span>
-          <h3 class="font-serif text-lg font-bold text-corset-champagne">Masajes & Tacto Consciente</h3>
-          <p class="text-xs text-elplacer-ivory/70 leading-relaxed font-light">
+          <h3 class="font-serif text-lg font-bold text-[#ead397]">Masajes & Tacto Consciente</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
             Talleres de masaje tántrico, desensibilización sensorial y desbloqueo emocional guiados por terapeutas certificados.
           </p>
         </div>
 
-        <div class="p-6 rounded-xl bg-[#250F22] border border-corset-gold/25 shadow-md space-y-3">
+        <div class="p-6 rounded-xl bg-[#250F22] border border-[#c5a059]/25 shadow-md space-y-3">
           <span class="text-2xl">⛓️</span>
-          <h3 class="font-serif text-lg font-bold text-corset-champagne">BDSM Ético & Shibari</h3>
-          <p class="text-xs text-elplacer-ivory/70 leading-relaxed font-light">
+          <h3 class="font-serif text-lg font-bold text-[#ead397]">BDSM Ético & Shibari</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
             Cuerdas japonesas, dinámicas de poder acordadas, protocolos de seguridad SSC (Sano, Seguro y Consentido).
           </p>
         </div>
 
-        <div class="p-6 rounded-xl bg-[#250F22] border border-corset-gold/25 shadow-md space-y-3">
+        <div class="p-6 rounded-xl bg-[#250F22] border border-[#c5a059]/25 shadow-md space-y-3">
           <span class="text-2xl">✨</span>
-          <h3 class="font-serif text-lg font-bold text-corset-champagne">Nudismo Social & Conexión</h3>
-          <p class="text-xs text-elplacer-ivory/70 leading-relaxed font-light">
+          <h3 class="font-serif text-lg font-bold text-[#ead397]">Nudismo Social & Conexión</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
             Espacio seguro de desnudamiento libre de connotaciones sexuales obligatorias. Normalización del cuerpo en su estado natural.
           </p>
         </div>
 
-        <!-- Nueva Sección: Organizadores de Eventos para Adultos y Mente Abierta -->
-        <div class="p-6 rounded-xl bg-[#250F22] border border-corset-gold/40 shadow-md space-y-3">
+        <div class="p-6 rounded-xl bg-[#250F22] border border-[#c5a059]/40 shadow-md space-y-3">
           <span class="text-2xl">🥂</span>
-          <h3 class="font-serif text-lg font-bold text-corset-gold">Organizadores de Eventos Mente Abierta</h3>
-          <p class="text-xs text-elplacer-ivory/70 leading-relaxed font-light">
+          <h3 class="font-serif text-lg font-bold text-[#c5a059]">Organizadores de Eventos Mente Abierta</h3>
+          <p class="text-xs text-[#f7f4ee]/70 leading-relaxed font-light">
             Coproducción de galas privadas, fiestas temáticas, salones de networking swinger y experiencias para adultos con criterios éticos y logística segura.
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Filosofía SegiSw -->
-    <div class="p-6 sm:p-8 rounded-2xl bg-[#250F22] border border-corset-gold/35 shadow-md space-y-4">
-      <h3 class="font-serif text-lg sm:text-xl font-bold text-corset-gold uppercase tracking-wider">
-        Filosofía de la Dirección (@SegiSw)
-      </h3>
-      <p class="text-sm text-elplacer-ivory/80 leading-relaxed font-light">
-        "En nuestro Centro Cultural no existe personal comercial contratado, 'ganchos' ni damas de compañía. Cada mujer que asiste lo hace por su propia voluntad, curiosidad y disfrute pleno. La elegancia reside en la reciprocidad absoluta."
-      </p>
-    </div>
+    <!-- Sección de Embajadores ubicada ANTES del formulario de alianzas -->
+    <AmbassadorSection />
 
     <!-- Formulario para Aliados, Terapeutas y Organizadores -->
     <div id="postulacion" class="max-w-2xl mx-auto">
-      <AmbassadorLink />
       <AllianceForm 
         title="Alianzas, Talleres & Contratación de Sede"
-        subtitle="¿Organizas eventos mente abierta, facilitas talleres de tantra o BDSM ético, o buscas una locación singular en Bogotá? Déjanos tu propuesta para coordinar fechas y producción."
       />
     </div>
+
+    <!-- Botón de 'Ver Eventos Anteriores' ubicado DESPUÉS del formulario de aliados -->
+    <div class="text-center pt-4">
+      <a href="/eventos-realizados" class="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-white/20 text-white hover:bg-white/10 text-xs font-serif font-semibold tracking-wider uppercase transition-colors">
+        <span>Ver Eventos Anteriores</span>
+        <span>→</span>
+      </a>
+    </div>
+
   </div>
-
-  <script>
-    const aliasInput = document.getElementById("affiliate-alias-input") as HTMLInputElement;
-    const genBtn = document.getElementById("generate-link-btn") as HTMLButtonElement;
-    const linkBox = document.getElementById("generated-link-box") as HTMLElement;
-    const linkDisplay = document.getElementById("affiliate-link-display") as HTMLElement;
-    const copyBtn = document.getElementById("copy-link-btn") as HTMLButtonElement;
-    const copyText = document.getElementById("copy-btn-text") as HTMLElement;
-    const shareWa = document.getElementById("share-whatsapp") as HTMLAnchorElement;
-    const shareTg = document.getElementById("share-telegram") as HTMLAnchorElement;
-    const shareX = document.getElementById("share-x") as HTMLAnchorElement;
-    const shareFb = document.getElementById("share-facebook") as HTMLAnchorElement;
-
-    genBtn?.addEventListener("click", () => {
-      const alias = aliasInput.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
-      if (!alias) {
-        aliasInput.focus();
-        return;
-      }
-
-      const url = `https://elplacerdecompartir.com/r/${alias}`;
-      linkDisplay.textContent = url;
-      linkBox.classList.remove("hidden");
-
-      const shareText = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society en Bogotá. Explora las experiencias con mi enlace de invitado: ${url}`);
-      const encodedUrl = encodeURIComponent(url);
-
-      if (shareWa) shareWa.href = `https://wa.me/?text=${shareText}`;
-      if (shareTg) shareTg.href = `https://t.me/share/url?url=${encodedUrl}&text=${encodeURIComponent("Experiencias de libertad, cultura y sensualidad consciente en Bogotá")}`;
-      if (shareX) shareX.href = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodeURIComponent("Descubre El Placer de Compartir & The Corset Society en Bogotá:")}`;
-      if (shareFb) shareFb.href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-
-      navigator.clipboard.writeText(url).catch(() => {});
-    });
-
-    copyBtn?.addEventListener("click", () => {
-      const text = linkDisplay.textContent;
-      if (text) {
-        navigator.clipboard.writeText(text).then(() => {
-          if (copyText) copyText.textContent = "¡Copiado!";
-          setTimeout(() => { if (copyText) copyText.textContent = "Copiar"; }, 2000);
-        });
-      }
-    });
-  </script>
 </Layout>

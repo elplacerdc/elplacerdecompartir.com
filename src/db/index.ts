@@ -206,70 +206,30 @@ export async function upsertLead(
     const validRoles = ["hombre_solo", "mujer_sola", "pareja", "otro"];
     const normalizedRol = data.rol && validRoles.includes(data.rol) ? data.rol : "otro";
 
-    // 1. Cross-Data Verification: Query by Email and by Phone separately
-    let leadByEmail: Lead | null = null;
+    // 1. Cross-Data Verification: Query by Phone variants first, then by Email
     let leadByPhone: Lead | null = null;
-
-    if (cleanEmail) {
-      const emailRes = await client.query("SELECT * FROM leads WHERE email = $1 LIMIT 1", [cleanEmail]);
-      leadByEmail = emailRes.rows[0] || null;
-    }
+    let leadByEmail: Lead | null = null;
 
     if (phoneVariants.length > 0) {
       const phoneRes = await client.query("SELECT * FROM leads WHERE whatsapp = ANY($1) LIMIT 1", [phoneVariants]);
       leadByPhone = phoneRes.rows[0] || null;
     }
 
-    // 1.1 Cross-Data Collision Check: Email belongs to one person, WhatsApp to another
-    if (leadByEmail && leadByPhone && leadByEmail.id !== leadByPhone.id) {
-      return {
-        status: "conflict",
-        isDuplicate: false,
-        isChannelNew: false,
-        channel: resolvedChannel,
-        error: "El correo electrónico y el número de WhatsApp suministrados pertenecen a dos registros diferentes en nuestra plataforma. Por favor verifica tus datos de contacto.",
-      };
+    if (cleanEmail) {
+      const emailRes = await client.query("SELECT * FROM leads WHERE email = $1 LIMIT 1", [cleanEmail]);
+      leadByEmail = emailRes.rows[0] || null;
     }
 
-    // 1.2 Cross-Data Mismatch Alert:
-    // If Email exists and has a registered phone that does NOT match this phone
-    if (leadByEmail && canonicalPhone && leadByEmail.whatsapp) {
-      const existingPhoneVariants = getPhoneVariants(leadByEmail.whatsapp);
-      const phoneMatches = phoneVariants.some((v) => existingPhoneVariants.includes(v));
-      if (!phoneMatches) {
-        return {
-          status: "conflict",
-          isDuplicate: false,
-          isChannelNew: false,
-          channel: resolvedChannel,
-          error: "El correo suministrado ya se encuentra vinculado a otro número de WhatsApp en nuestro sistema. Por favor ingresa con tu número original o contacta a soporte.",
-        };
-      }
-    }
+    // Resolve unified lead (phone priority as primary contact key)
+    const existingLead: Lead | null = leadByPhone || leadByEmail;
 
-    // If Phone exists and has a registered email that does NOT match this email
-    if (leadByPhone && cleanEmail && leadByPhone.email) {
-      if (leadByPhone.email.toLowerCase() !== cleanEmail) {
-        return {
-          status: "conflict",
-          isDuplicate: false,
-          isChannelNew: false,
-          channel: resolvedChannel,
-          error: "El número de WhatsApp suministrado ya se encuentra registrado con otro correo electrónico en nuestra plataforma. Por favor ingresa con tu correo original.",
-        };
-      }
-    }
-
-    const existingLead: Lead | null = leadByEmail || leadByPhone;
-
-    // 2. Existing Lead Path
+    // 2. Existing Lead Path (Seamless Tagging & Journey Consolidation)
     if (existingLead) {
       const existingMeta = existingLead.metadata || {};
       const existingChannels: string[] = Array.isArray(existingMeta.registered_channels)
         ? [...existingMeta.registered_channels]
         : [];
 
-      // Infer legacy channels if not explicitly populated
       if (existingLead.corset_vip && !existingChannels.includes("corset")) {
         existingChannels.push("corset");
       }
@@ -280,30 +240,37 @@ export async function upsertLead(
         existingChannels.push("centro_cultural");
       }
 
-      // Check if user is ALREADY registered in this specific channel
-      if (existingChannels.includes(resolvedChannel)) {
-        return {
-          status: "already_registered",
-          lead: existingLead,
-          isDuplicate: true,
-          isChannelNew: false,
-          channel: resolvedChannel,
-          message:
-            resolvedChannel === "corset"
-              ? "Tu solicitud de admisión a The Corset Society ya se encuentra registrada y en proceso de evaluación confidencial."
-              : resolvedChannel === "centro_cultural"
-              ? "Ya hemos recibido tu propuesta de alianza para el Centro Cultural. Nuestro equipo de dirección y producción se comunicará contigo."
-              : "Ya haces parte activa de nuestra comunidad. Tu registro previo se encuentra confirmado.",
-        };
+      const isChannelNew = !existingChannels.includes(resolvedChannel);
+      if (isChannelNew) {
+        existingChannels.push(resolvedChannel);
       }
 
-      // User exists in another channel, now registering in a NEW channel!
-      existingChannels.push(resolvedChannel);
+      // Consolidate tags
+      const existingTags: string[] = Array.isArray(existingMeta.tags) ? existingMeta.tags : [];
+      const newTagsToAdd: string[] = [resolvedChannel];
+      if (targetChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
+        newTagsToAdd.push("alianza");
+      }
+      if (data.corset_vip || resolvedChannel === "corset") {
+        newTagsToAdd.push("corset_vip");
+      }
+      const consolidatedTags = Array.from(new Set([...existingTags, ...newTagsToAdd]));
+
+      // Consolidate journey log
+      const journey = Array.isArray(existingMeta.journey) ? [...existingMeta.journey] : [];
+      journey.push({
+        channel: resolvedChannel,
+        timestamp: new Date().toISOString(),
+        origen: data.origen || null,
+        tipo_alianza: data.metadata?.tipo_alianza || null,
+      });
 
       const mergedMeta = {
         ...existingMeta,
         ...(data.metadata || {}),
         registered_channels: existingChannels,
+        tags: consolidatedTags,
+        journey,
       };
 
       const updatedLeadRes = await client.query(
@@ -324,19 +291,23 @@ export async function upsertLead(
           canonicalPhone || existingLead.whatsapp,
           normalizedRol,
           data.ciudad || null,
-          resolvedChannel === "corset" ? true : existingLead.corset_vip,
+          (resolvedChannel === "corset" || data.corset_vip) ? true : existingLead.corset_vip,
           JSON.stringify(mergedMeta),
           existingLead.id,
         ]
       );
 
+      const updatedLead = updatedLeadRes.rows[0];
+
       return {
-        status: "new_channel",
-        lead: updatedLeadRes.rows[0],
-        isDuplicate: false,
-        isChannelNew: true,
+        status: isChannelNew ? "new_channel" : "updated",
+        lead: updatedLead,
+        isDuplicate: !isChannelNew,
+        isChannelNew,
         channel: resolvedChannel,
-        message: "¡Canal habilitado exitosamente en tu perfil!",
+        message: isChannelNew 
+          ? "¡Canal habilitado exitosamente en tu perfil!" 
+          : "¡Datos y participación actualizados exitosamente!",
       };
     }
 
@@ -405,7 +376,7 @@ export async function recordAffiliatePayment(affiliateAlias: string): Promise<bo
       `UPDATE afiliados 
        SET referidos_pagados = referidos_pagados + 1,
            entradas_ganadas = FLOOR((referidos_pagados + 1) / 3)
-       WHERE alias = $1
+       WHERE LOWER(alias) = $1
        RETURNING *`,
       [affiliateAlias.trim().toLowerCase()]
     );
@@ -415,9 +386,183 @@ export async function recordAffiliatePayment(affiliateAlias: string): Promise<bo
   }
 }
 
+export async function trackAffiliateClick(affiliateAlias: string): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query(
+      `UPDATE afiliados SET clicks = COALESCE(clicks, 0) + 1 WHERE LOWER(alias) = $1`,
+      [affiliateAlias.trim().toLowerCase()]
+    );
+  } finally {
+    client.release();
+  }
+}
+
+export async function ensureAffiliateCode(aliasOrName: string, whatsapp?: string | null, email?: string | null): Promise<string> {
+  const client = await pool.connect();
+  try {
+    const phoneNorm = normalizePhone(whatsapp);
+    const cleanPhone = phoneNorm ? phoneNorm.canonical : null;
+    const phoneVariants = phoneNorm ? phoneNorm.variants : [];
+    const cleanEmail = email ? email.trim().toLowerCase() : null;
+
+    // 1. Check if an affiliate already exists with this phone or email
+    if (phoneVariants.length > 0 || cleanEmail) {
+      const existing = await client.query(
+        `SELECT alias FROM afiliados 
+         WHERE (whatsapp = ANY($1) AND array_length($1::text[], 1) > 0) 
+            OR (email = $2 AND $2 IS NOT NULL) 
+         LIMIT 1`,
+        [phoneVariants, cleanEmail]
+      );
+      if (existing.rows.length > 0) {
+        return existing.rows[0].alias;
+      }
+    }
+
+    // 2. Derive base code from aliasOrName
+    const baseCode = (aliasOrName || "embajador")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "") || "embajador";
+
+    let candidate = baseCode;
+    let attempt = 1;
+
+    while (attempt <= 10) {
+      const check = await client.query(`SELECT 1 FROM afiliados WHERE LOWER(alias) = $1`, [candidate]);
+      if (check.rows.length === 0) {
+        // Available!
+        await client.query(
+          `INSERT INTO afiliados (alias, nombre, whatsapp, email) VALUES ($1, $2, $3, $4) ON CONFLICT (alias) DO NOTHING`,
+          [candidate, aliasOrName || "Embajador", cleanPhone, cleanEmail]
+        );
+        return candidate;
+      }
+      candidate = `${baseCode}${Math.floor(100 + Math.random() * 900)}`;
+      attempt++;
+    }
+
+    const fallbackCode = `embajador${Date.now().toString().slice(-5)}`;
+    await client.query(
+      `INSERT INTO afiliados (alias, nombre, whatsapp, email) VALUES ($1, $2, $3, $4) ON CONFLICT (alias) DO NOTHING`,
+      [fallbackCode, aliasOrName || "Embajador", cleanPhone, cleanEmail]
+    );
+    return fallbackCode;
+  } finally {
+    client.release();
+  }
+}
+
+export async function getAffiliateStats(identifier: string): Promise<{
+  alias: string;
+  nombre: string;
+  whatsapp: string | null;
+  email: string | null;
+  clicks: number;
+  leadsCount: number;
+  purchasesCount: number;
+  freeTicketsEarned: number;
+} | null> {
+  const client = await pool.connect();
+  try {
+    const clean = identifier.trim().toLowerCase();
+    const phoneNorm = normalizePhone(identifier);
+    const phoneVariants = phoneNorm ? phoneNorm.variants : [];
+
+    let res = await client.query(
+      `SELECT * FROM afiliados 
+       WHERE LOWER(alias) = $1 OR email = $1 
+          OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[]))
+       LIMIT 1`,
+      [clean, phoneVariants.length > 0 ? phoneVariants : null]
+    );
+
+    // If not found in afiliados directly, check if user exists in leads and auto-provision!
+    if (res.rows.length === 0) {
+      let leadRow = null;
+      if (phoneVariants.length > 0) {
+        const leadRes = await client.query(
+          `SELECT * FROM leads WHERE whatsapp = ANY($1) LIMIT 1`,
+          [phoneVariants]
+        );
+        leadRow = leadRes.rows[0];
+      }
+      if (!leadRow && clean) {
+        const leadRes = await client.query(
+          `SELECT * FROM leads WHERE email = $1 LIMIT 1`,
+          [clean]
+        );
+        leadRow = leadRes.rows[0];
+      }
+
+      if (leadRow) {
+        await ensureAffiliateCode(leadRow.alias_nombre || "Embajador", leadRow.whatsapp, leadRow.email);
+        res = await client.query(
+          `SELECT * FROM afiliados 
+           WHERE email = $1 
+              OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[]))
+           LIMIT 1`,
+          [clean, phoneVariants.length > 0 ? phoneVariants : null]
+        );
+      }
+    }
+
+    if (res.rows.length === 0) return null;
+    const row = res.rows[0];
+
+    // Count leads referring this alias
+    const leadsRes = await client.query(
+      `SELECT COUNT(*)::int AS cnt FROM leads WHERE LOWER(afiliado_id) = $1`,
+      [row.alias.toLowerCase()]
+    );
+    const leadsCount = leadsRes.rows[0]?.cnt || 0;
+
+    return {
+      alias: row.alias,
+      nombre: row.nombre || row.alias,
+      whatsapp: row.whatsapp,
+      email: row.email,
+      clicks: row.clicks || 0,
+      leadsCount,
+      purchasesCount: row.referidos_pagados || 0,
+      freeTicketsEarned: row.entradas_ganadas || 0,
+    };
+  } finally {
+    client.release();
+  }
+}
+
+export async function updateAffiliateCode(oldAlias: string, newAlias: string): Promise<{ success: boolean; error?: string }> {
+  const client = await pool.connect();
+  try {
+    const cleanOld = oldAlias.trim().toLowerCase();
+    const cleanNew = newAlias.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+
+    if (!cleanNew || cleanNew.length < 3) {
+      return { success: false, error: "El código debe tener al menos 3 caracteres alfanuméricos" };
+    }
+
+    if (cleanOld === cleanNew) return { success: true };
+
+    const check = await client.query(`SELECT 1 FROM afiliados WHERE LOWER(alias) = $1`, [cleanNew]);
+    if (check.rows.length > 0) {
+      return { success: false, error: "Este código de embajador ya se encuentra en uso por otra persona" };
+    }
+
+    await client.query(`UPDATE afiliados SET alias = $1 WHERE LOWER(alias) = $2`, [cleanNew, cleanOld]);
+    // Also update referenced leads
+    await client.query(`UPDATE leads SET afiliado_id = $1 WHERE LOWER(afiliado_id) = $2`, [cleanNew, cleanOld]);
+
+    return { success: true };
+  } finally {
+    client.release();
+  }
+}
 
 // --- DRIZZLE ORM ---
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
 
 export const db = drizzle(pool, { schema });
+

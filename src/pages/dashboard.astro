@@ -1,0 +1,326 @@
+---
+// src/pages/dashboard.astro - Panel de Embajadores El Placer de Compartir
+import Layout from "../layouts/Layout.astro";
+import AmbassadorLogin from "../components/AmbassadorLogin.astro";
+---
+
+<Layout title="Panel de Embajadores — El Placer de Compartir" isCorset={false}>
+  <main class="min-h-screen bg-[#0d050f] text-[#f7f4ee] py-16 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Header -->
+      <div class="text-center mb-12">
+        <span class="inline-block py-1 px-3 rounded-full bg-[#c5a059]/10 border border-[#c5a059]/30 text-[#ead397] text-xs uppercase tracking-[0.25em] font-medium mb-3">
+          Programa Oficial de Embajadores
+        </span>
+        <h1 class="text-3xl sm:text-4xl font-serif font-bold text-[#ead397] tracking-wide">
+          Panel de Control de Embajador
+        </h1>
+        <p class="text-sm text-[#f7f4ee]/70 mt-2 max-w-xl mx-auto">
+          Monitorea el alcance de tu enlace, tus registros generados y el estado de tus recompensas VIP.
+        </p>
+      </div>
+
+      <!-- Auth Gate Container -->
+      <div id="unauthenticated-view">
+        <AmbassadorLogin />
+      </div>
+
+      <!-- Authenticated Dashboard View -->
+      <div id="authenticated-view" class="hidden space-y-8">
+        
+        <!-- Welcome Bar -->
+        <div class="flex flex-col sm:flex-row items-center justify-between p-6 rounded-2xl bg-[#140816] border border-[#c5a059]/30 shadow-lg gap-4">
+          <div>
+            <span class="text-xs text-[#c5a059] uppercase tracking-widest font-semibold block">Embajador Activo</span>
+            <h2 id="ambassador-name" class="text-xl font-serif font-bold text-[#f7f4ee]">Cargando...</h2>
+            <p id="ambassador-contact" class="text-xs text-[#f7f4ee]/50 mt-0.5 font-mono"></p>
+          </div>
+          <button 
+            id="btn-logout" 
+            class="px-4 py-2 rounded-lg text-xs uppercase tracking-wider font-semibold border border-[#c5a059]/30 text-[#f7f4ee]/70 hover:text-[#f7f4ee] hover:border-[#c5a059] transition-all"
+          >
+            Cerrar Sesión
+          </button>
+        </div>
+
+        <!-- 4 Metric Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
+            <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Clics Totales</span>
+            <span id="metric-clicks" class="text-3xl font-serif font-bold text-[#c5a059]">0</span>
+            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Interacciones en tu link</span>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
+            <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Registros</span>
+            <span id="metric-leads" class="text-3xl font-serif font-bold text-[#ead397]">0</span>
+            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Leads conectados</span>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
+            <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Membresías VIP</span>
+            <span id="metric-purchases" class="text-3xl font-serif font-bold text-[#81c784]">0</span>
+            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Ventas confirmadas</span>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
+            <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Entradas Ganadas</span>
+            <span id="metric-tickets" class="text-3xl font-serif font-bold text-[#e57373]">0</span>
+            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Acceso 100% libre</span>
+          </div>
+        </div>
+
+        <!-- Reward Milestone Tracker -->
+        <div class="p-6 rounded-2xl bg-gradient-to-r from-[#250F22] to-[#140816] border border-[#c5a059]/40 relative overflow-hidden">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <span class="text-xs uppercase tracking-[0.2em] text-[#c5a059] font-bold block mb-1">Incentivo Exclusivo</span>
+              <h3 class="text-lg font-serif font-bold text-[#ead397]">Regla de Recompensas: 3 Membresías = 1 Entrada VIP</h3>
+              <p class="text-xs text-[#f7f4ee]/70 mt-1 max-w-lg">
+                Por cada 3 compras de membresía anual VIP generadas con tu enlace, el sistema activa automáticamente un cupón de entrada 100% gratuita para el próximo evento de gala.
+              </p>
+            </div>
+            <div id="reward-badge-container" class="text-right">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="mt-4 pt-4 border-t border-[#c5a059]/20">
+            <div class="flex justify-between text-xs text-[#f7f4ee]/60 mb-1">
+              <span>Progreso hacia la próxima entrada gratis</span>
+              <span id="reward-progress-text" class="font-mono text-[#ead397]">0 / 3 compras</span>
+            </div>
+            <div class="w-full h-2.5 bg-[#0a0608] rounded-full overflow-hidden border border-[#c5a059]/20">
+              <div id="reward-progress-bar" class="h-full bg-gradient-to-r from-[#c5a059] to-[#ead397] transition-all duration-500" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Link Customization and Sharing -->
+        <div class="p-6 sm:p-8 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-6">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-serif font-bold text-[#ead397]">Tu Enlace de Afiliado Exclusivo</h3>
+            <span class="text-xs text-[#81c784] font-medium flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Activo y comisionable
+            </span>
+          </div>
+
+          <!-- Share Link Display -->
+          <div class="flex flex-col sm:flex-row gap-3">
+            <input 
+              type="text" 
+              id="current-share-url" 
+              readonly 
+              class="flex-1 px-4 py-3 rounded-lg bg-[#0a0608] border border-[#c5a059]/30 text-[#ead397] font-mono text-sm select-all focus:outline-none"
+            >
+            <button 
+              id="btn-copy-url" 
+              class="px-5 py-3 rounded-lg text-xs uppercase tracking-wider font-bold bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all whitespace-nowrap"
+            >
+              Copiar Enlace
+            </button>
+            <a 
+              id="btn-share-wa" 
+              href="#" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="px-5 py-3 rounded-lg text-xs uppercase tracking-wider font-bold bg-[#2e7d32] text-[#f7f4ee] hover:bg-[#388e3c] transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+            >
+              Compartir WhatsApp
+            </a>
+          </div>
+
+          <!-- Custom Code Editor -->
+          <div class="pt-6 border-t border-[#c5a059]/20">
+            <h4 class="text-sm font-semibold text-[#f7f4ee]/80 mb-2">Personalizar tu Código de Embajador</h4>
+            <p class="text-xs text-[#f7f4ee]/60 mb-3">Puedes cambiar tu alias para que tu enlace sea más memorable y exclusivo (mínimo 3 caracteres alfanuméricos).</p>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <div class="flex items-center flex-1 bg-[#0a0608] border border-[#c5a059]/30 rounded-lg px-3">
+                <span class="text-xs text-[#f7f4ee]/40 font-mono">elplacerdc.com/?ref=</span>
+                <input 
+                  type="text" 
+                  id="input-new-code" 
+                  placeholder="tu-alias" 
+                  class="flex-1 bg-transparent py-2.5 px-1 text-sm text-[#ead397] font-mono focus:outline-none"
+                >
+              </div>
+              <button 
+                id="btn-update-code" 
+                class="px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider font-semibold border border-[#c5a059]/50 hover:bg-[#c5a059]/20 text-[#ead397] transition-all whitespace-nowrap"
+              >
+                Guardar Código
+              </button>
+            </div>
+            <p id="code-update-feedback" class="text-xs mt-2 min-h-[16px]"></p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const unauthView = document.getElementById("unauthenticated-view");
+  const authView = document.getElementById("authenticated-view");
+  const ambassadorName = document.getElementById("ambassador-name");
+  const ambassadorContact = document.getElementById("ambassador-contact");
+  const metricClicks = document.getElementById("metric-clicks");
+  const metricLeads = document.getElementById("metric-leads");
+  const metricPurchases = document.getElementById("metric-purchases");
+  const metricTickets = document.getElementById("metric-tickets");
+  const currentShareUrl = document.getElementById("current-share-url") as HTMLInputElement;
+  const btnCopyUrl = document.getElementById("btn-copy-url");
+  const btnShareWa = document.getElementById("btn-share-wa") as HTMLAnchorElement;
+  const inputNewCode = document.getElementById("input-new-code") as HTMLInputElement;
+  const btnUpdateCode = document.getElementById("btn-update-code");
+  const codeUpdateFeedback = document.getElementById("code-update-feedback");
+  const btnLogout = document.getElementById("btn-logout");
+  const rewardProgressBar = document.getElementById("reward-progress-bar");
+  const rewardProgressText = document.getElementById("reward-progress-text");
+  const rewardBadgeContainer = document.getElementById("reward-badge-container");
+
+  let currentAlias = "";
+  const sessionIdentifier = localStorage.getItem("ambassador_session_phone");
+
+  async function loadDashboard() {
+    if (!sessionIdentifier) {
+      unauthView?.classList.remove("hidden");
+      authView?.classList.add("hidden");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(sessionIdentifier)}`);
+      const data = await res.json();
+
+      if (data.success && data.stats) {
+        const stats = data.stats;
+        currentAlias = stats.alias;
+
+        unauthView?.classList.add("hidden");
+        authView?.classList.remove("hidden");
+
+        if (ambassadorName) ambassadorName.textContent = stats.nombre || stats.alias;
+        if (ambassadorContact) ambassadorContact.textContent = stats.whatsapp || stats.email || "";
+
+        if (metricClicks) metricClicks.textContent = stats.clicks.toString();
+        if (metricLeads) metricLeads.textContent = stats.leadsCount.toString();
+        if (metricPurchases) metricPurchases.textContent = stats.purchasesCount.toString();
+        if (metricTickets) metricTickets.textContent = stats.freeTicketsEarned.toString();
+
+        const shareUrl = `https://elplacerdc.com/?ref=${stats.alias}`;
+        if (currentShareUrl) currentShareUrl.value = shareUrl;
+        if (inputNewCode) inputNewCode.value = stats.alias;
+
+        if (btnShareWa) {
+          const waMsg = encodeURIComponent(`Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
+          btnShareWa.href = `https://wa.me/?text=${waMsg}`;
+        }
+
+        // Calculate progress to next ticket
+        const progressCount = stats.purchasesCount % 3;
+        const progressPercent = Math.min(100, Math.round((progressCount / 3) * 100));
+        if (rewardProgressBar) rewardProgressBar.style.width = `${progressPercent}%`;
+        if (rewardProgressText) rewardProgressText.textContent = `${progressCount} / 3 compras hacia la próxima entrada`;
+
+        // Display Active Rewards
+        if (rewardBadgeContainer) {
+          if (stats.freeTicketsEarned > 0 || stats.purchasesCount >= 3) {
+            rewardBadgeContainer.innerHTML = `
+              <div class="p-3 bg-[#c5a059]/20 border border-[#c5a059] rounded-xl text-center">
+                <span class="text-[10px] uppercase tracking-wider text-[#ead397] block font-bold">Cupón VIP Desbloqueado</span>
+                <span class="font-mono text-sm font-bold text-[#f7f4ee] select-all">VIP-FREE-${stats.alias.toUpperCase()}</span>
+                <p class="text-[10px] text-[#81c784] mt-0.5">Válido para entrada gratuita</p>
+              </div>
+            `;
+          } else {
+            rewardBadgeContainer.innerHTML = `
+              <div class="p-3 bg-[#0a0608]/50 border border-[#c5a059]/20 rounded-xl text-center">
+                <span class="text-xs text-[#f7f4ee]/50">Faltan ${3 - progressCount} compras</span>
+              </div>
+            `;
+          }
+        }
+
+      } else {
+        localStorage.removeItem("ambassador_session_phone");
+        unauthView?.classList.remove("hidden");
+        authView?.classList.add("hidden");
+      }
+    } catch (e) {
+      console.error("Error loading ambassador stats:", e);
+    }
+  }
+
+  // Copy link
+  btnCopyUrl?.addEventListener("click", () => {
+    if (!currentShareUrl) return;
+    navigator.clipboard.writeText(currentShareUrl.value).then(() => {
+      const originalText = btnCopyUrl.textContent;
+      btnCopyUrl.textContent = "¡Copiado!";
+      setTimeout(() => {
+        btnCopyUrl.textContent = originalText;
+      }, 2000);
+    });
+  });
+
+  // Update Code
+  btnUpdateCode?.addEventListener("click", async () => {
+    const newCode = inputNewCode?.value.trim().toLowerCase();
+    if (!newCode || newCode.length < 3) {
+      if (codeUpdateFeedback) {
+        codeUpdateFeedback.className = "text-xs mt-2 text-[#ef5350]";
+        codeUpdateFeedback.textContent = "El código debe tener al menos 3 caracteres alfanuméricos";
+      }
+      return;
+    }
+
+    if (newCode === currentAlias.toLowerCase()) {
+      if (codeUpdateFeedback) {
+        codeUpdateFeedback.className = "text-xs mt-2 text-[#ead397]";
+        codeUpdateFeedback.textContent = "El código ya es el actual";
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/affiliates/update-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ oldCode: currentAlias, newCode }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        currentAlias = data.newCode;
+        if (currentShareUrl) currentShareUrl.value = `https://elplacerdc.com/?ref=${currentAlias}`;
+        if (codeUpdateFeedback) {
+          codeUpdateFeedback.className = "text-xs mt-2 text-[#81c784]";
+          codeUpdateFeedback.textContent = "✓ Código actualizado exitosamente";
+        }
+      } else {
+        if (codeUpdateFeedback) {
+          codeUpdateFeedback.className = "text-xs mt-2 text-[#ef5350]";
+          codeUpdateFeedback.textContent = data.error || "No se pudo actualizar el código";
+        }
+      }
+    } catch (e: any) {
+      if (codeUpdateFeedback) {
+        codeUpdateFeedback.className = "text-xs mt-2 text-[#ef5350]";
+        codeUpdateFeedback.textContent = "Error al actualizar código";
+      }
+    }
+  });
+
+  // Logout
+  btnLogout?.addEventListener("click", () => {
+    localStorage.removeItem("ambassador_session_phone");
+    window.location.reload();
+  });
+
+  loadDashboard();
+</script>

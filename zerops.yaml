@@ -11,6 +11,10 @@ zerops:
         - node_modules
     run:
       base: ubuntu/bun@1.3
+      volume:
+        hostname: localstorage
+        mountPath: /var/www/localstorage
+        readOnly: false
       ports:
         - port: 3000
           httpSupport: true
@@ -43,6 +47,10 @@ zerops:
         - node_modules
     run:
       base: ubuntu/bun@1.3
+      volume:
+        hostname: localstorage
+        mountPath: /var/www/localstorage
+        readOnly: false
       ports:
         - port: 3000
           httpSupport: true

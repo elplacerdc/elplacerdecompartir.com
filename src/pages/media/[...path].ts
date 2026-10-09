@@ -8,7 +8,7 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response('Not found', { status: 404 });
   }
 
-  const basePath = '/var/www/localstorage/proyectos/ELPLACERDC/media/';
+  const basePath = '/var/www/localstorage/ELPLACERDC/media/';
   const fullPath = path.join(basePath, filePath);
 
   // Security check to ensure the resolved path stays within basePath

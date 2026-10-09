@@ -1,19 +1,24 @@
 import type { APIRoute } from "astro";
-import { upsertLead } from "../../../db";
+import { upsertLead, ensureAffiliateCode } from "../../../db";
 import { notifyNewLead } from "../../../services/notifications";
-import { verifyOTP } from "../../../services/evolution";
+import { verifyChannelOTP } from "../../../services/evolution";
 import { addSubscriber } from "../../../services/listmonk";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json();
-    const { alias_nombre, email, whatsapp, rol, ciudad, origen, corset_vip, otp } = body;
+    const { alias_nombre, email, whatsapp, rol, ciudad, origen, corset_vip, otp, verified } = body;
 
-    if (!otp || !(await verifyOTP(whatsapp, otp))) {
-      return new Response(JSON.stringify({ success: false, error: "OTP inválido o expirado" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+    // Verify OTP if provided (or if already verified inline via /api/otp/verify)
+    if (!verified) {
+      const otpDestination = whatsapp || email;
+      const isValidOtp = otp && (await verifyChannelOTP(otpDestination, otp));
+      if (!isValidOtp) {
+        return new Response(JSON.stringify({ success: false, error: "Código de verificación inválido o expirado" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     }
 
     const affiliateRef = cookies.get("affiliate_ref")?.value;
@@ -41,6 +46,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
+    // Ensure bidirectional affiliate code generation for every registered lead
+    let affiliateCode: string | null = null;
+    try {
+      affiliateCode = await ensureAffiliateCode(alias_nombre || "Embajador", whatsapp, email);
+    } catch (e: any) {
+      console.warn("[Register ensureAffiliateCode Warn]:", e.message);
+    }
+
     // 2. Manejo de registro duplicado en el mismo canal (200 OK con supresión de multi-mensajes)
     if (result.status === "already_registered") {
       return new Response(
@@ -49,6 +62,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           already_registered: true,
           message: result.message,
           lead: result.lead,
+          affiliate_code: affiliateCode,
         }),
         {
           status: 200,
@@ -75,6 +89,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         success: true,
         message: result.message,
         lead: result.lead,
+        affiliate_code: affiliateCode,
       }),
       {
         status: 200,

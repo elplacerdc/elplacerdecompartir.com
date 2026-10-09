@@ -18,3 +18,5 @@ __pycache__/
 
 # Private customer data & leads
 data/
+localstorage/
+test-results/

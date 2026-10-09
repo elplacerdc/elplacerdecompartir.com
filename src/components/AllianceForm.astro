@@ -7,24 +7,26 @@ interface Props {
 
 const { 
   title = "Propuesta de Alianza o Contratación de Sede", 
-  subtitle = "¿Organizas veladas mente abierta, facilitas talleres de tantra o BDSM ético, o buscas una locación singular en Bogotá? Déjanos tu propuesta para coordinar fechas y producción." 
+  subtitle = "" 
 } = Astro.props;
 ---
 
-<div class="p-6 sm:p-10 rounded-2xl border border-corset-gold/35 bg-[#250F22]/95 shadow-[0_4px_30px_rgba(89,31,38,0.3)] relative overflow-hidden">
+<div id="postulacion" class="scroll-mt-24 p-6 sm:p-10 rounded-2xl border border-[#c5a059]/35 bg-[#250F22]/95 shadow-[0_4px_30px_rgba(89,31,38,0.3)] relative overflow-hidden">
   <!-- Decorative Ambient Glow -->
   <div class="absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl -z-10 pointer-events-none bg-[#721c24]/20"></div>
 
   <div class="mb-8 text-center sm:text-left">
-    <div class="inline-block px-3 py-1 rounded-full bg-corset-gold/15 border border-corset-gold/30 text-xs text-corset-champagne uppercase tracking-wider font-semibold mb-3">
+    <div class="inline-block px-3 py-1 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-xs text-[#ead397] uppercase tracking-wider font-semibold mb-3">
       🏛️ Dirección & Producción Cultural
     </div>
-    <h3 class="text-2xl font-serif font-bold tracking-wide uppercase text-corset-champagne">
+    <h3 class="text-2xl font-serif font-bold tracking-wide uppercase text-[#ead397]">
       {title}
     </h3>
-    <p class="text-sm text-elplacer-ivory/75 mt-2 leading-relaxed font-light">
-      {subtitle}
-    </p>
+    {subtitle && (
+      <p class="text-sm text-[#f7f4ee]/75 mt-2 leading-relaxed font-light">
+        {subtitle}
+      </p>
+    )}
   </div>
 
   <form id="alliance-form" class="space-y-5">
@@ -32,64 +34,96 @@ const {
 
     <!-- Nombre / Organización / Marca -->
     <div>
-      <label for="input-alias" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
-        Nombre, Colectivo o Marca Organizadora <span class="text-elplacer-terracotta">*</span>
+      <label for="input-alliance-alias" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Nombre, Colectivo o Marca Organizadora <span class="text-[#b84a39]">*</span>
       </label>
       <input
         type="text"
         name="alias_nombre"
-        id="input-alias"
+        id="input-alliance-alias"
         required
         placeholder="Ej. Colectivo Éter / Tu Nombre"
-        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
+        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
       />
     </div>
 
-    <!-- WhatsApp & Email Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div>
-        <label for="input-whatsapp" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
-          WhatsApp de Contacto Oficial <span class="text-elplacer-terracotta">*</span>
-        </label>
+    <!-- WhatsApp con OTP -->
+    <div>
+      <label for="input-alliance-whatsapp" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        WhatsApp de Contacto Oficial <span class="text-[#b84a39]">*</span>
+      </label>
+      <div class="flex flex-col sm:flex-row gap-2">
         <input
           type="tel"
           name="whatsapp"
-          id="input-whatsapp"
+          id="input-alliance-whatsapp"
           required
-          placeholder="+57 300 000 0000"
-          class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
+          placeholder="Ej: 310 000 0000 o +57 310..."
+          class="flex-1 px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
         />
+        <button
+          type="button"
+          id="btn-alliance-send-wa-otp"
+          class="px-4 py-3 rounded-xl bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 hover:bg-[#c5a059]/30 text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap"
+        >
+          Enviar Código OTP
+        </button>
+      </div>
+      <div id="alliance-wa-verified-badge" class="hidden mt-2 flex items-center gap-1.5 text-xs text-[#81c784] font-medium">
+        <span>✓</span> WhatsApp Verificado
       </div>
 
-      <div>
-        <label for="input-email" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
-          Correo Electrónico <span class="text-elplacer-terracotta">*</span>
-        </label>
-        <input
-          type="email"
-          name="email"
-          id="input-email"
-          required
-          placeholder="alianzas@tuorganizacion.com"
-          class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all"
-        />
+      <!-- WA OTP Verification Box -->
+      <div id="alliance-wa-otp-box" class="hidden mt-3 p-3 rounded-xl bg-[#140816] border border-[#c5a059]/40 space-y-2">
+        <div class="flex gap-2">
+          <input
+            type="text"
+            id="input-alliance-wa-otp"
+            maxlength="6"
+            placeholder="123456"
+            class="w-32 px-3 py-2 rounded-lg bg-[#0a0608] border border-[#c5a059]/30 text-center font-mono text-base tracking-widest text-[#ead397] focus:outline-none focus:border-[#c5a059]"
+          />
+          <button
+            type="button"
+            id="btn-alliance-verify-wa-otp"
+            class="px-4 py-2 rounded-lg bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all"
+          >
+            Verificar
+          </button>
+        </div>
+        <p id="alliance-wa-otp-status" class="text-[11px] text-[#f7f4ee]/60">Ingresa el código de 6 dígitos enviado a tu WhatsApp.</p>
       </div>
+    </div>
+
+    <!-- Correo Electrónico -->
+    <div>
+      <label for="input-alliance-email" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Correo Electrónico <span class="text-[#b84a39]">*</span>
+      </label>
+      <input
+        type="email"
+        name="email"
+        id="input-alliance-email"
+        required
+        placeholder="alianzas@tuorganizacion.com"
+        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+      />
     </div>
 
     <!-- Tipo de Alianza o Contratación -->
     <div>
-      <label for="input-tipo-alianza" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
-        Tipo de Propuesta o Alianza <span class="text-elplacer-terracotta">*</span>
+      <label for="input-tipo-alianza" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Tipo de Propuesta o Alianza <span class="text-[#b84a39]">*</span>
       </label>
       <select
         name="tipo_alianza"
         id="input-tipo-alianza"
         required
-        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
+        class="w-full px-4 py-3 rounded-xl bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
       >
         <option value="organizador_eventos_adultos">🥂 Organizador de Eventos Adultos / Mente Abierta</option>
         <option value="tallerista_terapeuta">🧘 Tallerista / Terapeuta (Tantra, Masajes, BDSM Ético)</option>
-        <option value="alquiler_espacio_privado">🏛️ Alquiler Privado del Espacio (Celebraciones o Veladas)</option>
+        <option value="alquiler_espacio_privado">🏛️ Alquiler Privado del Espacio (Veladas y Fantasías)</option>
         <option value="produccion_artistica">📸 Producción Artística / Fotografía / Performance</option>
         <option value="otra_alianza">✨ Otra Modalidad de Alianza Comercial o Cultural</option>
       </select>
@@ -97,58 +131,27 @@ const {
 
     <!-- Textarea para Detalle de la Propuesta -->
     <div>
-      <label for="input-propuesta" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
-        Cuéntanos sobre tu propuesta de alianza o requerimientos <span class="text-elplacer-terracotta">*</span>
+      <label for="input-propuesta" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
+        Descripción de tu Propuesta, Fechas o Necesidades <span class="text-[#b84a39]">*</span>
       </label>
       <textarea
         name="propuesta_detalle"
         id="input-propuesta"
         required
         rows="4"
-        placeholder="Describe el concepto del evento o taller, público estimado, fechas tentativas, requerimientos de la sede y propuesta de colaboración..."
-        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all leading-relaxed"
+        placeholder="Cuéntanos sobre tu evento o taller, formato esperado, público proyectado y qué espacios requieres..."
+        class="w-full px-4 py-3 rounded-xl bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
       ></textarea>
     </div>
 
-    <!-- Ciudad -->
-    <div>
-      <label for="input-ciudad" class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
-        Sede de Interés
-      </label>
-      <select
-        name="ciudad"
-        id="input-ciudad"
-        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum border border-corset-gold/30 text-elplacer-ivory focus:outline-none focus:border-corset-gold text-sm transition-all"
-      >
-        <option value="Bogotá">Sede Bogotá (Casa Teusaquillo / Galerías)</option>
-        <option value="Medellín">Próxima Sede Medellín</option>
-        <option value="Otra">Otra Locación</option>
-      </select>
-    </div>
-
-    <!-- Feedback Message Box -->
     <div id="alliance-feedback" class="hidden text-sm p-4 rounded-xl"></div>
-
-    <!-- OTP Section (Hidden initially) -->
-    <div id="otp-section" class="hidden">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-corset-gold mb-2">
-        Código de Verificación (Enviado a WhatsApp) <span class="text-elplacer-terracotta">*</span>
-      </label>
-      <input
-        type="text"
-        name="otp"
-        id="input-otp"
-        placeholder="Ej: 123456"
-        class="w-full px-4 py-3 rounded-xl bg-elplacer-midnight-plum/90 border border-corset-gold/30 text-elplacer-ivory placeholder-elplacer-ivory/30 focus:outline-none focus:border-corset-gold focus:ring-1 focus:ring-corset-gold text-sm transition-all text-center tracking-[0.5em] font-mono"
-      />
-    </div>
 
     <button
       type="submit"
-      id="alliance-submit-btn"
-      class="w-full py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-corset-gold via-corset-champagne to-[#8a6d3b] text-corset-noir hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
+      id="submit-alliance-btn"
+      class="w-full py-4 rounded-xl font-serif font-bold uppercase tracking-widest text-sm bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)] transition-all"
     >
-      Enviar Propuesta a Dirección Cultural
+      Enviar Propuesta a Dirección
     </button>
   </form>
 </div>
@@ -156,80 +159,154 @@ const {
 <script>
   const form = document.getElementById("alliance-form") as HTMLFormElement;
   const feedback = document.getElementById("alliance-feedback") as HTMLElement;
-  const submitBtn = document.getElementById("alliance-submit-btn") as HTMLButtonElement;
-  const otpSection = document.getElementById("otp-section") as HTMLElement;
-  const inputOtp = document.getElementById("input-otp") as HTMLInputElement;
+  const submitBtn = document.getElementById("submit-alliance-btn") as HTMLButtonElement;
 
-  let otpSent = false;
+  const inputWhatsapp = document.getElementById("input-alliance-whatsapp") as HTMLInputElement;
+  const btnSendWaOtp = document.getElementById("btn-alliance-send-wa-otp") as HTMLButtonElement;
+  const waOtpBox = document.getElementById("alliance-wa-otp-box") as HTMLElement;
+  const inputWaOtp = document.getElementById("input-alliance-wa-otp") as HTMLInputElement;
+  const btnVerifyWaOtp = document.getElementById("btn-alliance-verify-wa-otp") as HTMLButtonElement;
+  const waOtpStatus = document.getElementById("alliance-wa-otp-status") as HTMLElement;
+  const waVerifiedBadge = document.getElementById("alliance-wa-verified-badge") as HTMLElement;
+
+  let waVerified = false;
+
+  btnSendWaOtp?.addEventListener("click", async () => {
+    const whatsapp = inputWhatsapp.value.trim();
+    if (!whatsapp) {
+      alert("Por favor ingresa tu número de WhatsApp");
+      inputWhatsapp.focus();
+      return;
+    }
+
+    btnSendWaOtp.disabled = true;
+    btnSendWaOtp.textContent = "Enviando...";
+
+    try {
+      const res = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: whatsapp, channel: "whatsapp" }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        waOtpBox.classList.remove("hidden");
+        btnSendWaOtp.textContent = "Reenviar";
+        btnSendWaOtp.disabled = false;
+        waOtpStatus.textContent = "Código enviado a tu WhatsApp";
+        inputWaOtp.focus();
+      } else {
+        alert(data.error || "No se pudo enviar el código a WhatsApp");
+        btnSendWaOtp.textContent = "Enviar Código OTP";
+        btnSendWaOtp.disabled = false;
+      }
+    } catch (e: any) {
+      alert("Error al conectar para enviar código");
+      btnSendWaOtp.textContent = "Enviar Código OTP";
+      btnSendWaOtp.disabled = false;
+    }
+  });
+
+  btnVerifyWaOtp?.addEventListener("click", async () => {
+    const whatsapp = inputWhatsapp.value.trim();
+    const code = inputWaOtp.value.trim();
+
+    if (!code || code.length < 4) {
+      alert("Ingresa el código de 6 dígitos");
+      return;
+    }
+
+    btnVerifyWaOtp.disabled = true;
+    btnVerifyWaOtp.textContent = "...";
+
+    try {
+      const res = await fetch("/api/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ destination: whatsapp, code, channel: "whatsapp" }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        waVerified = true;
+        waOtpBox.classList.add("hidden");
+        btnSendWaOtp.classList.add("hidden");
+        inputWhatsapp.readOnly = true;
+        waVerifiedBadge.classList.remove("hidden");
+      } else {
+        waOtpStatus.textContent = "Código incorrecto";
+        btnVerifyWaOtp.disabled = false;
+        btnVerifyWaOtp.textContent = "Verificar";
+      }
+    } catch (e: any) {
+      alert("Error al verificar código");
+      btnVerifyWaOtp.disabled = false;
+      btnVerifyWaOtp.textContent = "Verificar";
+    }
+  });
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+    if (!waVerified) {
+      feedback.className = "text-sm p-4 rounded-xl bg-[#b84a39]/20 border border-[#b84a39]/40 text-[#ef5350]";
+      feedback.textContent = "⚠️ Por favor verifica tu WhatsApp pulsando 'Enviar Código OTP'.";
+      feedback.classList.remove("hidden");
+      btnSendWaOtp.focus();
+      return;
+    }
+
     submitBtn.disabled = true;
-    submitBtn.textContent = "Procesando...";
+    submitBtn.textContent = "Transmitiendo a Dirección...";
 
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
 
     try {
-      if (!otpSent) {
-        // Send OTP first
-        const otpRes = await fetch("/api/otp/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ whatsapp: payload.whatsapp }),
-        });
-        const otpData = await otpRes.json();
-        
-        if (otpData.success) {
-          otpSent = true;
-          otpSection.classList.remove("hidden");
-          inputOtp.required = true;
-          feedback.className = "text-sm p-4 rounded-xl bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
-          feedback.textContent = "ℹ️ Hemos enviado un código de verificación a tu WhatsApp. Ingrésalo para continuar.";
-          feedback.classList.remove("hidden");
-          submitBtn.textContent = "Verificar y Enviar";
-          submitBtn.disabled = false;
-        } else {
-          throw new Error(otpData.error || "Error al enviar código de verificación.");
-        }
-        return;
-      }
-
       const res = await fetch("/api/leads/alliance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          ...payload,
+          verified: true,
+        }),
       });
 
       const data = await res.json();
 
       if (data.success) {
-        if (data.already_registered) {
-          feedback.className = "text-sm p-4 rounded-xl bg-corset-gold/20 border border-corset-gold/40 text-corset-champagne";
-          feedback.textContent = `ℹ️ ${data.message || "Ya hemos recibido tu propuesta de alianza previamente."}`;
-        } else {
-          feedback.className = "text-sm p-4 rounded-xl bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
-          feedback.textContent = "✨ ¡Propuesta recibida con éxito! Nuestro equipo de dirección y producción se comunicará contigo vía WhatsApp y correo.";
-          form.reset();
-          otpSent = false;
-          otpSection.classList.add("hidden");
-          inputOtp.required = false;
+        // Auto-login ambassador session
+        const submittedPhone = inputWhatsapp.value.trim();
+        if (submittedPhone) {
+          localStorage.setItem("ambassador_session_phone", submittedPhone);
         }
+
+        let affiliateMsg = "";
+        if (data.affiliate_code) {
+          affiliateMsg = `
+            <div class="mt-3 p-3 bg-[#140816] rounded-xl border border-[#c5a059]/40 text-xs text-left">
+              <span class="text-[#ead397] font-semibold">Tu Enlace Oficial de Embajador:</span>
+              <code class="text-[#c5a059] block mt-1 select-all font-mono">https://elplacerdc.com/?ref=${data.affiliate_code}</code>
+              <a href="/dashboard" class="inline-block mt-2 text-[#ead397] underline font-medium">Ir a mi Panel de Embajador (Sesión Iniciada) →</a>
+            </div>
+          `;
+        }
+
+        feedback.className = "text-sm p-4 rounded-xl bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
+        feedback.innerHTML = `✨ ¡Propuesta recibida! La dirección del Centro Cultural evaluará tu proyecto y se comunicará vía WhatsApp o correo.${affiliateMsg}`;
         feedback.classList.remove("hidden");
+        form.reset();
       } else {
-        throw new Error(data.error || "Ocurrió un error al procesar.");
+        throw new Error(data.error || "Error al registrar la propuesta");
       }
     } catch (err: any) {
       feedback.className = "text-sm p-4 rounded-xl bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350]";
       feedback.textContent = err.message || "Error al conectar.";
       feedback.classList.remove("hidden");
     } finally {
-      if (!otpSent) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Enviar Propuesta a Dirección Cultural";
-      } else if (!submitBtn.disabled) {
-        submitBtn.textContent = "Verificar y Enviar";
-      }
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Enviar Propuesta a Dirección";
     }
   });
 </script>

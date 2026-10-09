@@ -1,93 +1,121 @@
 ---
+// galeria-centro-cultural.astro - Galería Completa del Centro Cultural El Placer de Compartir
 import Layout from "../layouts/Layout.astro";
+import AmbassadorSection from "../components/AmbassadorSection.astro";
 
 const zones = [
   {
-    title: "Zona Lobby",
+    title: "Lobby & Recepción Principal",
+    subtitle: "El umbral de bienvenida, diseñado con luz tenue, privacidad y acústica reservada.",
     photos: [
-      "/media/centro-cultural/fotos/lobby-1.jpg",
-      "/media/centro-cultural/fotos/lobby-2.jpg",
-      "/media/centro-cultural/fotos/lobby-3.jpg",
-    ]
+      { src: "/media/centro-cultural/fotos/lobby-1.jpg", title: "Lobby Central" },
+    ],
   },
   {
-    title: "Salón Principal",
+    title: "Salones de Talleres & Encuentros",
+    subtitle: "Espacios versátiles para dinámicas grupales, Shibari, charlas, masajes tántricos y cine reflexivo.",
     photos: [
-      "/media/centro-cultural/fotos/salon-principal-1-a.jpg",
-      "/media/centro-cultural/fotos/salon-principal-2.jpg",
-      "/media/centro-cultural/fotos/salon-principal-3.jpg",
-    ]
+      { src: "/media/centro-cultural/fotos/salon-principal-1-a.jpg", title: "Salón Principal (Vista Frontal)" },
+      { src: "/media/centro-cultural/fotos/salon-principal-2-a.jpg", title: "Salón Principal (Ángulo Amplio)" },
+      { src: "/media/centro-cultural/fotos/salon-negro-1.jpg", title: "Salón Negro (Atmósfera Íntima)" },
+      { src: "/media/centro-cultural/fotos/salon-negro-2.jpg", title: "Salón Negro (Detalle de Iluminación)" },
+      { src: "/media/centro-cultural/fotos/salon-rogo-1.jpg", title: "Salón Rojo (Terciopelo & Sensaciones)" },
+      { src: "/media/centro-cultural/fotos/salon-rogo-2.jpg", title: "Salón Rojo (Vista Lateral)" },
+      { src: "/media/centro-cultural/fotos/salon-cine-1.jpg", title: "Salón Cine & Proyecciones" },
+    ],
   },
   {
-    title: "Salón Negro",
+    title: "Habitaciones & Espacios Íntimos",
+    subtitle: "Habitaciones acondicionadas con confort prémium, higiene absoluta y estética cuidada.",
     photos: [
-      "/media/centro-cultural/fotos/salon-negro-1.jpg",
-      "/media/centro-cultural/fotos/salon-negro-2.jpg",
-      "/media/centro-cultural/fotos/salon-negro-3.jpg",
-    ]
+      { src: "/media/centro-cultural/fotos/hab-1-a.jpg", title: "Suite Sensorial I" },
+      { src: "/media/centro-cultural/fotos/hab-1-b.jpg", title: "Suite Sensorial I (Detalle)" },
+      { src: "/media/centro-cultural/fotos/hab-2-a.jpg", title: "Suite Sensorial II" },
+      { src: "/media/centro-cultural/fotos/hab-3-a.jpg", title: "Suite Sensorial III" },
+    ],
   },
   {
-    title: "Salón Rojo",
+    title: "Zona Licorera & Coctelería",
+    subtitle: "Barra de autor para degustaciones, cócteles artesanales y conversación distendida.",
     photos: [
-      "/media/centro-cultural/fotos/salon-rogo-1.jpg",
-      "/media/centro-cultural/fotos/salon-rojo-2.jpg",
-      "/media/centro-cultural/fotos/salon-rojo-3.jpg",
-    ]
+      { src: "/media/centro-cultural/fotos/licorera-1.jpg", title: "Barra Principal" },
+      { src: "/media/centro-cultural/fotos/licorera-2.jpg", title: "Área de Coctelería" },
+    ],
+  },
+];
+
+const videos = [
+  {
+    src: "/media/centro-cultural/videos/sitio-licorera.mp4",
+    title: "Recorrido Zona Licorera & Bar",
   },
   {
-    title: "Zona Licorera",
-    photos: [
-      "/media/centro-cultural/fotos/licorera-1.jpg",
-      "/media/centro-cultural/fotos/licorera-2.jpg",
-    ]
-  }
+    src: "/media/centro-cultural/videos/sitio-logos-1.mp4",
+    title: "Identidad & Atmósfera del Centro Cultural I",
+  },
+  {
+    src: "/media/centro-cultural/videos/sitio-logos-2.mp4",
+    title: "Identidad & Atmósfera del Centro Cultural II",
+  },
 ];
 ---
 
 <Layout 
   title="Galería del Centro Cultural | El Placer de Compartir"
-  description="Explora los espacios y salones de nuestro Centro Cultural en Bogotá."
+  description="Explora las fotos reales y videos de salones, habitaciones, lobby y licorera de nuestro Centro Cultural en Bogotá."
 >
   <div class="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-16">
     
+    <!-- Hero Title -->
     <div class="text-center space-y-4">
-      <span class="px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-corset-gold/20 text-corset-gold border border-corset-gold/40 inline-block mb-4">
-        Nuestros Espacios
+      <span class="inline-block px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-widest bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 mb-2">
+        Instalaciones Reales • Bogotá
       </span>
-      <h1 class="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-elplacer-ivory">
+      <h1 class="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-[#f7f4ee]">
         Galería Centro Cultural
       </h1>
-      <p class="text-lg text-elplacer-ivory/80 font-light max-w-2xl mx-auto">
-        Conoce las instalaciones, zonas y salones diseñados para la exploración sensorial, talleres y eventos de nuestra comunidad.
+      <p class="text-base sm:text-lg text-[#f7f4ee]/80 font-light max-w-2xl mx-auto leading-relaxed">
+        Conoce los espacios, salones y zonas diseñadas para la exploración sensorial, talleres y eventos de nuestra comunidad.
       </p>
       
       <div class="pt-4">
         <a 
-          href="/centro-cultural#alianzas" 
-          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-corset-gold text-elplacer-midnight-plum font-serif font-bold text-xs uppercase tracking-wider hover:bg-corset-champagne transition-all"
+          href="/centro-cultural#postulacion" 
+          class="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider hover:bg-[#ead397] shadow-lg transition-all"
         >
           Reserva un espacio (Alianzas)
         </a>
       </div>
     </div>
 
-    <!-- Zonas con Carrusel Horizontal -->
-    <div class="space-y-12">
+    <!-- Carruseles Horizontales por Zona -->
+    <div class="space-y-16">
       {zones.map((zone) => (
         <section class="space-y-4">
-          <h2 class="text-2xl font-serif font-bold text-corset-champagne border-b border-corset-gold/30 pb-2">{zone.title}</h2>
-          
-          <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 scrollbar-thin scrollbar-thumb-corset-gold/50 scrollbar-track-transparent">
+          <div class="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#c5a059]/20 pb-3 gap-2">
+            <div>
+              <h2 class="font-serif text-2xl font-bold text-[#ead397]">{zone.title}</h2>
+              <p class="text-xs sm:text-sm text-[#f7f4ee]/70 font-light mt-1">{zone.subtitle}</p>
+            </div>
+            <span class="text-[11px] text-[#c5a059] uppercase tracking-wider font-mono">
+              Desliza horizontalmente →
+            </span>
+          </div>
+
+          <!-- Carrusel Horizontal Fluido -->
+          <div class="flex gap-4 overflow-x-auto pb-4 pt-2 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-[#c5a059]/40">
             {zone.photos.map((photo) => (
-              <div class="flex-none w-[85%] sm:w-[60%] lg:w-[40%] snap-center rounded-2xl overflow-hidden border border-corset-gold/20 shadow-lg relative group aspect-[4/3]">
-                <img 
-                  src={photo} 
-                  alt={zone.title} 
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  onerror="this.src='/media/primera_invitacion_centro_cultural.jpg'"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-elplacer-midnight-plum/90 via-transparent to-transparent flex items-end p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span class="text-corset-champagne font-serif font-bold">{zone.title}</span>
+              <div class="min-w-[280px] sm:min-w-[360px] md:min-w-[420px] max-w-[460px] flex-shrink-0 snap-start rounded-2xl overflow-hidden bg-[#140816] border border-[#c5a059]/30 shadow-md group relative">
+                <div class="aspect-[4/3] w-full overflow-hidden bg-[#0a0608]">
+                  <img 
+                    src={photo.src} 
+                    alt={photo.title} 
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                </div>
+                <div class="p-3.5 bg-gradient-to-t from-[#140816] via-[#140816]/90 to-transparent">
+                  <p class="font-serif text-sm font-semibold text-[#f7f4ee]">{photo.title}</p>
                 </div>
               </div>
             ))}
@@ -95,9 +123,44 @@ const zones = [
         </section>
       ))}
     </div>
-    
-    <div class="text-center pt-8">
-      <a href="/centro-cultural" class="text-xs text-corset-gold hover:text-corset-champagne transition-colors underline underline-offset-2">← Volver a Centro Cultural</a>
+
+    <!-- Sección de Videos del Centro Cultural -->
+    <section class="space-y-6 pt-8 border-t border-[#c5a059]/20">
+      <div class="text-center space-y-2">
+        <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#c5a059] font-serif border border-[#c5a059]/30">
+          Recorridos Audiovisuales
+        </span>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#f7f4ee]">Videos de la Sede</h2>
+        <p class="text-xs sm:text-sm text-[#f7f4ee]/70 max-w-xl mx-auto">
+          Descubre el ambiente, la iluminación y la arquitectura del espacio en video.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {videos.map((vid) => (
+          <div class="rounded-2xl overflow-hidden bg-[#140816] border border-[#c5a059]/30 shadow-lg p-3 space-y-3 flex flex-col items-center">
+            <div class="rounded-xl overflow-hidden bg-black aspect-[9/16] w-full max-w-[260px] flex items-center justify-center">
+              <video 
+                src={vid.src} 
+                controls 
+                playsinline 
+                preload="none"
+                class="w-full h-full object-cover"
+              >
+                Tu navegador no soporta el formato de video.
+              </video>
+            </div>
+            <p class="font-serif text-xs font-semibold text-[#ead397] text-center px-1">{vid.title}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Ambassador Section -->
+    <AmbassadorSection />
+
+    <div class="text-center pt-4">
+      <a href="/centro-cultural" class="text-xs text-[#c5a059] hover:text-[#ead397] transition-colors underline underline-offset-2">← Volver a Centro Cultural</a>
     </div>
 
   </div>

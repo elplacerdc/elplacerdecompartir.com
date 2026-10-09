@@ -1,0 +1,46 @@
+---
+// src/components/AmbassadorSection.astro - Sección Promocional de Embajadores
+interface Props {
+  id?: string;
+  class?: string;
+}
+
+const { id = "embajadores", class: className = "" } = Astro.props;
+---
+
+<section id={id} class={`py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto ${className}`}>
+  <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#250F22] via-[#140816] to-[#0a0608] border border-[#c5a059]/40 p-8 sm:p-12 shadow-[0_8px_32px_rgba(89,31,38,0.25)] text-center">
+    
+    <!-- Ambient Glow -->
+    <div class="absolute -top-16 -right-16 w-64 h-64 bg-[#c5a059]/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-16 -left-16 w-64 h-64 bg-[#721c24]/20 rounded-full blur-3xl pointer-events-none"></div>
+
+    <span class="inline-block px-4 py-1.5 rounded-full text-xs font-serif font-bold uppercase tracking-[0.2em] bg-[#c5a059]/10 text-[#ead397] border border-[#c5a059]/30 mb-4">
+      Comunidad & Beneficios
+    </span>
+
+    <h2 class="text-2xl sm:text-3xl font-serif font-bold text-[#ead397] tracking-wide mb-3">
+      Gana como Embajador de El Placer de Compartir
+    </h2>
+
+    <p class="text-sm text-[#f7f4ee]/80 max-w-2xl mx-auto leading-relaxed mb-6">
+      Comparte tu enlace exclusivo con personas afines y de mente abierta. Cada 3 compras generadas con tu link (membresía VIP o entradas para eventos oficiales de El Placer de Compartir) activan automáticamente una <strong>Entrada Gratuita</strong> para nuestros encuentros y veladas de gala.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <a 
+        href="/dashboard" 
+        class="w-full sm:w-auto px-8 py-3.5 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059] text-[#050505] hover:brightness-110 shadow-[0_4px_20px_rgba(197,160,89,0.3)] transition-all"
+      >
+        Obtener mi Enlace de Embajador
+      </a>
+      <a 
+        href="/dashboard" 
+        class="w-full sm:w-auto px-8 py-3.5 rounded-full font-serif font-semibold uppercase tracking-wider text-xs border border-[#c5a059]/40 bg-[#140816]/80 text-[#ead397] hover:bg-[#140816] transition-all"
+      >
+        Ingresar a mi Panel
+      </a>
+    </div>
+
+  </div>
+</section>

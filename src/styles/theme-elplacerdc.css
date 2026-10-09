@@ -1,6 +1,7 @@
+@import "tailwindcss";
 
-
-@theme {
+@layer theme {
+  :root {
     /* ==========================================================================
        The Corset Society (Línea Luxury / Secret Society)
        ========================================================================== */
@@ -45,7 +46,7 @@
     --font-elplacer-display: 'Cinzel', 'Playfair Display', Georgia, serif;
     --font-elplacer-body: 'Inter', system-ui, sans-serif;
     --font-elplacer-quote: 'Cormorant Garamond', Georgia, serif;
-
+  }
 }
 
 /* ==========================================================================
