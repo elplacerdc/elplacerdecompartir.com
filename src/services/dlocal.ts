@@ -2,88 +2,115 @@ import crypto from 'crypto';
 
 export interface PaymentRequest {
   amount: number;
-  currency: string;
-  country: string;
-  payer: {
-    name: string;
-    email: string;
+  currency?: string;
+  country?: string;
+  description?: string;
+  orderId?: string;
+  payer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
   };
-  orderId: string;
   successUrl: string;
   cancelUrl: string;
   notificationUrl: string;
 }
 
-export async function createPaymentLink(req: PaymentRequest) {
-  const xLogin = process.env.DLOCAL_X_LOGIN;
-  const xTransKey = process.env.DLOCAL_X_TRANS_KEY;
-  const secretKey = process.env.DLOCAL_SECRET_KEY;
-  const apiUrl = process.env.DLOCAL_API_URL || "https://sandbox.dlocal.com";
-  
-  if (!xLogin || !xTransKey || !secretKey) {
-    throw new Error("Missing dLocal configuration");
+export function getDlocalConfig() {
+  const apiKey = process.env.DLOCAL_GO_API_KEY;
+  const secretKey = process.env.DLOCAL_GO_SECRET_KEY;
+  const isSandbox = (process.env.DLOCAL_GO_ENV || "").toLowerCase() === "sandbox";
+  const baseUrl = isSandbox ? "https://api-sbx.dlocalgo.com" : "https://api.dlocalgo.com";
+
+  if (!apiKey || !secretKey) {
+    throw new Error("Missing dLocal Go configuration (DLOCAL_GO_API_KEY / DLOCAL_GO_SECRET_KEY)");
   }
 
-  const xDate = new Date().toISOString();
-  
-  const payload = {
+  return { apiKey, secretKey, baseUrl, isSandbox };
+}
+
+export async function createPaymentLink(req: PaymentRequest): Promise<string> {
+  const { apiKey, secretKey, baseUrl } = getDlocalConfig();
+
+  const payload: Record<string, any> = {
     amount: req.amount,
-    currency: req.currency,
-    country: req.country,
-    payment_method_flow: "REDIRECT",
-    payer: {
-      name: req.payer.name,
-      email: req.payer.email
-    },
-    order_id: req.orderId,
+    currency: req.currency || "COP",
+    country: req.country || "CO",
+    order_id: req.orderId || `ORDER_${Date.now()}`,
+    description: (req.description || "The Corset Society - Membresía VIP").slice(0, 95),
     success_url: req.successUrl,
     back_url: req.cancelUrl,
     notification_url: req.notificationUrl,
-    description: "Annual VIP Membership"
   };
 
-  const requestBody = JSON.stringify(payload);
+  if (req.payer && (req.payer.name || req.payer.email)) {
+    payload.payer = {
+      name: req.payer.name,
+      email: req.payer.email,
+      phone: req.payer.phone,
+    };
+  }
 
-  const stringToSign = `${xLogin}${xDate}${requestBody}`;
-  const signature = crypto.createHmac('sha256', secretKey).update(stringToSign).digest('hex');
-
-  const response = await fetch(`${apiUrl}/payments`, {
+  const response = await fetch(`${baseUrl}/v1/payments`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Date": xDate,
-      "X-Login": xLogin,
-      "X-Trans-Key": xTransKey,
-      "X-Version": "2.1",
-      "Authorization": `V2-HMAC-SHA256, Signature: ${signature}`
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Authorization": `Bearer ${apiKey}:${secretKey}`,
     },
-    body: requestBody
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("dLocal payment link creation failed:", errorText);
-    throw new Error(`Payment link creation failed: ${response.statusText}`);
+    console.error("[dLocal Go Payment Error]:", response.status, errorText);
+    throw new Error(`Error en pasarela de pago (${response.status}): ${errorText}`);
   }
 
   const data = await response.json();
+  if (!data.redirect_url) {
+    throw new Error(data.message || "No se recibió redirect_url de dLocal Go");
+  }
+
   return data.redirect_url;
 }
 
-export function verifySignature(
-  xLoginHeader: string,
-  xDateHeader: string,
-  requestBody: string,
-  signatureHeader: string
-): boolean {
-  const secretKey = process.env.DLOCAL_SECRET_KEY;
-  if (!secretKey) return false;
+export async function retrievePayment(paymentId: string) {
+  const { apiKey, secretKey, baseUrl } = getDlocalConfig();
 
-  const stringToSign = `${xLoginHeader}${xDateHeader}${requestBody}`;
-  const expectedSignature = crypto.createHmac('sha256', secretKey).update(stringToSign).digest('hex');
+  const response = await fetch(`${baseUrl}/v1/payments/${paymentId}`, {
+    method: "GET",
+    headers: {
+      "Authorization": `Bearer ${apiKey}:${secretKey}`,
+    },
+  });
 
-  const hashMatch = signatureHeader.match(/Signature:\s*([a-f0-9]+)/i);
-  const receivedHash = hashMatch ? hashMatch[1] : signatureHeader;
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[dLocal Go Retrieve Payment Error]:", response.status, errorText);
+    throw new Error(`Error al consultar pago (${response.status}): ${errorText}`);
+  }
 
-  return expectedSignature === receivedHash;
+  return await response.json();
+}
+
+export function verifySignature(rawBody: string, authHeader: string): boolean {
+  const apiKey = process.env.DLOCAL_GO_API_KEY;
+  const secretKey = process.env.DLOCAL_GO_SECRET_KEY;
+  if (!apiKey || !secretKey || !authHeader) return false;
+
+  const match = authHeader.match(/Signature:\s*([a-f0-9]+)/i);
+  const receivedSig = (match ? match[1] : authHeader.replace(/^Bearer\s+/i, "")).trim().toLowerCase();
+
+  const expectedSig = crypto
+    .createHmac("sha256", secretKey)
+    .update(apiKey + rawBody)
+    .digest("hex")
+    .toLowerCase();
+
+  try {
+    return crypto.timingSafeEqual(Buffer.from(receivedSig, "hex"), Buffer.from(expectedSig, "hex"));
+  } catch {
+    return false;
+  }
 }

@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
               currency: "COP",
               country: "CO",
               order_id: ticketId,
-              description: `Cover Luna Llena: ${priceInfo.label} (${modalidad_pago === "reserva_40" ? "Separación 40%" : "Pago Total"})`,
+              description: `Cover Luna Llena: ${priceInfo.label} (${modalidad_pago === "reserva_40" ? "Separación 40%" : "Pago Total"})`.slice(0, 95),
               success_url: `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticketHash}`,
               back_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena",
               notification_url: "https://elplacerdecompartir.com/api/webhooks/dlocal",
