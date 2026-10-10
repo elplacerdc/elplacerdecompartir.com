@@ -525,6 +525,7 @@ const {
 
     const formData = new FormData(form);
     const payload = Object.fromEntries(formData.entries());
+    const formIsVip = (form.querySelector('input[name="corset_vip"]') as HTMLInputElement)?.value === "true" || formData.get("corset_vip") === "true" || isVip;
 
     try {
       const res = await fetch("/api/leads/register", {
@@ -534,7 +535,7 @@ const {
           ...payload,
           ref: localStorage.getItem("affiliate_ref") || undefined,
           verified: true,
-          corset_vip: isVip,
+          corset_vip: formIsVip,
         }),
       });
       const data = await res.json();

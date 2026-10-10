@@ -34,7 +34,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .toString()
       .trim()
       .toLowerCase() || undefined;
-    const targetChannel = corset_vip ? "corset" : "elplacerdc";
+    const isCorsetVip = corset_vip === true || corset_vip === "true";
+    const targetChannel = isCorsetVip ? "corset" : (origen === "alianza_centro_cultural" ? "centro_cultural" : "elplacerdc");
 
     const result = await upsertLead(
       {
@@ -43,9 +44,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         whatsapp,
         rol,
         ciudad: ciudad || "Bogotá",
-        origen: origen || (corset_vip ? "web_corset" : "web_comunidad"),
+        origen: origen || (isCorsetVip ? "web_corset" : "web_comunidad"),
         afiliado_id: affiliateRef || undefined,
-        corset_vip: Boolean(corset_vip),
+        corset_vip: isCorsetVip,
       },
       targetChannel
     );

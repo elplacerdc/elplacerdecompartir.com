@@ -246,13 +246,13 @@ export async function upsertLead(
         existingChannels.push(resolvedChannel);
       }
 
-      // Consolidate tags
+      // Consolidate tags as an additive monotonic set
       const existingTags: string[] = Array.isArray(existingMeta.tags) ? existingMeta.tags : [];
       const newTagsToAdd: string[] = [resolvedChannel];
       if (targetChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
         newTagsToAdd.push("alianza");
       }
-      if (data.corset_vip || resolvedChannel === "corset") {
+      if (data.corset_vip || resolvedChannel === "corset" || existingLead.corset_vip) {
         newTagsToAdd.push("corset_vip");
       }
       const consolidatedTags = Array.from(new Set([...existingTags, ...newTagsToAdd]));
@@ -281,7 +281,7 @@ export async function upsertLead(
           whatsapp = COALESCE($3, whatsapp),
           rol = CASE WHEN $4 != 'otro' THEN $4 ELSE rol END,
           ciudad = COALESCE($5, ciudad),
-          corset_vip = CASE WHEN $6 = true THEN true ELSE corset_vip END,
+          corset_vip = CASE WHEN ($6 = true OR corset_vip = true) THEN true ELSE false END,
           metadata = $7,
           updated_at = NOW()
         WHERE id = $8
@@ -292,7 +292,7 @@ export async function upsertLead(
           canonicalPhone || existingLead.whatsapp,
           normalizedRol,
           data.ciudad || null,
-          (resolvedChannel === "corset" || data.corset_vip) ? true : existingLead.corset_vip,
+          Boolean(resolvedChannel === "corset" || data.corset_vip || existingLead.corset_vip),
           JSON.stringify(mergedMeta),
           existingLead.id,
         ]
@@ -312,10 +312,25 @@ export async function upsertLead(
       };
     }
 
-    // 3. New Lead Insertion Path
+    // 3. New Lead Insertion Path (Ensure tags array is initialized monotonically)
+    const initialTags: string[] = [resolvedChannel];
+    if (resolvedChannel === "corset" || Boolean(data.corset_vip)) {
+      initialTags.push("corset_vip");
+    }
+    if (resolvedChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
+      initialTags.push("alianza");
+    }
+
     const initialMeta = {
       ...(data.metadata || {}),
       registered_channels: [resolvedChannel],
+      tags: Array.from(new Set(initialTags)),
+      journey: [{
+        channel: resolvedChannel,
+        timestamp: new Date().toISOString(),
+        origen: data.origen || null,
+        tipo_alianza: data.metadata?.tipo_alianza || null,
+      }],
     };
 
     try {
@@ -332,7 +347,7 @@ export async function upsertLead(
           data.ciudad || "Bogotá",
           data.origen || (resolvedChannel === "corset" ? "web_corset" : resolvedChannel === "centro_cultural" ? "alianza_centro_cultural" : "web_comunidad"),
           data.afiliado_id || null,
-          resolvedChannel === "corset" ? true : Boolean(data.corset_vip),
+          Boolean(resolvedChannel === "corset" || data.corset_vip),
           JSON.stringify(initialMeta),
         ]
       );

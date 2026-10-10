@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "start": "bun run ./dist/server/entry.mjs",
-    "test": "bun test tests/elplacerdc.test.ts",
+    "test": "bun test tests/*.test.ts",
     "test:e2e": "playwright test"
   },
   "dependencies": {
