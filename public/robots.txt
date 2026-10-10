@@ -1,0 +1,8 @@
+# robots.txt for El Placer de Compartir & The Corset Society
+User-agent: *
+Disallow: /admin/
+Disallow: /adminn/
+Disallow: /api/admin/
+Disallow: /api/webhooks/
+
+Sitemap: https://elplacerdecompartir.com/sitemap.xml

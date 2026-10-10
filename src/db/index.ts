@@ -23,6 +23,7 @@ export interface Lead {
   origen: string | null;
   afiliado_id: string | null;
   corset_vip: boolean;
+  primer_pago_acreditado?: boolean;
   metadata?: Record<string, any>;
   created_at: Date;
   updated_at: Date;
@@ -369,18 +370,69 @@ export async function upsertLead(
   }
 }
 
-export async function recordAffiliatePayment(affiliateAlias: string): Promise<boolean> {
+export function maskEmail(email: string | null): string {
+  if (!email) return "u****@privado.com";
+  const parts = email.trim().toLowerCase().split("@");
+  if (parts.length !== 2) return "u****@privado.com";
+  const user = parts[0];
+  const domain = parts[1];
+  if (user.length <= 2) {
+    return `${user[0]}****@${domain}`;
+  }
+  return `${user[0]}****${user[user.length - 1]}@${domain}`;
+}
+
+export async function recordAffiliatePayment(affiliateAlias: string, leadId?: string): Promise<{ success: boolean; credited: boolean }> {
   const client = await pool.connect();
   try {
+    const cleanAlias = affiliateAlias.trim().toLowerCase();
+
+    // 1. Antifraude / Regla de acreditación única: sólo la primera compra real del lead suma al embajador
+    if (leadId) {
+      const leadCheck = await client.query("SELECT primer_pago_acreditado FROM leads WHERE id::text = $1", [leadId]);
+      if (leadCheck.rows[0]?.primer_pago_acreditado) {
+        // Ya fue acreditado por una compra previa. Ignorar compras subsecuentes de forma silenciosa
+        return { success: true, credited: false };
+      }
+      // Marcar primer pago acreditado de forma atómica
+      await client.query("UPDATE leads SET primer_pago_acreditado = true, updated_at = NOW() WHERE id::text = $1", [leadId]);
+    }
+
+    // 2. Acreditar venta al embajador
     const res = await client.query(
       `UPDATE afiliados 
        SET referidos_pagados = referidos_pagados + 1,
            entradas_ganadas = FLOOR((referidos_pagados + 1) / 3)
        WHERE LOWER(alias) = $1
        RETURNING *`,
-      [affiliateAlias.trim().toLowerCase()]
+      [cleanAlias]
     );
-    return res.rowCount !== null && res.rowCount > 0;
+
+    if (res.rowCount && res.rowCount > 0) {
+      const updatedRow = res.rows[0];
+      const purchases = updatedRow.referidos_pagados || 0;
+      const tickets = updatedRow.entradas_ganadas || 0;
+
+      // 3. Disparo de multi-mensajería al embajador (WhatsApp + Email)
+      import("../services/notifications").then(({ notifyAmbassadorSaleAcredited, notifyAmbassadorFreeTicketWon }) => {
+        notifyAmbassadorSaleAcredited(
+          { alias: updatedRow.alias, nombre: updatedRow.nombre, whatsapp: updatedRow.whatsapp, email: updatedRow.email },
+          purchases,
+          tickets
+        ).catch((e) => console.error("[Notify Sale Acredited Err]:", e));
+
+        if (purchases % 3 === 0) {
+          notifyAmbassadorFreeTicketWon(
+            { alias: updatedRow.alias, nombre: updatedRow.nombre, whatsapp: updatedRow.whatsapp, email: updatedRow.email },
+            tickets
+          ).catch((e) => console.error("[Notify Free Ticket Won Err]:", e));
+        }
+      }).catch((e) => console.error("[Import Notifications Err]:", e));
+
+      return { success: true, credited: true };
+    }
+
+    return { success: false, credited: false };
   } finally {
     client.release();
   }
@@ -520,7 +572,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
     const leadsCount = leadsRes.rows[0]?.cnt || 0;
 
     const referredLeadsRes = await client.query(
-      `SELECT alias_nombre, rol, ciudad, created_at 
+      `SELECT email, created_at, primer_pago_acreditado 
        FROM leads 
        WHERE LOWER(afiliado_id) = $1 
        ORDER BY created_at DESC 
@@ -537,7 +589,11 @@ export async function getAffiliateStats(identifier: string): Promise<{
       leadsCount,
       purchasesCount: row.referidos_pagados || 0,
       freeTicketsEarned: row.entradas_ganadas || 0,
-      referredLeads: referredLeadsRes.rows,
+      referredLeads: referredLeadsRes.rows.map((r) => ({
+        email_masked: maskEmail(r.email),
+        created_at: r.created_at,
+        compro_entrada: Boolean(r.primer_pago_acreditado),
+      })),
     };
   } finally {
     client.release();
@@ -562,8 +618,9 @@ export async function updateAffiliateCode(oldAlias: string, newAlias: string): P
     }
 
     await client.query(`UPDATE afiliados SET alias = $1 WHERE LOWER(alias) = $2`, [cleanNew, cleanOld]);
-    // Also update referenced leads
+    // Also update referenced leads and event tickets
     await client.query(`UPDATE leads SET afiliado_id = $1 WHERE LOWER(afiliado_id) = $2`, [cleanNew, cleanOld]);
+    await client.query(`UPDATE event_tickets SET afiliado_ref = $1 WHERE LOWER(afiliado_ref) = $2`, [cleanNew, cleanOld]);
 
     return { success: true };
   } finally {

@@ -398,7 +398,8 @@ export async function notifyNewTicket(
   );
 }
 
-// Nueva función de notificación para reservas de eventos individuales (Sitio 9 Oct e Impacto 10 Oct)
+// Notificación para reservas de eventos (Sitio 9 Oct e Impacto 10 Oct)
+// Soporta combinación multimensajería si el usuario se registra por primera vez desde un evento
 export async function notifyEventReservation(
   ticket: {
     evento: string;
@@ -408,6 +409,10 @@ export async function notifyEventReservation(
     alias_nombre?: string;
     whatsapp: string;
     email?: string;
+  },
+  options?: {
+    isNewLead?: boolean;
+    affiliateCode?: string;
   }
 ): Promise<void> {
   const isSitio = ticket.evento.includes("sitio") || ticket.evento.includes("9-oct");
@@ -415,30 +420,66 @@ export async function notifyEventReservation(
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ELPLACERDC-EVENT-${ticket.ticket_hash}`;
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
+  const isNew = Boolean(options?.isNewLead);
+  const affCode = options?.affiliateCode || "embajador";
+  const affLink = `https://elplacerdecompartir.com/?ref=${affCode}`;
 
-  // 1. WhatsApp al asistente confirmando reserva y mencionando el QR enviado al correo
-  const waText = 
-    `🎟️ *RESERVA CONFIRMADA — ${eventTitle.toUpperCase()}*\n\n` +
-    `Hola *${lead.alias_nombre || "Bienvenido(a)"}* ✨\n\n` +
-    `Tu reserva para *${eventTitle}* en el Centro Cultural El Placer de Compartir ha sido registrada exitosamente.\n\n` +
-    `🎫 *Ticket ID:* \`${ticket.ticket_hash}\`\n\n` +
-    `📧 *Credencial con QR de Asistencia:* Hemos enviado tu pase oficial con código QR scannable a tu correo *${lead.email || "registrado"}*. Por favor preséntalo en tu teléfono al momento de ingresar a la sede.\n\n` +
-    `📍 *Dirección:* Centro Cultural El Placer de Compartir, Bogotá.\n\n` +
-    `🍷 *El Placer de Compartir*`;
+  // 1. WhatsApp al asistente
+  let waText = "";
+  if (isNew) {
+    waText =
+      `✨ *¡BIENVENIDO(A) A EL PLACER DE COMPARTIR!* ✨\n\n` +
+      `Hola *${lead.alias_nombre || "Bienvenido(a)"}*, tu registro a nuestra comunidad y tu pase para *${eventTitle}* han sido confirmados exitosamente.\n\n` +
+      `🎫 *Pase ID:* \`${ticket.ticket_hash}\`\n` +
+      `📍 *Ubicación:* Centro Cultural El Placer de Compartir, Bogotá.\n\n` +
+      `📲 *Ingreso Requerido con QR:* Es requerido para el ingreso presentar tu código QR en tu pantalla al llegar. Lo hemos enviado a tu correo *${lead.email || "registrado"}*.\n\n` +
+      `💎 *TU ENLACE DE EMBAJADOR EXCLUSIVO:*\n` +
+      `Al registrarte, ya cuentas con tu enlace oficial de embajador. Por cada 3 compras generadas con tu link, ¡recibes 1 entrada 100% gratuita!\n` +
+      `🔗 *Enlace:* ${affLink}\n` +
+      `⚙️ *Personaliza tu código y sigue tus pases en:* https://elplacerdecompartir.com/dashboard\n\n` +
+      `🍷 *El Placer de Compartir*`;
+  } else {
+    waText =
+      `🎟️ *RESERVA CONFIRMADA — ${eventTitle.toUpperCase()}*\n\n` +
+      `Hola *${lead.alias_nombre || "Bienvenido(a)"}* ✨\n\n` +
+      `Tu reserva para *${eventTitle}* en el Centro Cultural El Placer de Compartir ha sido registrada exitosamente.\n\n` +
+      `🎫 *Ticket ID:* \`${ticket.ticket_hash}\`\n\n` +
+      `📲 *Ingreso Requerido con QR:* Es requerido para el ingreso presentar tu código QR de asistencia al momento de entrar. Lo hemos enviado a tu correo *${lead.email || "registrado"}*.\n\n` +
+      `📍 *Dirección:* Centro Cultural El Placer de Compartir, Bogotá.\n\n` +
+      `🎉 *¡Nos vemos en el evento!* Comparte tu enlace exclusivo con tus amigos para que reserven contigo y gana entradas gratuitas:\n` +
+      `🔗 ${affLink}\n\n` +
+      `🍷 *El Placer de Compartir*`;
+  }
 
   sendEvolutionWhatsApp(lead.whatsapp, waText).catch((e) =>
     console.error("[NotifyEventReservation WA Err]:", e)
   );
 
-  // 2. Correo con QR de asistencia adjunto
+  // 2. Correo con QR de asistencia adjunto al asistente
   if (lead.email) {
+    const ambassadorEmailSnippet = `
+      <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; font-weight: bold; display: block; margin-bottom: 6px;">Programa de Embajadores</span>
+        <h3 style="color: #ead397; font-size: 15px; margin: 0 0 8px 0;">Gana Entradas Gratuitas por Recomendar</h3>
+        <p style="font-size: 12px; color: rgba(247, 244, 238, 0.8); line-height: 1.5; margin: 0 0 12px 0;">
+          ¡Nos vemos en el evento! Comparte tu enlace exclusivo con tus amigos para que reserven contigo: por cada 3 compras de entradas generadas, el sistema te otorga automáticamente 1 pase gratuito.
+        </p>
+        <div style="padding: 10px; background-color: #0a0608; border-radius: 6px; font-family: monospace; font-size: 13px; color: #ead397; margin-bottom: 14px; word-break: break-all;">
+          ${affLink}
+        </div>
+        <a href="https://elplacerdecompartir.com/dashboard" style="background-color: #c5a059; color: #0a0608; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">
+          Entrar a mi Panel y Personalizar Código →
+        </a>
+      </div>
+    `;
+
     const emailHtml = `
       <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
         <div style="margin-bottom: 20px;">
           <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
         </div>
         <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">El Placer de Compartir</h1>
-        <h2 style="color: #f7f4ee; font-size: 15px; margin: 0 0 20px 0; letter-spacing: 1px;">Pase Oficial de Ingreso</h2>
+        <h2 style="color: #f7f4ee; font-size: 15px; margin: 0 0 20px 0; letter-spacing: 1px;">${isNew ? "Bienvenido(a) • Pase Oficial de Ingreso" : "Pase Oficial de Ingreso"}</h2>
         
         <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; font-family: sans-serif;">
           <p style="margin: 4px 0; font-size: 13px;"><strong>Evento:</strong> ${eventTitle}</p>
@@ -451,9 +492,11 @@ export async function notifyEventReservation(
           <img src="${qrUrl}" alt="QR de Acceso" style="width: 200px; height: 200px; display: block;" />
         </div>
         
-        <p style="font-family: sans-serif; font-size: 12px; color: rgba(247, 244, 238, 0.7); line-height: 1.5;">
-          Presenta este código QR desde tu pantalla en la recepción del Centro Cultural para validar tu ingreso.
+        <p style="font-family: sans-serif; font-size: 12px; color: rgba(247, 244, 238, 0.85); line-height: 1.5;">
+          <strong>Requerido para el ingreso:</strong> Presenta este código QR desde tu pantalla en la recepción del Centro Cultural para validar tu acceso.
         </p>
+
+        ${ambassadorEmailSnippet}
         
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 25px 0;" />
         <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Centro Cultural El Placer de Compartir • Bogotá<br/>Línea Oficial: +57 319 419 4785</p>
@@ -468,6 +511,31 @@ export async function notifyEventReservation(
       html: wrapSpanishEmail(emailHtml, `Tu Pase de Entrada QR — ${eventTitle}`),
     }).catch((e) => console.error("[NotifyEventReservation Email Err]:", e));
   }
+
+  // 3. Notificación oficial por correo a la Marca (Admin web@elplacerdecompartir.com)
+  const brandSubject = `[Nueva Reserva Evento] ${eventTitle} — ${lead.alias_nombre || "Invitado(a)"}`;
+  const brandHtml = `
+    <div style="font-family: sans-serif; padding: 20px; background-color: #f7f4ee; color: #1a1a1a;">
+      <h2 style="color: #721c24;">Nueva Reserva Registrada — Centro Cultural</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Evento:</td><td style="padding: 8px; border: 1px solid #ddd;">${eventTitle}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Titular:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.alias_nombre || "Invitado(a)"}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">WhatsApp:</td><td style="padding: 8px; border: 1px solid #ddd;">${formattedPhone}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Email:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.email || "No suministrado"}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Pase ID:</td><td style="padding: 8px; border: 1px solid #ddd; font-family: monospace;">${ticket.ticket_hash}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Es Usuario Nuevo:</td><td style="padding: 8px; border: 1px solid #ddd;">${isNew ? "Sí (Nuevo registro)" : "No (Usuario recurrente)"}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${new Date().toLocaleString("es-CO")}</td></tr>
+      </table>
+    </div>
+  `;
+
+  sendTransactionalEmail({
+    to: BRAND_NOTIFICATION_EMAIL,
+    name: "El Placer de Compartir Admin",
+    fromName: "El Placer de Compartir",
+    subject: brandSubject,
+    html: wrapSpanishEmail(brandHtml, brandSubject),
+  }).catch((e) => console.error("[NotifyEventReservation BrandEmail Err]:", e));
 }
 
 const ALLIANCE_LABELS: Record<string, string> = {
@@ -587,4 +655,184 @@ export async function notifyNewAlliance(
   sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, adminWa).catch((e) =>
     console.error("[NotifyAlliance Admin WhatsApp Err]:", e)
   );
+}
+
+export async function notifyAmbassadorNewReferral(
+  ambassador: { alias: string; nombre?: string | null; whatsapp?: string | null; email?: string | null },
+  referral?: { alias_nombre?: string | null; email?: string | null }
+): Promise<void> {
+  const dashUrl = "https://elplacerdecompartir.com/dashboard";
+  if (ambassador.whatsapp) {
+    const waText =
+      `✨ *¡NUEVO REGISTRO CON TU ENLACE!* ✨\n\n` +
+      `Hola *${ambassador.nombre || ambassador.alias}*,\n\n` +
+      `Un nuevo usuario se ha registrado en El Placer de Compartir a través de tu enlace de embajador.\n\n` +
+      `Sigue sumando registros y ventas para obtener tus entradas 100% gratuitas.\n\n` +
+      `📊 *Revisa tu progreso en tu panel:*\n👉 ${dashUrl}\n\n` +
+      `🍷 *El Placer de Compartir*`;
+    sendEvolutionWhatsApp(ambassador.whatsapp, waText).catch((e) =>
+      console.error("[NotifyAmbassador Referral WA Err]:", e)
+    );
+  }
+
+  if (ambassador.email) {
+    const emailHtml = `
+      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
+        <div style="margin-bottom: 20px;">
+          <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+        </div>
+        <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">El Placer de Compartir</h1>
+        <h2 style="color: #f7f4ee; font-size: 15px; margin: 0 0 20px 0; letter-spacing: 1px;">¡Nuevo Registro Acreditado a tu Enlace!</h2>
+        
+        <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; font-family: sans-serif;">
+          <p style="margin: 4px 0; font-size: 13px;">Hola <strong style="color: #ead397;">${ambassador.nombre || ambassador.alias}</strong>,</p>
+          <p style="margin: 8px 0; font-size: 13px; line-height: 1.6;">
+            ¡Excelente noticia! Una nueva persona se ha registrado en nuestra comunidad utilizando tu enlace exclusivo de embajador (<span style="color: #ead397; font-family: monospace;">${ambassador.alias}</span>).
+          </p>
+          <p style="margin: 8px 0; font-size: 13px; color: rgba(247, 244, 238, 0.7);">
+            Cuando tus referidos adquieran entradas para nuestros eventos oficiales o veladas privadas, acumularás ventas. ¡Por cada 3 compras generadas, ganas 1 entrada 100% gratuita!
+          </p>
+        </div>
+
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="${dashUrl}" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #0a050c; padding: 12px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ir a mi Panel de Embajador →</a>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 25px 0;" />
+        <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Programa Oficial de Embajadores • El Placer de Compartir<br/>Línea Oficial: +57 319 419 4785</p>
+      </div>
+    `;
+    sendTransactionalEmail({
+      to: ambassador.email,
+      name: ambassador.nombre || ambassador.alias,
+      fromName: "El Placer de Compartir",
+      subject: "¡Nuevo registro con tu enlace de embajador! — El Placer de Compartir",
+      html: wrapSpanishEmail(emailHtml, "Nuevo Registro con tu Enlace"),
+    }).catch((e) => console.error("[NotifyAmbassador Referral Email Err]:", e));
+  }
+}
+
+export async function notifyAmbassadorSaleAcredited(
+  ambassador: { alias: string; nombre?: string | null; whatsapp?: string | null; email?: string | null },
+  purchasesCount: number,
+  freeTicketsEarned: number
+): Promise<void> {
+  const dashUrl = "https://elplacerdecompartir.com/dashboard";
+  const progressInCycle = purchasesCount % 3;
+  const remaining = 3 - (progressInCycle === 0 ? 3 : progressInCycle);
+
+  if (ambassador.whatsapp) {
+    const waText =
+      `🎉 *¡ENTRADA PAGADA ACREDITADA A TU FAVOR!* 🎉\n\n` +
+      `Hola *${ambassador.nombre || ambassador.alias}*,\n\n` +
+      `Uno de tus referidos ha adquirido una entrada para un evento. ¡Esta venta ha sido acreditada exitosamente a tu cuenta de embajador!\n\n` +
+      `📈 *Estado:* Llevas *${purchasesCount}* compra(s) acreditada(s).\n` +
+      (remaining === 0 || remaining === 3
+        ? `🎁 ¡Has desbloqueado una nueva entrada 100% gratuita!`
+        : `🎯 Te falta(n) solo *${remaining}* compra(s) para tu próxima entrada gratis.`) +
+      `\n\n👉 Revisa tu panel: ${dashUrl}\n\n` +
+      `🍷 *El Placer de Compartir*`;
+    sendEvolutionWhatsApp(ambassador.whatsapp, waText).catch((e) =>
+      console.error("[NotifyAmbassador Sale WA Err]:", e)
+    );
+  }
+
+  if (ambassador.email) {
+    const emailHtml = `
+      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
+        <div style="margin-bottom: 20px;">
+          <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+        </div>
+        <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">El Placer de Compartir</h1>
+        <h2 style="color: #81c784; font-size: 15px; margin: 0 0 20px 0; letter-spacing: 1px;">¡Venta Acreditada a tu Favor! 🎉</h2>
+        
+        <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; font-family: sans-serif;">
+          <p style="margin: 4px 0; font-size: 13px;">Hola <strong style="color: #ead397;">${ambassador.nombre || ambassador.alias}</strong>,</p>
+          <p style="margin: 8px 0; font-size: 13px; line-height: 1.6;">
+            ¡Excelente desempeño! Uno de tus invitados referidos ha comprado una entrada para un evento y la venta ha sido acreditada oficialmente a tu balance de embajador.
+          </p>
+          <div style="background-color: #140816; border-left: 3px solid #81c784; padding: 12px; margin: 15px 0; border-radius: 4px;">
+            <p style="margin: 2px 0; font-size: 13px; color: #f7f4ee;">
+              <strong>Compras Totales Acreditadas:</strong> ${purchasesCount}
+            </p>
+            <p style="margin: 2px 0; font-size: 13px; color: #ead397;">
+              <strong>Entradas Gratuitas Acumuladas:</strong> ${freeTicketsEarned}
+            </p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="${dashUrl}" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #0a050c; padding: 12px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Mi Progreso en el Dashboard →</a>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 25px 0;" />
+        <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Programa Oficial de Embajadores • El Placer de Compartir</p>
+      </div>
+    `;
+    sendTransactionalEmail({
+      to: ambassador.email,
+      name: ambassador.nombre || ambassador.alias,
+      fromName: "El Placer de Compartir",
+      subject: `¡Nueva compra acreditada a tu favor! (${purchasesCount} ventas) — El Placer de Compartir`,
+      html: wrapSpanishEmail(emailHtml, "Compra Acreditada a tu Favor"),
+    }).catch((e) => console.error("[NotifyAmbassador Sale Email Err]:", e));
+  }
+}
+
+export async function notifyAmbassadorFreeTicketWon(
+  ambassador: { alias: string; nombre?: string | null; whatsapp?: string | null; email?: string | null },
+  totalTicketsWon: number
+): Promise<void> {
+  const dashUrl = "https://elplacerdecompartir.com/dashboard";
+  if (ambassador.whatsapp) {
+    const waText =
+      `🎟️ *¡FELICIDADES! HAS GANADO 1 ENTRADA GRATUITA* 🎟️\n\n` +
+      `Hola *${ambassador.nombre || ambassador.alias}*,\n\n` +
+      `¡Has completado 3 compras acreditadas con tu enlace! El sistema te ha asignado *1 ENTRADA 100% GRATUITA* para redimir en nuestros eventos.\n\n` +
+      `📌 *Nota:* Para redimir en veladas de The Corset Society, recuerda contar con tu credencial VIP activa.\n\n` +
+      `👉 Ingresa a tu panel para ver tus entradas disponibles: ${dashUrl}\n\n` +
+      `🍷 *El Placer de Compartir*`;
+    sendEvolutionWhatsApp(ambassador.whatsapp, waText).catch((e) =>
+      console.error("[NotifyAmbassador FreeTicket WA Err]:", e)
+    );
+  }
+
+  if (ambassador.email) {
+    const emailHtml = `
+      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
+        <div style="margin-bottom: 20px;">
+          <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
+        </div>
+        <h1 style="color: #ead397; text-transform: uppercase; letter-spacing: 2px; font-size: 18px; margin: 0 0 5px 0;">El Placer de Compartir</h1>
+        <h2 style="color: #e57373; font-size: 16px; margin: 0 0 20px 0; letter-spacing: 1px;">¡Recompensa Desbloqueada: 1 Entrada Gratuita! 🎟️</h2>
+        
+        <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; font-family: sans-serif;">
+          <p style="margin: 4px 0; font-size: 13px;">Estimado(a) <strong style="color: #ead397;">${ambassador.nombre || ambassador.alias}</strong>,</p>
+          <p style="margin: 8px 0; font-size: 13px; line-height: 1.6;">
+            ¡Meta cumplida! Gracias a la difusión de tu enlace, has alcanzado 3 compras acreditadas y se ha generado automáticamente tu recompensa de <strong>1 Entrada 100% Gratuita</strong> (Total acumuladas: ${totalTicketsWon}).
+          </p>
+          <div style="background-color: #140816; border: 1px solid rgba(197, 160, 89, 0.4); padding: 14px; margin: 15px 0; border-radius: 6px;">
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: #ead397; font-weight: bold;">Condiciones de Redención:</p>
+            <p style="margin: 0; font-size: 11px; color: rgba(247, 244, 238, 0.8);">
+              Válido para eventos oficiales del Centro Cultural El Placer de Compartir. Para veladas privadas de gala de <strong>The Corset Society</strong>, es indispensable contar con credencial VIP activa.
+            </p>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 25px 0;">
+          <a href="${dashUrl}" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #0a050c; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Canjear mi Entrada en el Panel →</a>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 25px 0;" />
+        <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Programa Oficial de Embajadores • El Placer de Compartir</p>
+      </div>
+    `;
+    sendTransactionalEmail({
+      to: ambassador.email,
+      name: ambassador.nombre || ambassador.alias,
+      fromName: "El Placer de Compartir",
+      subject: "¡Felicidades! Has ganado 1 Entrada Gratuita — Programa de Embajadores",
+      html: wrapSpanishEmail(emailHtml, "Entrada Gratuita Ganada"),
+    }).catch((e) => console.error("[NotifyAmbassador FreeTicket Email Err]:", e));
+  }
 }

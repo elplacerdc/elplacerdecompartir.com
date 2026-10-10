@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { createPaymentLink } from "../../../services/dlocal";
 
-export const POST: APIRoute = async ({ request, url }) => {
+export const POST: APIRoute = async ({ request, url, cookies }) => {
   let userId = "guest_" + Date.now();
   let userEmail = "contacto@elplacerdecompartir.com";
   let userName = "Invitado VIP";
@@ -26,6 +26,10 @@ export const POST: APIRoute = async ({ request, url }) => {
     } catch {}
   }
 
+  const affiliateRef = cookies.get("affiliate_ref")?.value || null;
+  const discountRate = affiliateRef ? 0.10 : 0;
+  const finalAmount = Math.round(199000.00 * (1 - discountRate));
+
   const orderId = `CORSET_VIP_${userId}_${Date.now()}`;
   const baseUrl = `${url.protocol}//${url.host}`;
   const successUrl = `${baseUrl}/corset-vip?payment=success`;
@@ -34,10 +38,10 @@ export const POST: APIRoute = async ({ request, url }) => {
 
   try {
     const redirectUrl = await createPaymentLink({
-      amount: 199000.00,
+      amount: finalAmount,
       currency: "COP",
       country: "CO",
-      description: "Membresía Anual The Corset Society",
+      description: "Membresía Anual The Corset Society" + (affiliateRef ? " (Descuento de Cortesía 10%)" : ""),
       payer: {
         name: userName,
         email: userEmail

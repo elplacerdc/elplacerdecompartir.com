@@ -47,15 +47,13 @@ const zones = [
 const videos = [
   {
     src: "/media/centro-cultural/videos/sitio-licorera.mp4",
+    poster: "/media/centro-cultural/fotos/licorera-1.jpg",
     title: "Recorrido Zona Licorera & Bar",
   },
   {
     src: "/media/centro-cultural/videos/sitio-logos-1.mp4",
-    title: "Identidad & Atmósfera del Centro Cultural I",
-  },
-  {
-    src: "/media/centro-cultural/videos/sitio-logos-2.mp4",
-    title: "Identidad & Atmósfera del Centro Cultural II",
+    poster: "/media/centro-cultural/fotos/salon-principal-1-a.jpg",
+    title: "Identidad & Atmósfera del Centro Cultural",
   },
 ];
 ---
@@ -136,12 +134,13 @@ const videos = [
         </p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-3xl mx-auto">
         {videos.map((vid) => (
-          <div class="rounded-2xl overflow-hidden bg-[#140816] border border-[#c5a059]/30 shadow-lg p-3 space-y-3 flex flex-col items-center">
-            <div class="rounded-xl overflow-hidden bg-black aspect-[9/16] w-full max-w-[260px] flex items-center justify-center">
+          <div class="rounded-2xl overflow-hidden bg-[#140816] border border-[#c5a059]/30 shadow-lg p-3.5 space-y-3 flex flex-col items-center">
+            <div class="rounded-xl overflow-hidden bg-black aspect-[9/16] w-full max-w-[280px] flex items-center justify-center relative">
               <video 
                 src={vid.src} 
+                poster={vid.poster}
                 controls 
                 playsinline 
                 preload="none"

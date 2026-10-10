@@ -76,7 +76,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
 
   test("Admin Dashboard: Password Gate, Login, KPIs and QR Check-in Terminal", async ({ page }) => {
     const base = new BasePage(page);
-    await base.goto("/admin");
+    await base.goto("/adminn");
 
     // 1. Unauthenticated Password Gate
     await expect(page.locator("#admin-password-input")).toBeVisible();
@@ -130,7 +130,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.getByText("Evento Oficial ElPlacerDC")).toBeVisible();
     await expect(page.locator("h1")).toContainText("Viernes 9 de Octubre");
     await expect(page.getByText(/descontracturadas/i)).toHaveCount(0);
-    await expect(page.getByText("Reserva tu Pase Gratuito")).toBeVisible();
+    await expect(page.getByText(/Reserva tu Pase/i).first()).toBeVisible();
     await expect(page.getByPlaceholder("310 123 4567")).toBeVisible();
 
     // Impacto 10 Octubre
@@ -166,8 +166,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.getByPlaceholder("Ej: 310 123 4567")).toBeVisible();
     await expect(page.getByRole("button", { name: "Enviar Código de Acceso" })).toBeVisible();
 
-    // Verify authenticated dashboard elements exist in DOM
-    await expect(page.locator("#metric-clicks")).toBeAttached();
+    // Verify authenticated dashboard elements exist in DOM (3 core metrics)
     await expect(page.locator("#metric-leads")).toBeAttached();
     await expect(page.locator("#metric-purchases")).toBeAttached();
     await expect(page.locator("#metric-tickets")).toBeAttached();
@@ -188,7 +187,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
       "/the-corset-society",
       "/corset-vip",
       "/dashboard",
-      "/admin",
+      "/adminn",
     ];
 
     for (const route of routes) {

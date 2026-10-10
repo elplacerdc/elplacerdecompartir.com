@@ -3,35 +3,18 @@ import { sendEvolutionWhatsApp } from "../../../services/notifications";
 import {
   getSessionHistory,
   appendSessionMessage,
+  isHumanTakeover,
+  setHumanTakeover,
+  clearHumanTakeover,
+  isAffiliatePitched,
+  setAffiliatePitched,
 } from "../../../services/session";
+import { buildDynamicSystemPrompt } from "../../../services/bot-knowledge";
 
 const BIFROST_URL = process.env.BIFROST_URL || "http://bifrost:8080/v1";
+const BIFROST_VIRTUAL_KEY =
+  process.env.BIFROST_VIRTUAL_KEY || "vk-production-main";
 const BOT_PHONE = "573021004070";
-
-const SYSTEM_PROMPT = `Eres el Anfitrión y Enlace Oficial de 'El Placer de Compartir' y 'The Corset Society' en Bogotá, Colombia.
-Tu tono es sofisticado, discreto, seductor, formal y sumamente profesional. Atiendes exclusivamente por WhatsApp.
-
---- DIRECTRICES CANÓNICAS DE MARCA & EVENTOS ---
-1. 'The Corset Society': Círculo privado de gala noir, misterio y ticket alto en Bogotá.
-   - Próxima velada: 'Noche de Luna Llena — Máscarada en el Bosque' el Sábado 31 de Octubre de 2026 en Bogotá (8:00 P.M. — 4:00 A.M.).
-   - Dress code: Máscara obligatoria / Noir Fantasy (hadas, elfos, duendes, espíritus o criaturas nocturnas). Locación secreta revelada 24h antes por privado.
-   - Pases Oficiales de Cover (ÚNICOS DISPONIBLES — NO existen mesas VIP ni otros paquetes):
-     * *Pase Pareja*: $100.000 COP (o separación inicial con solo $40.000 COP). Incluye acceso para 2 personas y coctelería de bienvenida.
-     * *Pase Single (Hombre Solo)*: $120.000 COP (o separación inicial con solo $50.000 COP). Incluye admisión selecta filtrada y coctel de autor.
-     * *Pase Unicornio (Mujer Sola)*: $30.000 COP (o separación inicial con solo $10.000 COP). Tarifa preferencial y admisión prioritaria.
-   - Enlace oficial directo para formalizar reserva y pago:
-     https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas
-
-2. 'El Placer de Compartir': Comunidad de erotismo consciente, consentimiento lúcido y exploración relacional sin presiones.
-   - Centro Cultural en Bogotá: Talleres vivenciales para parejas, masajes tántricos, BDSM ético y experiencias sensoriales.
-   - Enlaces oficiales: https://elplacerdecompartir.com y https://elplacerdecompartir.com/centro-cultural
-
---- INVARIANTES CRÍTICOS DE CONVERSACIÓN ---
-- NUNCA saludes en mensajes subsecuentes si ya existe historial previo en la conversación (no repitas 'Hola', 'Bienvenido', 'Buenas noches', etc.). Responde directamente lo consultado.
-- NUNCA inventes mesas VIP, porcentajes o servicios no detallados arriba. Si preguntan por mesas, aclara con elegancia que la gala cuenta con espacios lounge comunes y se reserva únicamente por Pase Pareja, Single o Unicornio.
-- Respuestas breves, directas y cautivadoras para WhatsApp (máximo 2 párrafos concisos).
-- Si preguntan cómo pagar o reservar, indícales el valor exacto de su pase y proporciónales el enlace https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas.
-- Formato sutil de WhatsApp con asteriscos para negritas (ej: *The Corset Society*).`;
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -53,10 +36,11 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // 1. Extraer emisor y mensaje soportando firmas de Evolution Go (whatsmeow) y Baileys
+    // 1. Extraer metadata de evento soportando Evolution Go (whatsmeow) y Baileys
     const eventData = payload.data || payload;
     const info = eventData.Info || eventData.info || {};
     const key = eventData.key || {};
+
     const fromMe = Boolean(
       info.IsFromMe ??
         info.isFromMe ??
@@ -65,67 +49,267 @@ export const POST: APIRoute = async ({ request }) => {
         eventData.fromMe ??
         false
     );
-    const remoteJid = String(
+
+    const chatJid = String(
       info.Chat ||
-        info.Sender ||
-        eventData.Chat ||
-        eventData.Sender ||
         key.remoteJid ||
+        eventData.Chat ||
         payload.remoteJid ||
         eventData.remoteJid ||
+        ""
+    );
+    const senderJid = String(
+      info.Sender ||
+        eventData.Sender ||
         payload.sender ||
         ""
     );
+    const senderAlt = String(
+      info.SenderAlt ||
+        eventData.SenderAlt ||
+        eventData.senderAlt ||
+        ""
+    );
 
-    // Ignorar mensajes enviados por nosotros mismos o de grupos
+    // Ignorar grupos y difusiones de estado
     if (
-      fromMe ||
-      !remoteJid ||
-      remoteJid.includes("@g.us") ||
-      remoteJid.includes("status@broadcast")
+      chatJid.includes("@g.us") ||
+      chatJid.includes("status@broadcast") ||
+      senderJid.includes("@g.us")
     ) {
-      return new Response(JSON.stringify({ status: "ignored_self_or_group" }), {
+      return new Response(JSON.stringify({ status: "ignored_group_or_status" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const cleanSenderDigits = remoteJid.replace(/@.*$/, "").replace(/\D/g, "");
-    if (!cleanSenderDigits || cleanSenderDigits === BOT_PHONE) {
-      return new Response(JSON.stringify({ status: "ignored_bot_sender" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+    // Identificar todos los posibles IDs del cliente interlocutor
+    // Si fromMe es true, el cliente es la contraparte del chat (chatJid/key.remoteJid), NUNCA senderJid (que es el operador).
+    const rawTargetIds = fromMe
+      ? [chatJid, key.remoteJid, eventData.remoteJid]
+      : [chatJid, senderJid, senderAlt, key.remoteJid];
+
+    const targetDigitsList = Array.from(
+      new Set(
+        rawTargetIds
+          .map((id) => (id ? String(id).replace(/@.*$/, "").replace(/\D/g, "") : ""))
+          .filter((digits) => digits && digits !== BOT_PHONE)
+      )
+    );
+
+    if (targetDigitsList.length === 0) {
+      return new Response(
+        JSON.stringify({ status: "ignored_bot_or_empty_recipient" }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    // Extraer texto del mensaje (soporta mayúsculas de Go structs: Message.conversation)
+    const primaryCustomerPhone = targetDigitsList[0];
+
+    // Extraer contenido del mensaje
     const msgObj = eventData.Message || eventData.message || payload.message || {};
-    const messageText =
+    let messageText = String(
       msgObj.conversation ||
-      msgObj.extendedTextMessage?.text ||
-      eventData.text ||
-      payload.text ||
-      "";
+        msgObj.extendedTextMessage?.text ||
+        msgObj.imageMessage?.caption ||
+        msgObj.videoMessage?.caption ||
+        eventData.text ||
+        payload.text ||
+        ""
+    ).trim();
 
-    if (!messageText || messageText.trim() === "") {
+    // 2. Control de Intervención Humana del Operador (fromMe == true)
+    if (fromMe) {
+      if (messageText.includes("#bot")) {
+        await clearHumanTakeover(targetDigitsList);
+        console.log(
+          `[WhatsApp Bot] Takeover cancelado manualmente vía #bot para:`,
+          targetDigitsList
+        );
+      } else if (messageText.includes("#mute")) {
+        await setHumanTakeover(targetDigitsList, 86400); // Silencio de 24 horas
+        console.log(
+          `[WhatsApp Bot] Bot silenciado 24h vía #mute para:`,
+          targetDigitsList
+        );
+      } else {
+        // Cualquier mensaje del operador desde su teléfono pausa el bot por 2 horas (7200s)
+        await setHumanTakeover(targetDigitsList, 7200);
+        console.log(
+          `[WhatsApp Bot] Intervención humana detectada del operador. Bot pausado 2h para:`,
+          targetDigitsList
+        );
+      }
+
+      return new Response(JSON.stringify({ status: "human_takeover_updated" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // 3. Comprobar si la conversación está en ventana de intervención humana activa
+    const inTakeover = await isHumanTakeover(targetDigitsList);
+    if (inTakeover) {
+      console.log(
+        `[WhatsApp Bot] Mensaje de ${primaryCustomerPhone} silenciado por intervención humana activa.`
+      );
+      return new Response(
+        JSON.stringify({ status: "ignored_human_takeover_active" }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // 4. Extracción de Mensaje Citado (quotedMessage)
+    const contextInfo =
+      msgObj.extendedTextMessage?.contextInfo ||
+      msgObj.contextInfo ||
+      eventData.contextInfo;
+
+    const quotedMessage = contextInfo?.quotedMessage;
+    let quotedText = "";
+    if (quotedMessage) {
+      quotedText = String(
+        quotedMessage.conversation ||
+          quotedMessage.extendedTextMessage?.text ||
+          quotedMessage.imageMessage?.caption ||
+          quotedMessage.videoMessage?.caption ||
+          ""
+      ).trim();
+    }
+
+    // 5. Soporte y Transcripción de Notas de Voz (audioMessage)
+    const isAudio = Boolean(
+      msgObj.audioMessage || eventData.messageType === "audioMessage"
+    );
+
+    if (isAudio) {
+      console.log(
+        `[WhatsApp Bot] Nota de voz detectada de ${primaryCustomerPhone}. Iniciando procesamiento...`
+      );
+      try {
+        let audioBase64 =
+          msgObj.audioMessage?.base64 ||
+          eventData.base64 ||
+          payload.base64 ||
+          eventData.data?.base64;
+
+        if (!audioBase64) {
+          const downloadRes = await fetch(
+            "http://evolution:8085/message/downloadmedia",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message: msgObj }),
+            }
+          );
+          if (downloadRes.ok) {
+            const downloadJson = await downloadRes.json();
+            audioBase64 =
+              downloadJson.data?.base64 ||
+              downloadJson.base64 ||
+              downloadJson.data;
+          }
+        }
+
+        if (audioBase64) {
+          const cleanBase64 = String(audioBase64).replace(
+            /^data:.*?;base64,/,
+            ""
+          );
+          const audioBuffer = Buffer.from(cleanBase64, "base64");
+
+          const formData = new FormData();
+          const audioBlob = new Blob([audioBuffer], { type: "audio/ogg" });
+          formData.append("file", audioBlob, "audio.ogg");
+          formData.append("model", "whisper-1");
+
+          const transcriptionRes = await fetch(
+            `${BIFROST_URL}/audio/transcriptions`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${BIFROST_VIRTUAL_KEY}`,
+              },
+              body: formData,
+            }
+          );
+
+          if (transcriptionRes.ok) {
+            const transcriptionJson = await transcriptionRes.json();
+            const transcribed = String(transcriptionJson.text || "").trim();
+            if (transcribed) {
+              messageText = transcribed;
+              console.log(
+                `[WhatsApp Bot] Audio de ${primaryCustomerPhone} transcrito exitosamente: "${messageText}"`
+              );
+            }
+          } else {
+            console.warn(
+              `[WhatsApp Bot] Whisper HTTP ${transcriptionRes.status} al transcribir audio`
+            );
+          }
+        }
+      } catch (audioErr: any) {
+        console.error(
+          "[WhatsApp Bot Audio Transcribe Err]:",
+          audioErr.message
+        );
+      }
+
+      // Si no se pudo transcribir, responder con calidez de marca
+      if (!messageText) {
+        const audioFallbackMsg =
+          "Recibí tu nota de voz, pero en este momento no logré escucharla con total claridad. ¿Podrías escribirme tu consulta o contarme en qué te colaboro?";
+        (async () => {
+          await new Promise((r) => setTimeout(r, 2000));
+          await sendEvolutionWhatsApp(primaryCustomerPhone, audioFallbackMsg);
+        })();
+        return new Response(
+          JSON.stringify({ status: "audio_fallback_sent" }),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+
+    if (!messageText) {
       return new Response(JSON.stringify({ status: "ignored_no_text" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
 
+    // 6. Formatear mensaje del usuario con contexto de cita
+    let finalPromptUserMessage = messageText;
+    if (quotedText) {
+      finalPromptUserMessage = `[Mensaje citado al que responde el usuario: "${quotedText}"]\n${messageText}`;
+    }
+
     const senderName =
       info.PushName || eventData.pushName || payload.pushName || "Invitado(a)";
 
-    // 2. Procesamiento asíncrono con memoria en Valkey y Bifrost LLM
+    // 7. Procesamiento Asíncrono con Bifrost LLM Gateway
     (async () => {
       try {
-        // Recuperar historial de conversación (últimos 10 mensajes)
-        const sessionHistory = await getSessionHistory(cleanSenderDigits, 10);
+        const sessionHistory = await getSessionHistory(primaryCustomerPhone, 10);
+        const alreadyPitched = await isAffiliatePitched(primaryCustomerPhone);
 
-        // Construir array de mensajes con contexto cronológico
+        const dynamicSystemPrompt = buildDynamicSystemPrompt({
+          senderPhone: primaryCustomerPhone,
+          senderName,
+          isAffiliateEligible: !alreadyPitched,
+        });
+
         const llmMessages: Array<{ role: string; content: string }> = [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: dynamicSystemPrompt },
         ];
 
         for (const item of sessionHistory) {
@@ -135,16 +319,16 @@ export const POST: APIRoute = async ({ request }) => {
           });
         }
 
-        // Agregar mensaje actual del usuario
         llmMessages.push({
           role: "user",
-          content: messageText,
+          content: finalPromptUserMessage,
         });
 
         const bifrostResponse = await fetch(`${BIFROST_URL}/chat/completions`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${BIFROST_VIRTUAL_KEY}`,
           },
           body: JSON.stringify({
             model: "auto",
@@ -155,8 +339,10 @@ export const POST: APIRoute = async ({ request }) => {
         });
 
         if (!bifrostResponse.ok) {
+          const errBody = await bifrostResponse.text();
           console.error(
-            `[WhatsApp Bot] Bifrost returned HTTP ${bifrostResponse.status}`
+            `[WhatsApp Bot] Bifrost returned HTTP ${bifrostResponse.status}:`,
+            errBody
           );
           return;
         }
@@ -169,12 +355,35 @@ export const POST: APIRoute = async ({ request }) => {
         if (replyText && replyText.trim()) {
           const finalReply = replyText.trim();
 
-          // Guardar atómicamente en memoria de Valkey ambos turnos
-          await appendSessionMessage(cleanSenderDigits, "user", messageText);
-          await appendSessionMessage(cleanSenderDigits, "assistant", finalReply);
+          // Simulación de presencia y ritmo de conversación humano
+          const typingDelayMs = Math.min(
+            7000,
+            Math.max(2500, finalReply.length * 30)
+          );
+          await new Promise((resolve) => setTimeout(resolve, typingDelayMs));
 
-          // Despachar a WhatsApp vía Evolution Go
-          await sendEvolutionWhatsApp(cleanSenderDigits, finalReply);
+          // Guardar ambos turnos en Valkey (preservando el contexto de cita)
+          await appendSessionMessage(
+            primaryCustomerPhone,
+            "user",
+            finalPromptUserMessage
+          );
+          await appendSessionMessage(
+            primaryCustomerPhone,
+            "assistant",
+            finalReply
+          );
+
+          // Control de frecuencia para el programa de embajadores
+          if (
+            finalReply.toLowerCase().includes("embajador") ||
+            finalReply.toLowerCase().includes("embajadores")
+          ) {
+            await setAffiliatePitched(primaryCustomerPhone, 604800); // 7 días
+          }
+
+          // Despachar respuesta por WhatsApp vía Evolution Go
+          await sendEvolutionWhatsApp(primaryCustomerPhone, finalReply);
         }
       } catch (err: any) {
         console.error(

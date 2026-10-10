@@ -9,6 +9,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = await request.json();
     const { alias_nombre, email, whatsapp, rol, ciudad, origen, corset_vip, otp, verified } = body;
 
+    // Strict validation: alias / pseudónimo is strictly mandatory (BAI-219)
+    const cleanAlias = (alias_nombre || "").toString().trim();
+    if (!cleanAlias) {
+      return new Response(JSON.stringify({ success: false, error: "El pseudónimo / alias es estrictamente obligatorio." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Verify OTP if provided (or if already verified inline via /api/otp/verify)
     if (!verified) {
       const otpDestination = whatsapp || email;
@@ -79,6 +88,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       notifyNewLead(result.lead as any, targetChannel).catch((e) =>
         console.error("[Lead Notifications Err]:", e)
       );
+
+      // Notificar al embajador si viene referido
+      if (affiliateRef) {
+        import("../../../db").then(({ pool }) => {
+          pool.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [affiliateRef])
+            .then((affRes) => {
+              if (affRes.rows.length > 0) {
+                import("../../../services/notifications").then(({ notifyAmbassadorNewReferral }) => {
+                  notifyAmbassadorNewReferral(affRes.rows[0], result.lead).catch((err) =>
+                    console.error("[Notify Ambassador Err]:", err)
+                  );
+                });
+              }
+            })
+            .catch((err) => console.error("[Query Ambassador Err]:", err));
+        });
+      }
 
       if (email) {
         addSubscriber(email, alias_nombre || "Lead", [1]).catch((e) =>

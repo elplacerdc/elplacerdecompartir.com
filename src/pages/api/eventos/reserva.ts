@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import crypto from "crypto";
-import { upsertLead, pool } from "../../../db";
+import { upsertLead, pool, ensureAffiliateCode } from "../../../db";
 import { verifyChannelOTP } from "../../../services/evolution";
 import { notifyEventReservation } from "../../../services/notifications";
 
@@ -61,8 +61,29 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       "elplacerdc"
     );
 
+    const isNewLead = leadResult.status === "created";
     const leadId = leadResult.lead?.id || null;
     const ticketHash = `EPDC-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
+
+    // Ensure automatic ambassador code provisioning
+    let userAffiliateCode = "";
+    try {
+      userAffiliateCode = await ensureAffiliateCode(alias_nombre || "embajador", whatsapp, email);
+    } catch (e) {
+      console.warn("[Affiliate Provisioning Err]:", e);
+    }
+
+    // If new lead referred by an ambassador, notify referring ambassador!
+    if (isNewLead && affiliateRef) {
+      import("../../../services/notifications").then(({ notifyAmbassadorNewReferral }) => {
+        notifyAmbassadorNewReferral(affiliateRef, {
+          alias_nombre,
+          email,
+          rol,
+          ciudad,
+        }).catch((err) => console.error("[NotifyAmbassador Referral Err]:", err));
+      });
+    }
 
     // 2. Insert into event_tickets
     const client = await pool.connect();
@@ -97,7 +118,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       client.release();
     }
 
-    // 3. Dispatch multi-channel notification (WA + Email with QR)
+    // 3. Dispatch multi-channel notification (WA + Email with QR, combined with Welcome/Ambassador if new)
     notifyEventReservation(
       {
         evento,
@@ -107,6 +128,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         alias_nombre,
         whatsapp,
         email,
+      },
+      {
+        isNewLead,
+        affiliateCode: userAffiliateCode,
       }
     ).catch((err) => console.error("[Event Reservation Notification Err]:", err));
 

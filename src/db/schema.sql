@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS leads (
   origen VARCHAR(100) DEFAULT 'web_comunidad',
   afiliado_id VARCHAR(100),
   corset_vip BOOLEAN DEFAULT false,
+  primer_pago_acreditado BOOLEAN DEFAULT false,
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -21,6 +22,8 @@ CREATE TABLE IF NOT EXISTS afiliados (
   alias VARCHAR(100) UNIQUE NOT NULL,
   nombre VARCHAR(255),
   whatsapp VARCHAR(50),
+  email VARCHAR(255),
+  clicks INT DEFAULT 0,
   referidos_pagados INT DEFAULT 0,
   entradas_ganadas INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -45,3 +48,14 @@ CREATE INDEX IF NOT EXISTS idx_leads_whatsapp ON leads(whatsapp);
 CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email);
 CREATE INDEX IF NOT EXISTS idx_afiliados_alias ON afiliados(alias);
 CREATE INDEX IF NOT EXISTS idx_event_tickets_hash ON event_tickets(ticket_hash);
+
+CREATE TABLE IF NOT EXISTS event_expenses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  evento VARCHAR(100) NOT NULL,
+  concepto VARCHAR(255) NOT NULL,
+  monto NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_event_expenses_evento ON event_expenses(evento);

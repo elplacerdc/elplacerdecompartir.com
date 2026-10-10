@@ -18,8 +18,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "Tipo de entrada inválido" }), { status: 400 });
     }
 
-    const monto = modalidad_pago === "reserva_40" ? priceInfo.reserva_40 : priceInfo.total;
+    const baseMonto = modalidad_pago === "reserva_40" ? priceInfo.reserva_40 : priceInfo.total;
     const affiliateRef = cookies.get("affiliate_ref")?.value || null;
+    const discountRate = affiliateRef ? 0.10 : 0;
+    const monto = Math.round(baseMonto * (1 - discountRate));
 
     // 1. Upsert lead first
     const leadResult = await upsertLead(

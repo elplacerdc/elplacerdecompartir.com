@@ -52,6 +52,16 @@ export const POST: APIRoute = async ({ request }) => {
             [paymentId, ticket.id]
           );
 
+          // Acreditar venta al embajador si existe afiliado_ref
+          if (ticket.afiliado_ref) {
+            try {
+              const { recordAffiliateSale } = await import("../../../db");
+              await recordAffiliateSale(ticket.afiliado_ref, ticket.lead_id);
+            } catch (affErr) {
+              console.error("[Affiliate Credit Err]:", affErr);
+            }
+          }
+
           // Disparar multi-mensajería transaccional confirmada
           try {
             await notifyNewTicket(
@@ -59,8 +69,8 @@ export const POST: APIRoute = async ({ request }) => {
                 id: ticket.id,
                 tipo_entrada: ticket.tipo_entrada,
                 tipo_pago: ticket.tipo_pago,
-                monto_pagado: ticket.monto,
-                metodo_pago: "dlocal_go_live",
+                monto_pagado: ticket.monto_pagado || ticket.monto,
+                metodo_pago: "pasarela_digital_live",
                 ticket_hash: ticket.ticket_hash,
               },
               {
@@ -70,16 +80,24 @@ export const POST: APIRoute = async ({ request }) => {
               }
             );
           } catch (notifErr) {
-            console.error("[dLocal Go Webhook] Error enviando notificaciones:", notifErr);
+            console.error("[Gateway Webhook] Error enviando notificaciones:", notifErr);
           }
         } else if (orderId && (orderId.startsWith("CORSET_VIP_") || orderId.startsWith("VIP_"))) {
           // Caso 2: Membresía VIP Corset
-          console.log(`[dLocal Go Webhook] Activando membresía VIP para orden ${orderId}`);
+          console.log(`[Gateway Webhook] Activando membresía VIP para orden ${orderId}`);
           if (payment.payer?.email) {
-            await client.query(
-              `UPDATE leads SET corset_vip = true, updated_at = NOW() WHERE email = $1`,
+            const leadRes = await client.query(
+              `UPDATE leads SET corset_vip = true, updated_at = NOW() WHERE email = $1 RETURNING id, afiliado_id`,
               [payment.payer.email]
             );
+            if (leadRes.rows.length > 0 && leadRes.rows[0].afiliado_id) {
+              try {
+                const { recordAffiliateSale } = await import("../../../db");
+                await recordAffiliateSale(leadRes.rows[0].afiliado_id, leadRes.rows[0].id);
+              } catch (affErr) {
+                console.error("[VIP Affiliate Credit Err]:", affErr);
+              }
+            }
           }
           if (payment.payer?.phone) {
             await sendEvolutionWhatsApp(

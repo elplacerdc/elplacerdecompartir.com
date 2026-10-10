@@ -1,0 +1,1869 @@
+---
+// src/pages/admin/index.astro - Dashboard de Administración y Control General Single-Page Luxury
+import Layout from "../../layouts/Layout.astro";
+import { verifyAdminSessionToken } from "../../services/adminAuth";
+
+const token = Astro.cookies.get("admin_token")?.value;
+const isAuthenticated = verifyAdminSessionToken(token);
+---
+
+<Layout title="Panel de Administración — El Placer de Compartir" isCorset={false} noindex={true}>
+  <main class="min-h-screen bg-[#140816] text-[#f7f4ee] py-10 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto space-y-8">
+
+      {!isAuthenticated ? (
+        <!-- Luxury Password Gate Modal/Card -->
+        <div class="min-h-[70vh] flex items-center justify-center">
+          <div class="w-full max-w-md p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-[#250e29] to-[#1c081e] border border-[#c5a059]/40 shadow-[0_12px_45px_rgba(0,0,0,0.6)] text-center space-y-6">
+            <div class="w-16 h-16 mx-auto rounded-full bg-[#c5a059]/15 border border-[#c5a059]/40 flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(197,160,89,0.3)]">
+              🔒
+            </div>
+
+            <div>
+              <span class="text-[10px] uppercase tracking-[0.25em] text-[#ead397] font-semibold block mb-1">
+                Acceso Restringido • Dirección
+              </span>
+              <h1 class="text-2xl font-serif font-bold text-[#f7f4ee]">
+                Panel de Administración
+              </h1>
+              <p class="text-xs text-[#f7f4ee]/70 mt-2">
+                Ingresa la contraseña de seguridad para gestionar métricas, validar accesos QR y administrar la comunidad.
+              </p>
+            </div>
+
+            <form id="login-form" class="space-y-4 text-left">
+              <div>
+                <label for="admin-password-input" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1.5">
+                  Contraseña Maestra
+                </label>
+                <input 
+                  type="password" 
+                  id="admin-password-input" 
+                  required
+                  placeholder="••••••••••••" 
+                  class="w-full px-4 py-3 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-[#ead397] text-sm focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059]"
+                  autofocus
+                />
+              </div>
+
+              <div id="login-error" class="hidden p-3 rounded-lg bg-[#b71c1c]/25 border border-[#ef5350]/50 text-xs text-[#ef5350] text-center"></div>
+
+              <button 
+                type="submit" 
+                id="btn-login-submit"
+                class="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-lg transition-all"
+              >
+                Acceder al Panel
+              </button>
+            </form>
+
+            <p class="text-[11px] text-[#f7f4ee]/40">
+              El acceso no autorizado está estrictamente monitoreado y registrado.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <!-- Dashboard Single-Page Luxury Activo -->
+        <div class="space-y-8">
+          
+          <!-- Header Bar -->
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#c5a059]/25 pb-6 gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span class="py-1 px-3 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-[#ead397] text-[10px] uppercase tracking-[0.2em] font-semibold">
+                  Dirección & Control General
+                </span>
+                <span class="text-xs text-[#81c784] font-medium flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Sesión Activa
+                </span>
+              </div>
+              <h1 class="text-2xl sm:text-3xl font-serif font-bold text-[#ead397]">
+                Dashboard de Administración
+              </h1>
+              <p class="text-xs text-[#f7f4ee]/70 mt-1">
+                Haz clic en cualquier tarjeta o fila para abrir el panel de gestión interactivo sin recargar la página.
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+              <button 
+                id="btn-create-ticket-top" 
+                class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] hover:brightness-110 transition-all flex items-center gap-1.5 shadow-md"
+                title="Generar entrada o cortesía 100%"
+              >
+                <span>🎟️</span> + Crear Pase / Cortesía 100%
+              </button>
+              <button 
+                id="btn-change-password-modal" 
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#250e29] border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
+                title="Cambiar contraseña de acceso"
+              >
+                <span>🔑</span> Cambiar Clave
+              </button>
+              <button 
+                id="btn-refresh" 
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#250e29] border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
+                title="Actualizar datos en tiempo real"
+              >
+                <span>↻</span> Actualizar
+              </button>
+              <button 
+                id="btn-logout" 
+                class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#3a111b] border border-[#ef5350]/40 text-[#ef5350] hover:bg-[#ef5350]/20 transition-all"
+                title="Cerrar sesión segura"
+              >
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+
+          <!-- KPI Metrics Grid (100% Clickeables e interactivas) -->
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold">Métricas Globales (Toca una tarjeta para ver detalle y gestionar)</span>
+              <span class="text-[11px] text-[#f7f4ee]/50 italic">Single-Page Interactivo</span>
+            </div>
+
+            <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
+              
+              <!-- KPI 1: Comunidad Registrada -->
+              <div 
+                id="card-kpi-leads" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Comunidad Registrada</span>
+                <span id="kpi-leads" class="text-2xl sm:text-3xl font-serif font-bold text-[#ead397] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Directorio unificado →</span>
+              </div>
+
+              <!-- KPI 2: Solicitudes de Aliados -->
+              <div 
+                id="card-kpi-affiliates" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Solicitudes Aliados</span>
+                <span id="kpi-affiliates" class="text-2xl sm:text-3xl font-serif font-bold text-[#c5a059] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Centro cultural →</span>
+              </div>
+
+              <!-- KPI 3: Credenciales VIP Activas -->
+              <div 
+                id="card-kpi-tickets" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#f7f4ee]/70 block mb-1">Credenciales VIP</span>
+                <span id="kpi-tickets" class="text-2xl sm:text-3xl font-serif font-bold text-[#e57373] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Corset Society →</span>
+              </div>
+
+              <!-- KPI 4: Pases Emitidos -->
+              <div 
+                id="card-kpi-pending-cash" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#2b1021] to-[#1c081e] border border-[#ffb74d]/40 hover:border-[#ffb74d] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#ffb74d] block mb-1">Pases Emitidos</span>
+                <span id="kpi-pending-cash" class="text-2xl sm:text-3xl font-serif font-bold text-[#ffb74d] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#ffb74d] block mt-1 underline">Ver todos los pases →</span>
+              </div>
+
+              <!-- KPI 5: Ingreso Neto Pasarelas -->
+              <div 
+                id="card-kpi-checkins" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#81c784] block mb-1">Ingreso Neto Pasarelas</span>
+                <span id="kpi-checkins" class="text-lg sm:text-xl font-serif font-bold text-[#81c784] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#81c784] block mt-1 underline">Menos comisiones →</span>
+              </div>
+
+              <!-- KPI 6: Margen Neto Real -->
+              <div 
+                id="card-kpi-revenue" 
+                class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#260e2a] to-[#1c081e] border border-[#c5a059]/30 hover:border-[#c5a059] cursor-pointer hover:scale-[1.02] transition-all text-center group shadow-md"
+              >
+                <span class="text-[11px] uppercase tracking-wider text-[#ead397] block mb-1">Margen Neto Real</span>
+                <span id="kpi-revenue" class="text-lg sm:text-xl font-serif font-bold text-[#ead397] group-hover:text-white transition-colors">...</span>
+                <span class="text-[10px] text-[#c5a059] block mt-1 underline">Ver balance y gastos →</span>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Escáner QR de Cámara Automático & Control de Acceso -->
+          <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#280f2d] via-[#1e0a22] to-[#250d28] border border-[#c5a059]/40 shadow-2xl space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#c5a059]/20 pb-4">
+              <div>
+                <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Control de Acceso Físico en Puerta</span>
+                <h2 class="text-xl sm:text-2xl font-serif font-bold text-[#ead397]">Validador de Asistencia y Escáner QR</h2>
+              </div>
+
+              <!-- Tabs de Modo de Escaneo -->
+              <div class="flex items-center gap-2 bg-[#0e0410] p-1.5 rounded-xl border border-[#c5a059]/30">
+                <button 
+                  type="button" 
+                  id="tab-camera-scan" 
+                  class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059] text-[#0e0410] transition-all"
+                >
+                  📷 Escáner Cámara Celular
+                </button>
+                <button 
+                  type="button" 
+                  id="tab-manual-scan" 
+                  class="px-3 py-1.5 rounded-lg text-xs font-medium text-[#f7f4ee]/70 hover:text-white transition-all"
+                >
+                  ⌨️ Manual por Código
+                </button>
+              </div>
+            </div>
+
+            <!-- Panel 1: Escáner con Cámara Automático (Móvil / Web) -->
+            <div id="panel-camera-scanner" class="space-y-4">
+              <div class="max-w-md mx-auto relative rounded-2xl overflow-hidden border-2 border-[#c5a059]/60 shadow-[0_0_25px_rgba(197,160,89,0.25)] bg-[#0a040b]">
+                <video id="qr-video-stream" class="w-full h-72 sm:h-80 object-cover" autoplay playsinline muted></video>
+                
+                <!-- Retícula de escaneo visual -->
+                <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                  <div class="w-56 h-56 border-2 border-[#c5a059] rounded-2xl relative shadow-[0_0_20px_rgba(197,160,89,0.4)] animate-pulse">
+                    <span class="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-[#ead397]"></span>
+                    <span class="absolute top-2 right-2 w-4 h-4 border-t-2 border-r-2 border-[#ead397]"></span>
+                    <span class="absolute bottom-2 left-2 w-4 h-4 border-b-2 border-l-2 border-[#ead397]"></span>
+                    <span class="absolute bottom-2 right-2 w-4 h-4 border-b-2 border-r-2 border-[#ead397]"></span>
+                  </div>
+                </div>
+
+                <div id="camera-loading-overlay" class="absolute inset-0 bg-[#0a040b] flex flex-col items-center justify-center p-4 text-center space-y-3">
+                  <span class="text-3xl">📷</span>
+                  <p class="text-xs text-[#ead397]">Iniciando cámara del dispositivo...</p>
+                  <button 
+                    type="button" 
+                    id="btn-start-camera" 
+                    class="px-4 py-2 rounded-xl bg-[#c5a059] text-[#0a040b] text-xs font-bold uppercase tracking-wider"
+                  >
+                    Activar Cámara
+                  </button>
+                </div>
+              </div>
+
+              <p class="text-center text-xs text-[#f7f4ee]/70">
+                Apunta la cámara al código QR de la credencial. Se valida <strong class="text-[#ead397]">automáticamente</strong> y se abre en ventana emergente sin copiar ni pegar.
+              </p>
+            </div>
+
+            <!-- Panel 2: Ingreso Manual -->
+            <div id="panel-manual-scanner" class="hidden">
+              <form id="checkin-form" class="flex flex-col sm:flex-row gap-3">
+                <input 
+                  type="text" 
+                  id="input-ticket-hash" 
+                  placeholder="Pega o escribe el Ticket Hash o código QR (ej: ELPLACERDC-EVENT-c188...)" 
+                  class="flex-1 px-4 py-3 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-[#ead397] font-mono text-sm placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059]"
+                />
+                <button 
+                  type="submit" 
+                  id="btn-checkin-submit" 
+                  class="px-6 py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-md transition-all whitespace-nowrap"
+                >
+                  Validar Asistencia
+                </button>
+              </form>
+            </div>
+
+            <!-- Inline feedback fallback -->
+            <div id="checkin-result" class="hidden p-4 rounded-2xl text-sm transition-all duration-300"></div>
+          </div>
+
+          <!-- Filtro por Etiquetas / Segmentos (Reubicado antes del Directorio) -->
+          <div class="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-[#1c081e] border border-[#c5a059]/25 shadow-sm text-xs">
+            <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold mr-1">Filtrar Vistas:</span>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm"
+              data-tag="todos"
+            >
+              Todos
+            </button>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
+              data-tag="elplacerdc"
+            >
+              🍷 El Placer DC
+            </button>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
+              data-tag="corset"
+            >
+              🔒 The Corset Society
+            </button>
+            <button 
+              type="button" 
+              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
+              data-tag="aliados"
+            >
+              🤝 Aliados & Centro Cultural
+            </button>
+          </div>
+
+          <!-- Directorio Unificado de Usuarios & Embajadores (Lógica Indivisible Registro = Lead = Embajador) -->
+          <div class="p-6 rounded-3xl bg-[#1c081e] border border-[#c5a059]/30 space-y-4 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#c5a059]/20 pb-3 gap-3">
+              <div>
+                <h3 class="text-lg font-serif font-bold text-[#ead397]">Directorio Unificado de Usuarios & Embajadores</h3>
+                <span class="text-xs text-[#f7f4ee]/60">Registro = Lead = Embajador • Clic en una fila para ver ficha completa y gestión</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button 
+                  id="btn-add-unified-user" 
+                  class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 hover:bg-[#c5a059]/30 transition-all flex items-center gap-1.5"
+                >
+                  <span>👤</span> + Nuevo Usuario / Lead
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-[520px]">
+              <table class="w-full text-left text-xs">
+                <thead class="sticky top-0 bg-[#1c081e] border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
+                  <tr>
+                    <th class="py-2.5 px-3">Usuario / Nombre</th>
+                    <th class="py-2.5 px-3">Contacto</th>
+                    <th class="py-2.5 px-3">Código Embajador</th>
+                    <th class="py-2.5 px-3">Modalidad / Origen</th>
+                    <th class="py-2.5 px-2 text-center">Clics</th>
+                    <th class="py-2.5 px-2 text-center">Referidos</th>
+                    <th class="py-2.5 px-2 text-center">Ventas</th>
+                    <th class="py-2.5 px-2 text-center">VIP</th>
+                    <th class="py-2.5 px-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="unified-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
+                  <tr><td colspan="9" class="py-6 text-center text-[#f7f4ee]/40">Cargando directorio unificado...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  </main>
+
+  <!-- MODAL / DRAWER INTERACTIVO (SINGLE-PAGE) PARA DETALLE Y GESTIÓN CRUD -->
+  <div id="drawer-container" class="hidden fixed inset-0 z-50 overflow-hidden">
+    <!-- Backdrop oscuro con blur -->
+    <div id="drawer-backdrop" class="absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity"></div>
+
+    <div class="fixed inset-y-0 right-0 max-w-full flex w-full sm:max-w-3xl">
+      <div class="w-full bg-[#1c081e] border-l border-[#c5a059]/40 shadow-2xl flex flex-col">
+        
+        <!-- Drawer Header -->
+        <div class="p-4 sm:p-6 border-b border-[#c5a059]/25 flex items-center justify-between bg-[#250e29]">
+          <div>
+            <span id="drawer-badge" class="text-[10px] uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Gestión Interactiva</span>
+            <h2 id="drawer-title" class="text-xl font-serif font-bold text-[#ead397]">Detalle de Registros</h2>
+          </div>
+          <button 
+            id="drawer-close" 
+            class="p-2 rounded-xl text-[#f7f4ee]/70 hover:text-white hover:bg-white/10 transition-colors text-lg"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Drawer Search / Action Bar -->
+        <div class="p-3 sm:p-4 border-b border-[#c5a059]/15 flex items-center justify-between gap-3 bg-[#140816]">
+          <input 
+            type="text" 
+            id="drawer-search" 
+            placeholder="Buscar por nombre, teléfono, hash..." 
+            class="flex-1 px-3.5 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] placeholder-[#f7f4ee]/40 focus:outline-none focus:border-[#c5a059]"
+          />
+          <button 
+            id="drawer-btn-add-new" 
+            class="px-4 py-2 rounded-xl bg-[#c5a059] text-[#0a050c] text-xs font-bold uppercase tracking-wider hover:brightness-110 whitespace-nowrap shadow-sm"
+          >
+            + Añadir
+          </button>
+        </div>
+
+        <!-- Drawer Content Area (Scrollable Table & Form) -->
+        <div id="drawer-content" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+          <!-- Dynamically populated -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RESULTADO DE ESCÁNER QR EN POPUP DISMISSIBLE -->
+  <div id="modal-qr-result" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full max-w-md p-6 sm:p-8 rounded-3xl bg-[#250e29] border-2 border-[#c5a059] shadow-2xl space-y-5 text-center">
+      <div id="qr-modal-icon" class="text-5xl">✨</div>
+      <div>
+        <h3 id="qr-modal-title" class="text-2xl font-serif font-bold text-[#ead397]">Acceso Concedido</h3>
+        <p id="qr-modal-subtitle" class="text-xs text-[#f7f4ee]/70 mt-1">Verificación biométrica y de credencial en puerta</p>
+      </div>
+      
+      <div id="qr-modal-body" class="p-4 rounded-2xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-left space-y-2 text-[#f7f4ee]">
+        <!-- Dynamic attendee details -->
+      </div>
+
+      <button 
+        type="button" 
+        id="btn-close-qr-modal" 
+        class="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-serif font-bold uppercase text-xs tracking-wider hover:brightness-110 shadow-lg"
+      >
+        Cerrar / Continuar Escaneando
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: DESGLOSE FINANCIERO Y RECAUDACIÓN (COP) -->
+  <div id="modal-financial" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5 text-left max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <div>
+          <span class="text-[10px] uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Tesorería & Facturación</span>
+          <h3 class="text-xl font-serif font-bold text-[#ead397]">Desglose de Recaudación (COP)</h3>
+        </div>
+        <button id="modal-financial-close" class="text-sm text-[#f7f4ee]/70 hover:text-white p-2">✕</button>
+      </div>
+      <div id="financial-modal-content" class="space-y-4 text-xs">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CAMBIAR CONTRASEÑA ADMIN -->
+  <div id="modal-password" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-md p-6 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <h3 class="text-lg font-serif font-bold text-[#ead397]">Cambiar Contraseña Maestra</h3>
+        <button id="modal-password-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
+      </div>
+
+      <form id="form-change-password" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider mb-1">Contraseña Actual</label>
+          <input type="password" id="input-cur-pwd" required class="w-full px-4 py-2.5 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-sm text-[#ead397] focus:outline-none focus:border-[#c5a059]" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider mb-1">Nueva Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="input-new-pwd" minlength="6" required class="w-full px-4 py-2.5 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-sm text-[#ead397] focus:outline-none focus:border-[#c5a059]" />
+        </div>
+        <div id="change-pwd-status" class="hidden p-3 rounded-lg text-xs"></div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110">
+          Guardar Nueva Contraseña
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREACIÓN MANUAL GENÉRICA / 100% DESCUENTO -->
+  <div id="modal-crud-create" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <h3 id="modal-crud-title" class="text-lg font-serif font-bold text-[#ead397]">Añadir Nuevo Registro</h3>
+        <button id="modal-crud-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
+      </div>
+      <form id="form-crud-create" class="space-y-4">
+        <div id="crud-fields-container" class="space-y-3">
+          <!-- Populated by JS -->
+        </div>
+        <div id="crud-create-status" class="hidden p-3 rounded-lg text-xs"></div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+          Guardar Registro
+        </button>
+      </form>
+    </div>
+  </div>
+
+</Layout>
+
+<script>
+  // State Store
+  let cachedMetrics: any = null;
+  let activeDrawerType: "leads" | "affiliates" | "tickets" | "pending_cash" | "checkins" | null = null;
+  let activeTagFilter = "todos";
+  let videoStream: MediaStream | null = null;
+  let qrScanActive = false;
+  let scanCooldown = false;
+
+  // DOM Elements
+  const loginForm = document.getElementById("login-form") as HTMLFormElement;
+  const adminPasswordInput = document.getElementById("admin-password-input") as HTMLInputElement;
+  const loginError = document.getElementById("login-error");
+  const btnLogout = document.getElementById("btn-logout");
+  const btnRefresh = document.getElementById("btn-refresh");
+  const btnCreateTicketTop = document.getElementById("btn-create-ticket-top");
+
+  // KPIs
+  const kpiLeads = document.getElementById("kpi-leads");
+  const kpiAffiliates = document.getElementById("kpi-affiliates");
+  const kpiTickets = document.getElementById("kpi-tickets");
+  const kpiPendingCash = document.getElementById("kpi-pending-cash");
+  const kpiCheckins = document.getElementById("kpi-checkins");
+  const kpiRevenue = document.getElementById("kpi-revenue");
+
+  // KPI Cards (Clickable)
+  const cardLeads = document.getElementById("card-kpi-leads");
+  const cardAffiliates = document.getElementById("card-kpi-affiliates");
+  const cardTickets = document.getElementById("card-kpi-tickets");
+  const cardPendingCash = document.getElementById("card-kpi-pending-cash");
+  const cardCheckins = document.getElementById("card-kpi-checkins");
+  const cardRevenue = document.getElementById("card-kpi-revenue");
+
+  // Scanner Elements
+  const tabCameraScan = document.getElementById("tab-camera-scan");
+  const tabManualScan = document.getElementById("tab-manual-scan");
+  const panelCameraScanner = document.getElementById("panel-camera-scanner");
+  const panelManualScanner = document.getElementById("panel-manual-scanner");
+  const qrVideoStream = document.getElementById("qr-video-stream") as HTMLVideoElement;
+  const cameraLoadingOverlay = document.getElementById("camera-loading-overlay");
+  const btnStartCamera = document.getElementById("btn-start-camera");
+  const checkinForm = document.getElementById("checkin-form") as HTMLFormElement;
+  const inputTicketHash = document.getElementById("input-ticket-hash") as HTMLInputElement;
+  const btnCheckinSubmit = document.getElementById("btn-checkin-submit") as HTMLButtonElement;
+  const checkinResult = document.getElementById("checkin-result");
+
+  // QR Modal Popup
+  const modalQrResult = document.getElementById("modal-qr-result");
+  const qrModalIcon = document.getElementById("qr-modal-icon");
+  const qrModalTitle = document.getElementById("qr-modal-title");
+  const qrModalSubtitle = document.getElementById("qr-modal-subtitle");
+  const qrModalBody = document.getElementById("qr-modal-body");
+  const btnCloseQrModal = document.getElementById("btn-close-qr-modal");
+
+  // Financial Modal
+  const modalFinancial = document.getElementById("modal-financial");
+  const modalFinancialClose = document.getElementById("modal-financial-close");
+  const financialModalContent = document.getElementById("financial-modal-content");
+
+  // Drawer Elements
+  const drawerContainer = document.getElementById("drawer-container");
+  const drawerBackdrop = document.getElementById("drawer-backdrop");
+  const drawerClose = document.getElementById("drawer-close");
+  const drawerTitle = document.getElementById("drawer-title");
+  const drawerBadge = document.getElementById("drawer-badge");
+  const drawerSearch = document.getElementById("drawer-search") as HTMLInputElement;
+  const drawerBtnAddNew = document.getElementById("drawer-btn-add-new");
+  const drawerContent = document.getElementById("drawer-content");
+
+  // Password Modal
+  const btnChangePasswordModal = document.getElementById("btn-change-password-modal");
+  const modalPassword = document.getElementById("modal-password");
+  const modalPasswordClose = document.getElementById("modal-password-close");
+  const formChangePassword = document.getElementById("form-change-password") as HTMLFormElement;
+  const inputCurPwd = document.getElementById("input-cur-pwd") as HTMLInputElement;
+  const inputNewPwd = document.getElementById("input-new-pwd") as HTMLInputElement;
+  const changePwdStatus = document.getElementById("change-pwd-status");
+
+  // CRUD Modal
+  const modalCrudCreate = document.getElementById("modal-crud-create");
+  const modalCrudClose = document.getElementById("modal-crud-close");
+  const modalCrudTitle = document.getElementById("modal-crud-title");
+  const formCrudCreate = document.getElementById("form-crud-create") as HTMLFormElement;
+  const crudFieldsContainer = document.getElementById("crud-fields-container");
+  const crudCreateStatus = document.getElementById("crud-create-status");
+  const btnAddAffiliateModal = document.getElementById("btn-add-affiliate-modal");
+  const btnAddLeadModal = document.getElementById("btn-add-lead-modal");
+
+  // Tables
+  const unifiedTableBody = document.getElementById("unified-table-body");
+  const btnAddUnifiedUser = document.getElementById("btn-add-unified-user");
+
+  // Tag filter buttons
+  document.querySelectorAll(".tag-filter-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tag-filter-btn").forEach((b) => {
+        b.className = "tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold";
+      });
+      btn.className = "tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm";
+      activeTagFilter = btn.getAttribute("data-tag") || "todos";
+      
+      if (cachedMetrics) {
+        renderUnifiedTable(filterByTag(cachedMetrics.leads));
+        if (activeDrawerType) renderDrawer(activeDrawerType);
+      }
+    });
+  });
+
+  function filterByTag(items: any[]) {
+    if (!items) return [];
+    if (activeTagFilter === "todos") return items;
+    if (activeTagFilter === "elplacerdc") {
+      return items.filter((item) => {
+        const org = (item.origen || "").toLowerCase();
+        const tags = Array.isArray(item.metadata?.tags) ? item.metadata.tags : [];
+        const channels = Array.isArray(item.metadata?.registered_channels) ? item.metadata.registered_channels : [];
+        return org.includes("elplacerdc") || org.includes("comunidad") || org === "web" || org === "web_comunidad" ||
+               tags.includes("elplacerdc") || channels.includes("elplacerdc") ||
+               (!item.corset_vip && !org.includes("corset") && !org.includes("alianza"));
+      });
+    }
+    if (activeTagFilter === "corset") {
+      return items.filter((item) => {
+        const org = (item.origen || "").toLowerCase();
+        const tags = Array.isArray(item.metadata?.tags) ? item.metadata.tags : [];
+        const channels = Array.isArray(item.metadata?.registered_channels) ? item.metadata.registered_channels : [];
+        return item.corset_vip === true || org.includes("corset") || tags.includes("corset") || tags.includes("corset_vip") || channels.includes("corset");
+      });
+    }
+    if (activeTagFilter === "aliados") {
+      return items.filter((item) => {
+        const org = (item.origen || "").toLowerCase();
+        const tags = Array.isArray(item.metadata?.tags) ? item.metadata.tags : [];
+        const channels = Array.isArray(item.metadata?.registered_channels) ? item.metadata.registered_channels : [];
+        return org.includes("alianza") || org.includes("aliado") || org.includes("centro_cultural") || org.includes("impacto") ||
+               tags.includes("alianza") || tags.includes("centro_cultural") || channels.includes("centro_cultural");
+      });
+    }
+    return items;
+  }
+
+  // 1. LOGIN HANDLER
+  loginForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const pwd = adminPasswordInput.value.trim();
+    if (!pwd) return;
+
+    try {
+      const res = await fetch("/api/admin/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.location.reload();
+      } else {
+        if (loginError) {
+          loginError.textContent = data.error || "Contraseña incorrecta";
+          loginError.classList.remove("hidden");
+        }
+      }
+    } catch (e: any) {
+      if (loginError) {
+        loginError.textContent = "Error al conectar con el servidor";
+        loginError.classList.remove("hidden");
+      }
+    }
+  });
+
+  // 2. LOGOUT HANDLER
+  btnLogout?.addEventListener("click", async () => {
+    await fetch("/api/admin/auth/logout", { method: "POST" });
+    window.location.reload();
+  });
+
+  // 3. LOAD METRICS IN-PLACE
+  async function loadMetrics() {
+    try {
+      const res = await fetch("/api/admin/metrics");
+      if (res.status === 401) {
+        if (btnLogout) {
+          window.location.reload();
+        }
+        return;
+      }
+      const data = await res.json();
+      if (!data.success) return;
+
+      cachedMetrics = data;
+
+      if (kpiLeads) kpiLeads.textContent = (data.counts.totalLeads ?? 0).toString();
+      if (kpiAffiliates) kpiAffiliates.textContent = (data.counts.totalAliados ?? 0).toString();
+      if (kpiTickets) kpiTickets.textContent = (data.counts.totalVip ?? 0).toString();
+      if (kpiPendingCash) kpiPendingCash.textContent = (data.counts.totalTickets ?? 0).toString();
+      if (kpiCheckins) kpiCheckins.textContent = `$${Number(data.counts.netRevenue ?? 0).toLocaleString("es-CO")}`;
+      if (kpiRevenue) kpiRevenue.textContent = `$${Number(data.counts.netMargin ?? 0).toLocaleString("es-CO")}`;
+
+      renderUnifiedTable(filterByTag(data.leads));
+
+      // If drawer is open, re-render it
+      if (activeDrawerType) {
+        renderDrawer(activeDrawerType);
+      }
+    } catch (e) {
+      console.error("[Admin Metrics Err]:", e);
+    }
+  }
+
+  // 4. RENDER DIRECTORTIO UNIFICADO (Registro = Lead = Embajador)
+  function renderUnifiedTable(leads: any[]) {
+    if (!unifiedTableBody) return;
+    if (!leads || leads.length === 0) {
+      unifiedTableBody.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-[#f7f4ee]/40">No hay registros con este filtro.</td></tr>';
+      return;
+    }
+
+    unifiedTableBody.innerHTML = leads.map((l) => {
+      const isVip = l.corset_vip === true || l.is_possible_vip === true;
+      const affAlias = l.affiliate_alias ? `@${l.affiliate_alias}` : '—';
+      const clicks = l.affiliate_clicks || 0;
+      const refCount = l.affiliate_leads_count || 0;
+      const salesCount = l.affiliate_sales_count || 0;
+      const roleDisplay = l.rol ? l.rol.replace('_', ' ') : 'general';
+
+      return `
+        <tr class="hover:bg-[#250e29]/70 cursor-pointer transition-colors group" data-lead-id="${l.id}">
+          <td class="py-3 px-3 font-medium text-[#f7f4ee]">
+            <div class="font-serif font-bold text-sm text-[#ead397] group-hover:text-white transition-colors">${l.alias_nombre || "Invitado"}</div>
+            <div class="text-[10px] text-[#f7f4ee]/40 font-mono">ID: ${l.id.substring(0, 8)}...</div>
+          </td>
+          <td class="py-3 px-3 font-mono text-[11px]">
+            <div class="text-[#f7f4ee]/90">${l.whatsapp || "—"}</div>
+            <div class="text-[#f7f4ee]/50 text-[10px] truncate max-w-[150px]">${l.email || "—"}</div>
+          </td>
+          <td class="py-3 px-3 font-mono text-[11px] text-[#ead397] font-semibold">
+            ${affAlias}
+          </td>
+          <td class="py-3 px-3 text-[11px]">
+            <span class="capitalize text-[#f7f4ee]/80">${roleDisplay}</span>
+            <span class="block text-[10px] text-[#c5a059]/70">${l.origen || "web"}</span>
+          </td>
+          <td class="py-3 px-2 text-center font-mono text-xs">${clicks}</td>
+          <td class="py-3 px-2 text-center font-mono text-xs text-[#ead397] font-semibold">${refCount}</td>
+          <td class="py-3 px-2 text-center font-mono text-xs text-[#81c784] font-bold">${salesCount}</td>
+          <td class="py-3 px-2 text-center">
+            ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40"><span class="sm:hidden text-xs">👑</span><span class="hidden sm:inline">👑 VIP</span></span>' : '<span class="text-[#f7f4ee]/30">—</span>'}
+          </td>
+          <td class="py-3 px-3 text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              <button 
+                type="button" 
+                class="btn-row-add-ticket px-2.5 py-1 rounded-lg bg-[#c5a059]/20 text-[#ead397] hover:bg-[#c5a059]/30 border border-[#c5a059]/40 text-[10px] font-semibold whitespace-nowrap"
+                data-lead-id="${l.id}"
+                data-lead-name="${l.alias_nombre || ''}"
+                title="Crear Pase o Cortesía asignado a este usuario"
+              >
+                + Pase
+              </button>
+              <button 
+                type="button" 
+                class="btn-delete-record px-2.5 py-1 rounded-lg bg-[#3a111b] text-[#ef5350] hover:bg-[#ef5350]/20 border border-[#ef5350]/30 text-[10px] font-semibold whitespace-nowrap"
+                data-entity="user"
+                data-id="${l.id}"
+                data-name="${l.alias_nombre || 'este usuario'}"
+                title="Eliminar usuario y su embajador de forma indivisible"
+              >
+                🗑️ Borrar
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function renderLeadsTable(leads: any[]) {
+    if (!leadsTableBody) return;
+    if (leads.length === 0) {
+      leadsTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-[#f7f4ee]/40">No hay leads registrados con este filtro.</td></tr>`;
+      return;
+    }
+
+    leadsTableBody.innerHTML = leads.slice(0, 10).map((l) => {
+      const isVip = l.is_possible_vip || l.corset_vip;
+      return `
+        <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-lead-id="${l.id}">
+          <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
+          <td class="py-2.5 px-2 text-[11px] capitalize text-[#ead397]">${l.rol ? l.rol.replace('_', ' ') : "general"}</td>
+          <td class="py-2.5 px-2 text-[10px] text-[#f7f4ee]/70">${l.origen || "web"}</td>
+          <td class="py-2.5 px-2 text-center">
+            ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 VIP</span>' : '—'}
+          </td>
+          <td class="py-2.5 px-2 text-right">
+            <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}">Eliminar</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    bindDeleteButtons();
+  }
+
+  
+  function openDrawerWithLead(leadId: string) {
+    if (!cachedMetrics?.leads) return;
+    const lead = cachedMetrics.leads.find((l: any) => l.id === leadId);
+    if (!lead) return;
+
+    activeDrawerType = "leads";
+    drawerContainer?.classList.remove("hidden");
+    if (drawerBadge) drawerBadge.textContent = "Ficha de Usuario";
+    if (drawerTitle) drawerTitle.textContent = lead.alias_nombre || "Invitado";
+
+    const isVip = lead.corset_vip === true || lead.is_possible_vip === true;
+
+    drawerContent.innerHTML = `
+      <div class="space-y-4">
+        <div class="p-5 rounded-2xl bg-[#250e29] border border-[#c5a059]/40 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="text-base font-serif font-bold text-[#ead397]">${lead.alias_nombre || "Invitado"}</h4>
+            ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-xs font-bold border border-[#c5a059]/40">👑 VIP</span>' : ''}
+          </div>
+          <div class="text-xs text-[#f7f4ee]/80 font-mono space-y-1">
+            <div><strong>WhatsApp:</strong> ${lead.whatsapp || "—"}</div>
+            <div><strong>Email:</strong> ${lead.email || "—"}</div>
+            <div><strong>Modalidad:</strong> ${lead.rol ? lead.rol.replace('_', ' ') : "general"} • <strong>Ciudad:</strong> ${lead.ciudad || "Bogotá"}</div>
+            <div><strong>Origen:</strong> ${lead.origen || "web"} • <strong>Registrado:</strong> ${new Date(lead.created_at).toLocaleString("es-CO")}</div>
+          </div>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 space-y-2">
+          <h5 class="text-xs uppercase text-[#c5a059] font-bold">Programa de Embajador</h5>
+          <div class="text-xs text-[#f7f4ee]/80 font-mono space-y-1">
+            <div><strong>Código:</strong> @${lead.affiliate_alias || "No asignado"}</div>
+            <div><strong>Clics en Link:</strong> ${lead.affiliate_clicks || 0}</div>
+            <div><strong>Referidos Registrados:</strong> ${lead.affiliate_leads_count || 0}</div>
+            <div><strong>Ventas Pagadas Acreditadas:</strong> ${lead.affiliate_sales_count || 0}</div>
+            <div><strong>Entradas Gratuitas Ganadas:</strong> ${lead.affiliate_tickets_won || 0}</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button type="button" class="btn-drawer-add-ticket flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase" data-lead-id="${lead.id}">
+            + Asignar Pase o Cortesía
+          </button>
+          <button type="button" class="btn-delete-record py-2.5 px-4 rounded-xl bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 font-semibold text-xs" data-entity="user" data-id="${lead.id}">
+            🗑️ Eliminar Usuario
+          </button>
+        </div>
+      </div>
+    `;
+
+    drawerContent.querySelector(".btn-drawer-add-ticket")?.addEventListener("click", () => {
+      openCrudModal("tickets", lead.id);
+    });
+
+    drawerContent.querySelector(".btn-delete-record")?.addEventListener("click", async () => {
+      if (!confirm("¿Eliminar este usuario y su embajador en cascada indivisible?")) return;
+      await fetch(`/api/admin/records?entity=user&id=${lead.id}`, { method: "DELETE" });
+      drawerContainer?.classList.add("hidden");
+      loadMetrics();
+    });
+  }
+
+  // Event delegation on unifiedTableBody for instant reactivity (Optimistic UI)
+  unifiedTableBody?.addEventListener("click", async (e) => {
+    const target = e.target as HTMLElement;
+
+    // + Pase button
+    const addTicketBtn = target.closest(".btn-row-add-ticket") as HTMLElement;
+    if (addTicketBtn) {
+      e.stopPropagation();
+      const leadId = addTicketBtn.getAttribute("data-lead-id");
+      if (leadId) openCrudModal("tickets", leadId);
+      return;
+    }
+
+    // Delete record button
+    const deleteBtn = target.closest(".btn-delete-record") as HTMLElement;
+    if (deleteBtn) {
+      e.stopPropagation();
+      const entity = deleteBtn.getAttribute("data-entity") || "user";
+      const id = deleteBtn.getAttribute("data-id");
+      const name = deleteBtn.getAttribute("data-name") || "este usuario";
+      if (!id) return;
+
+      if (!confirm(`¿Estás seguro de eliminar a "${name}" (y su perfil de embajador en cascada indivisible)?`)) return;
+
+      const row = deleteBtn.closest("tr");
+      if (row) {
+        row.style.opacity = "0.3";
+        row.style.pointerEvents = "none";
+      }
+
+      try {
+        const res = await fetch(`/api/admin/records?entity=${entity}&id=${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (data.success) {
+          if (row) row.remove();
+          if (cachedMetrics?.leads) {
+            cachedMetrics.leads = cachedMetrics.leads.filter((l: any) => l.id !== id);
+            cachedMetrics.counts.totalLeads = Math.max(0, (cachedMetrics.counts.totalLeads || 1) - 1);
+            if (kpiLeads) kpiLeads.textContent = cachedMetrics.counts.totalLeads.toString();
+          }
+        } else {
+          alert(data.error || "No se pudo eliminar el registro");
+          if (row) {
+            row.style.opacity = "1";
+            row.style.pointerEvents = "auto";
+          }
+        }
+      } catch (err: any) {
+        alert("Error de conexión al eliminar");
+        if (row) {
+          row.style.opacity = "1";
+          row.style.pointerEvents = "auto";
+        }
+      }
+      return;
+    }
+
+    // Row click -> drawer
+    const row = target.closest("tr");
+    if (row && row.hasAttribute("data-lead-id")) {
+      const leadId = row.getAttribute("data-lead-id");
+      if (leadId) openDrawerWithLead(leadId);
+    }
+  });
+
+  function bindDeleteButtons() {
+    document.querySelectorAll(".btn-delete-record").forEach((btn) => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const entity = btn.getAttribute("data-entity");
+        const id = btn.getAttribute("data-id");
+        const name = btn.getAttribute("data-name") || "este registro";
+        if (!confirm(`¿Estás seguro de eliminar a "${name}" de ${entity}?`)) return;
+
+        try {
+          const res = await fetch(`/api/admin/records?entity=${entity}&id=${id}`, { method: "DELETE" });
+          const data = await res.json();
+          if (data.success) {
+            loadMetrics();
+          } else {
+            alert(data.error || "No se pudo eliminar el registro");
+          }
+        } catch (err: any) {
+          alert("Error de conexión al eliminar");
+        }
+      });
+    });
+  }
+
+  // 5. DRAWER SINGLE-PAGE SYSTEM
+  function openDrawer(type: "leads" | "affiliates" | "tickets" | "pending_cash" | "checkins" | "aliados" | "vip") {
+    activeDrawerType = type;
+    drawerContainer?.classList.remove("hidden");
+    renderDrawer(type);
+  }
+
+  function closeDrawer() {
+    activeDrawerType = null;
+    drawerContainer?.classList.add("hidden");
+  }
+
+  drawerBackdrop?.addEventListener("click", closeDrawer);
+  drawerClose?.addEventListener("click", closeDrawer);
+
+  cardLeads?.addEventListener("click", () => openDrawer("leads"));
+  cardAffiliates?.addEventListener("click", () => openDrawer("aliados"));
+  cardTickets?.addEventListener("click", () => openDrawer("vip"));
+  cardPendingCash?.addEventListener("click", () => openDrawer("tickets"));
+  cardCheckins?.addEventListener("click", () => {
+    modalFinancial?.classList.remove("hidden");
+    renderFinancialModal();
+  });
+  cardRevenue?.addEventListener("click", () => {
+    modalFinancial?.classList.remove("hidden");
+    renderFinancialModal();
+  });
+
+  // Open Financial Breakdown Modal with Live event_expenses CRUD
+  function renderFinancialModal() {
+    if (!cachedMetrics || !cachedMetrics.financial) return;
+    const fin = cachedMetrics.financial;
+    if (!financialModalContent) return;
+
+    const expensesList = (fin.expenses || []).map((exp: any) => `
+      <div class="py-2.5 px-3 rounded-xl bg-[#250e29] border border-[#c5a059]/20 flex items-center justify-between gap-3">
+        <div>
+          <span class="text-xs font-semibold text-[#f7f4ee]">${exp.concepto}</span>
+          <span class="text-[10px] text-[#c5a059]/70 ml-2">(${exp.evento})</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="font-mono text-xs font-bold text-[#ef5350]">-$${Number(exp.monto).toLocaleString("es-CO")} COP</span>
+          <button 
+            type="button" 
+            class="btn-delete-expense text-[#ef5350] hover:text-white text-xs px-2 py-1 rounded bg-[#3a111b] border border-[#ef5350]/30 hover:bg-[#ef5350]/20 transition-all"
+            data-expense-id="${exp.id}"
+            data-expense-name="${exp.concepto}"
+            title="Eliminar gasto"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+    `).join("");
+
+    financialModalContent.innerHTML = `
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 text-center">
+          <span class="text-[10px] text-[#f7f4ee]/70 uppercase block mb-1">Ingreso Bruto Pasarelas</span>
+          <span class="text-base sm:text-lg font-bold font-serif text-[#ead397]">$${Number(fin.grossRevenue || fin.totalRevenue).toLocaleString("es-CO")} COP</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#ef5350]/30 text-center">
+          <span class="text-[10px] text-[#ef5350]/80 uppercase block mb-1">Comisión Pasarela</span>
+          <span class="text-base sm:text-lg font-bold font-serif text-[#ef5350]">-$${Number(fin.gatewayFees || 0).toLocaleString("es-CO")} COP</span>
+          <span class="text-[9px] text-[#f7f4ee]/40 block">1.99% + $800 + IVA</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#81c784]/30 text-center">
+          <span class="text-[10px] text-[#81c784]/80 uppercase block mb-1">Ingreso Neto Pasarelas</span>
+          <span class="text-base sm:text-lg font-bold font-serif text-[#81c784]">$${Number(fin.netRevenue || 0).toLocaleString("es-CO")} COP</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#ffb74d]/30 text-center">
+          <span class="text-[10px] text-[#ffb74d]/80 uppercase block mb-1">Costos Fijos Totales</span>
+          <span class="text-base sm:text-lg font-bold font-serif text-[#ffb74d]">-$${Number(fin.totalExpenses || 0).toLocaleString("es-CO")} COP</span>
+        </div>
+        <div class="p-3.5 rounded-2xl bg-gradient-to-br from-[#2b1608] to-[#140816] border border-[#c5a059] text-center col-span-2 sm:col-span-2">
+          <span class="text-[10px] text-[#ead397] uppercase tracking-wider font-bold block mb-1">Margen Neto Real</span>
+          <span class="text-xl sm:text-2xl font-bold font-serif text-[#ead397]">$${Number(fin.netMargin || 0).toLocaleString("es-CO")} COP</span>
+          <span class="text-[9px] text-[#81c784] block font-semibold">Ingreso Neto Pasarelas - Costos Fijos</span>
+        </div>
+      </div>
+
+      <!-- Módulo Interactivo de Costos Fijos Dinámicos (event_expenses) -->
+      <div class="space-y-3 pt-3 border-t border-[#c5a059]/20">
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-[#ead397] uppercase tracking-wider text-xs">Costos Fijos por Evento (event_expenses)</h4>
+          <span class="text-[10px] text-[#c5a059] font-mono">Total Gastos: $${Number(fin.totalExpenses || 0).toLocaleString("es-CO")} COP</span>
+        </div>
+
+        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          ${(fin.expenses && fin.expenses.length > 0) ? expensesList : '<p class="text-xs text-[#f7f4ee]/40 text-center py-3 bg-[#140816] rounded-xl border border-[#c5a059]/10">No hay gastos fijos registrados aún.</p>'}
+        </div>
+
+        <!-- Formulario Inline para Agregar Gasto Fijo -->
+        <form id="form-add-expense" class="p-3.5 rounded-2xl bg-[#1e0a22] border border-[#c5a059]/30 space-y-2.5">
+          <span class="text-[10px] uppercase font-bold text-[#c5a059] block">+ Agregar Costo Fijo</span>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input 
+              type="text" 
+              id="expense-concepto" 
+              placeholder="Concepto (ej: DJ, Luces, Seguridad)" 
+              required
+              class="px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
+            />
+            <input 
+              type="number" 
+              id="expense-monto" 
+              placeholder="Monto en COP" 
+              required
+              min="0"
+              class="px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] font-mono focus:outline-none focus:border-[#c5a059]"
+            />
+            <select 
+              id="expense-evento" 
+              class="px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none focus:border-[#c5a059]"
+            >
+              <option value="luna_llena">Noche Luna Llena</option>
+              <option value="sitio_9_oct">Inauguración Licorera</option>
+              <option value="impacto_10_oct">Impacto Producciones</option>
+            </select>
+          </div>
+          <button 
+            type="submit" 
+            class="w-full py-2 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow"
+          >
+            Guardar Gasto Fijo
+          </button>
+        </form>
+      </div>
+
+      <!-- Recaudación Bruta por Evento -->
+      <div class="space-y-2 pt-2 border-t border-[#c5a059]/20">
+        <h4 class="font-bold text-[#ead397] uppercase tracking-wider text-[11px]">Recaudación Bruta por Evento</h4>
+        <div class="p-3 rounded-xl bg-[#140816] border border-[#c5a059]/20 divide-y divide-[#c5a059]/10">
+          ${fin.perEvent.length === 0 ? '<p class="text-[#f7f4ee]/50 text-center py-2">Sin ingresos aún.</p>' : fin.perEvent.map((ev: any) => `
+            <div class="py-2 flex items-center justify-between">
+              <div>
+                <span class="font-semibold text-white capitalize text-xs">${ev.evento.replace('_', ' ')}</span>
+                <span class="text-[10px] text-[#f7f4ee]/50 ml-2">(${ev.count} entradas)</span>
+              </div>
+              <span class="font-mono font-bold text-xs text-[#ead397]">$${ev.total.toLocaleString("es-CO")} COP</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    // Bind delete expense buttons
+    financialModalContent.querySelectorAll(".btn-delete-expense").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-expense-id");
+        const name = btn.getAttribute("data-expense-name");
+        if (!confirm(`¿Eliminar el costo fijo "${name}"?`)) return;
+        try {
+          const res = await fetch(`/api/admin/expenses?id=${id}`, { method: "DELETE" });
+          const data = await res.json();
+          if (data.success) {
+            await loadMetrics();
+            renderFinancialModal();
+          } else {
+            alert(data.error || "No se pudo eliminar el gasto");
+          }
+        } catch (e) {
+          alert("Error de conexión al eliminar gasto");
+        }
+      });
+    });
+
+    // Bind add expense form
+    const formAddExp = document.getElementById("form-add-expense") as HTMLFormElement;
+    formAddExp?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const concepto = (document.getElementById("expense-concepto") as HTMLInputElement).value;
+      const monto = (document.getElementById("expense-monto") as HTMLInputElement).value;
+      const evento = (document.getElementById("expense-evento") as HTMLSelectElement).value;
+
+      try {
+        const res = await fetch("/api/admin/expenses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ concepto, monto: Number(monto), evento }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          await loadMetrics();
+          renderFinancialModal();
+        } else {
+          alert(data.error || "Error al agregar gasto");
+        }
+      } catch (e) {
+        alert("Error de conexión al agregar gasto");
+      }
+    });
+  }
+
+  modalFinancialClose?.addEventListener("click", () => modalFinancial?.classList.add("hidden"));
+
+  function renderDrawer(type: string) {
+    if (!drawerContent || !cachedMetrics) return;
+    const filter = (drawerSearch?.value || "").toLowerCase().trim();
+
+    if (type === "leads") {
+      if (drawerBadge) drawerBadge.textContent = "Directorio Unificado & Comunidad";
+      const filteredLeads = filterByTag(cachedMetrics.leads).filter((l: any) => 
+        (l.alias_nombre || "").toLowerCase().includes(filter) ||
+        (l.whatsapp || "").toLowerCase().includes(filter) ||
+        (l.email || "").toLowerCase().includes(filter) ||
+        (l.rol || "").toLowerCase().includes(filter) ||
+        (l.origen || "").toLowerCase().includes(filter)
+      );
+
+      if (drawerTitle) drawerTitle.textContent = `Directorio de Contactos (${filteredLeads.length})`;
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filteredLeads.map((l: any) => {
+            const isVip = l.is_possible_vip || l.corset_vip;
+            return `
+              <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Invitado"}</span>
+                    ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 Posible VIP</span>' : ''}
+                    ${l.affiliate_alias ? `<span class="px-2 py-0.5 rounded-full bg-[#8E4A8C]/30 text-[#f3e5f5] text-[10px] font-mono">Embajador: @${l.affiliate_alias}</span>` : ''}
+                  </div>
+                  <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
+                  <div class="text-[11px] text-[#f7f4ee]/60">
+                    Modalidad: <strong class="text-[#ead397] capitalize">${l.rol || "general"}</strong> • Origen: <strong>${l.origen || "web"}</strong> • Entradas emitidas: <strong>${l.tickets_count || 0}</strong>
+                  </div>
+                  ${l.affiliate_alias ? `
+                    <div class="text-[10px] text-[#c5a059]">
+                      Stats Embajador: ${l.affiliate_clicks || 0} Clics | ${l.affiliate_referrals || 0} Referidos Pagados | ${l.affiliate_tickets_won || 0} Pases Ganados
+                    </div>
+                  ` : ''}
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-center">
+                  <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}" data-lead-name="${l.alias_nombre || ''}">
+                    + Asignar Pase
+                  </button>
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}">
+                    🗑️ Borrar
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      // Bind lead ticket assign button
+      document.querySelectorAll(".btn-create-ticket-for-lead").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const leadId = btn.getAttribute("data-lead-id");
+          openCrudModal("tickets", leadId);
+        });
+      });
+    }
+
+    if (type === "affiliates") {
+      if (drawerBadge) drawerBadge.textContent = "Red de Embajadores";
+      if (drawerTitle) drawerTitle.textContent = `Embajadores Activos (${cachedMetrics.affiliates.length})`;
+
+      const filtered = cachedMetrics.affiliates.filter((a: any) =>
+        (a.alias || "").toLowerCase().includes(filter) ||
+        (a.nombre || "").toLowerCase().includes(filter) ||
+        (a.whatsapp || "").toLowerCase().includes(filter)
+      );
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filtered.map((a: any) => `
+            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1">
+                <div class="font-bold text-[#ead397] text-sm">@${a.alias} <span class="text-xs font-normal text-[#f7f4ee]/60">(${a.nombre || ""})</span></div>
+                <div class="text-xs text-[#f7f4ee]/80 font-mono">Contacto: ${a.whatsapp || a.email || "—"}</div>
+                <div class="text-[11px] text-[#c5a059]">Clics: ${a.clicks || 0} • Ventas Pagadas: ${a.referidos_pagados || 0} • Pases Ganados: ${a.entradas_ganadas || 0}</div>
+              </div>
+              <div class="flex items-center gap-2 self-end sm:self-center">
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}">
+                  🗑️ Borrar
+                </button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    if (type === "aliados") {
+      if (drawerBadge) drawerBadge.textContent = "Solicitudes & Alianzas Culturales";
+      const filteredLeads = (cachedMetrics.leads || []).filter((l: any) => {
+        const org = (l.origen || "").toLowerCase();
+        return org.includes("aliado") || org.includes("alianza") || org.includes("centro_cultural");
+      }).filter((l: any) => 
+        (l.alias_nombre || "").toLowerCase().includes(filter) ||
+        (l.whatsapp || "").toLowerCase().includes(filter) ||
+        (l.email || "").toLowerCase().includes(filter)
+      );
+
+      if (drawerTitle) drawerTitle.textContent = `Solicitudes Aliados (${filteredLeads.length})`;
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filteredLeads.length === 0 ? '<p class="text-xs text-[#f7f4ee]/40 text-center py-4">No hay solicitudes de aliados registradas.</p>' : filteredLeads.map((l: any) => `
+            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1">
+                <div class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Aliado"}</div>
+                <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
+                <div class="text-[11px] text-[#f7f4ee]/60">Origen: <strong class="text-[#ead397]">${l.origen || "aliado"}</strong> • Ciudad: ${l.ciudad || "Bogotá"}</div>
+              </div>
+              <div class="flex items-center gap-2 self-end sm:self-center">
+                <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}">
+                  + Asignar Pase
+                </button>
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="user" data-id="${l.id}" data-name="${l.alias_nombre || 'Aliado'}">
+                  🗑️ Borrar
+                </button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      drawerContent.querySelectorAll(".btn-create-ticket-for-lead").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const leadId = btn.getAttribute("data-lead-id");
+          openCrudModal("tickets", leadId);
+        });
+      });
+    }
+
+    if (type === "vip") {
+      if (drawerBadge) drawerBadge.textContent = "The Corset Society • Credenciales VIP";
+      const filteredLeads = (cachedMetrics.leads || []).filter((l: any) => l.corset_vip === true || l.is_possible_vip === true).filter((l: any) => 
+        (l.alias_nombre || "").toLowerCase().includes(filter) ||
+        (l.whatsapp || "").toLowerCase().includes(filter) ||
+        (l.email || "").toLowerCase().includes(filter)
+      );
+
+      if (drawerTitle) drawerTitle.textContent = `Credenciales VIP (${filteredLeads.length})`;
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filteredLeads.length === 0 ? '<p class="text-xs text-[#f7f4ee]/40 text-center py-4">No hay miembros VIP registrados aún.</p>' : filteredLeads.map((l: any) => `
+            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Miembro VIP"}</span>
+                  <span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 VIP</span>
+                </div>
+                <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
+                <div class="text-[11px] text-[#f7f4ee]/60">Modalidad: <strong class="text-[#ead397] capitalize">${l.rol || "pareja"}</strong> • Pases: <strong>${l.tickets_count || 0}</strong></div>
+              </div>
+              <div class="flex items-center gap-2 self-end sm:self-center">
+                <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}">
+                  + Asignar Pase
+                </button>
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="user" data-id="${l.id}" data-name="${l.alias_nombre || 'Miembro VIP'}">
+                  🗑️ Borrar
+                </button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      drawerContent.querySelectorAll(".btn-create-ticket-for-lead").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const leadId = btn.getAttribute("data-lead-id");
+          openCrudModal("tickets", leadId);
+        });
+      });
+    }
+
+    if (type === "tickets" || type === "pending_cash" || type === "checkins") {
+      let list = cachedMetrics.tickets;
+      if (type === "pending_cash") {
+        list = list.filter((t: any) => t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion");
+        if (drawerBadge) drawerBadge.textContent = "Gestión de Cobros & Bre-B";
+        if (drawerTitle) drawerTitle.textContent = `Pendientes Efectivo / Bre-B (${list.length})`;
+      } else if (type === "checkins") {
+        list = list.filter((t: any) => t.estado === "asistido");
+        if (drawerBadge) drawerBadge.textContent = "Acceso en Puerta";
+        if (drawerTitle) drawerTitle.textContent = `Asistencias Validadas (${list.length})`;
+      } else {
+        if (drawerBadge) drawerBadge.textContent = "Boletería & Pases";
+        if (drawerTitle) drawerTitle.textContent = `Pases Emitidos Totales (${list.length})`;
+      }
+
+      const filtered = list.filter((t: any) =>
+        (t.alias_nombre || "").toLowerCase().includes(filter) ||
+        (t.ticket_hash || "").toLowerCase().includes(filter) ||
+        (t.evento || "").toLowerCase().includes(filter) ||
+        (t.tipo_entrada || "").toLowerCase().includes(filter)
+      );
+
+      drawerContent.innerHTML = `
+        <div class="space-y-3">
+          ${filtered.map((t: any) => {
+            const isPending = t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion";
+            return `
+              <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-[#ead397] text-sm">${t.alias_nombre || "Invitado"}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${t.estado === 'asistido' ? 'bg-[#2e7d32]/30 text-[#81c784]' : isPending ? 'bg-[#f57c00]/30 text-[#ffb74d]' : 'bg-[#c5a059]/20 text-[#ead397]'}">
+                      ${t.estado}
+                    </span>
+                    ${t.is_bre_b ? '<span class="px-2 py-0.5 rounded-full bg-[#8E4A8C]/30 text-[#f3e5f5] text-[10px] font-bold border border-[#8E4A8C]/50">⚡ Bre-B</span>' : ''}
+                    ${t.tipo_pago === 'cortesia_100' ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/30 text-[#ead397] text-[10px] font-bold">100% Cortesía</span>' : ''}
+                  </div>
+                  <div class="text-xs text-[#f7f4ee]/80 font-mono">Evento: ${t.evento} • Pase: ${t.tipo_entrada} • Monto: $${Number(t.monto_pagado).toLocaleString("es-CO")} (${t.metodo_pago})</div>
+                  <div class="text-[10px] text-[#c5a059] font-mono break-all">Hash: ${t.ticket_hash}</div>
+                </div>
+                <div class="flex items-center gap-2 self-end sm:self-center">
+                  ${isPending ? `
+                    <button type="button" class="btn-mark-paid px-3 py-1.5 rounded-lg bg-[#2e7d32] text-white text-xs font-bold hover:brightness-110 shadow-sm" data-ticket-id="${t.id}">
+                      ✓ Confirmar Pago
+                    </button>
+                  ` : ''}
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="ticket" data-id="${t.id}">
+                    🗑️ Borrar
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      // Bind mark paid
+      document.querySelectorAll(".btn-mark-paid").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.getAttribute("data-ticket-id");
+          if (!confirm("¿Confirmar que este pago fue recibido en efectivo / Bre-B / cuenta bancaria?")) return;
+          try {
+            const res = await fetch("/api/admin/records", {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ entity: "ticket", id, updates: { estado: "pagado" } }),
+            });
+            const data = await res.json();
+            if (data.success) {
+              loadMetrics();
+            } else {
+              alert(data.error || "No se pudo actualizar el pase");
+            }
+          } catch (e: any) {
+            alert("Error al confirmar pago");
+          }
+        });
+      });
+    }
+
+    bindDeleteButtons();
+  }
+
+  drawerSearch?.addEventListener("input", () => {
+    if (activeDrawerType) renderDrawer(activeDrawerType);
+  });
+
+  // 6. MODAL CAMBIO DE CONTRASEÑA
+  btnChangePasswordModal?.addEventListener("click", () => {
+    modalPassword?.classList.remove("hidden");
+    if (changePwdStatus) changePwdStatus.classList.add("hidden");
+  });
+  modalPasswordClose?.addEventListener("click", () => modalPassword?.classList.add("hidden"));
+
+  formChangePassword?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const cur = inputCurPwd.value;
+    const nxt = inputNewPwd.value;
+    if (!nxt || nxt.length < 6) return;
+
+    try {
+      const res = await fetch("/api/admin/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: cur, newPassword: nxt }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (changePwdStatus) {
+          changePwdStatus.className = "p-3 rounded-lg text-xs bg-[#2e7d32]/25 text-[#81c784] block";
+          changePwdStatus.textContent = "✓ Contraseña actualizada correctamente";
+        }
+        setTimeout(() => modalPassword?.classList.add("hidden"), 1500);
+      } else {
+        if (changePwdStatus) {
+          changePwdStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+          changePwdStatus.textContent = data.error || "Error al actualizar contraseña";
+        }
+      }
+    } catch (e: any) {
+      if (changePwdStatus) {
+        changePwdStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+        changePwdStatus.textContent = "Error de conexión";
+      }
+    }
+  });
+
+  // 7. MODAL AÑADIR REGISTRO MANUALMENTE / CORTESÍA 100%
+  drawerBtnAddNew?.addEventListener("click", () => openCrudModal(activeDrawerType || "leads"));
+  btnCreateTicketTop?.addEventListener("click", () => openCrudModal("tickets"));
+  btnAddAffiliateModal?.addEventListener("click", () => openCrudModal("affiliates"));
+  btnAddUnifiedUser?.addEventListener("click", () => openCrudModal("leads"));
+  btnAddLeadModal?.addEventListener("click", () => openCrudModal("leads"));
+  modalCrudClose?.addEventListener("click", () => modalCrudCreate?.classList.add("hidden"));
+
+  let currentCrudEntity = "lead";
+
+  function openCrudModal(type: string, optionalLeadId?: string | null) {
+    if (!crudFieldsContainer || !modalCrudTitle) return;
+    modalCrudCreate?.classList.remove("hidden");
+    if (crudCreateStatus) crudCreateStatus.classList.add("hidden");
+
+    if (type === "affiliates") {
+      currentCrudEntity = "affiliate";
+      modalCrudTitle.textContent = "Nuevo Embajador Oficial";
+      crudFieldsContainer.innerHTML = `
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Alias / Código de Afiliado *</label>
+          <input type="text" id="crud-alias" required placeholder="ej: laura-vip" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Nombre Completo</label>
+          <input type="text" id="crud-nombre" placeholder="Nombre completo" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">WhatsApp</label>
+          <input type="tel" id="crud-wa" placeholder="310 000 0000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+      `;
+    } else if (type === "tickets" || type === "pending_cash") {
+      currentCrudEntity = "ticket";
+      modalCrudTitle.textContent = "Crear Pase o Cortesía (Asignado Obligatoriamente)";
+      
+      const usersList = (cachedMetrics?.leads || []).map((l: any) => `
+        <option value="${l.id}" ${optionalLeadId === l.id ? 'selected' : ''}>
+          ${l.alias_nombre || 'Invitado'} (${l.whatsapp || l.email || 'Sin contacto'})${l.affiliate_alias ? ' • Embajador: @' + l.affiliate_alias : ''}
+        </option>
+      `).join("");
+
+      crudFieldsContainer.innerHTML = `
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Categoría del Pase *</label>
+          <select id="crud-tipo-pago" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-xs text-[#ead397] font-semibold">
+            <option value="pago_real">💵 Pago Real Efectivo en Sitio (Acredita venta al embajador)</option>
+            <option value="cortesia">🎟️ Cortesía Manual ($0 COP - No suma a ventas)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Asignar a Usuario Existente *</label>
+          <select id="crud-lead-id" required class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-xs text-[#f7f4ee]">
+            <option value="">-- Seleccionar Usuario Obligatorio --</option>
+            ${usersList}
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Evento *</label>
+          <select id="crud-evento" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="luna_llena">Noche de Luna Llena (Halloween)</option>
+            <option value="sitio_9_oct">Inauguración Sitio Licorera (9 Oct)</option>
+            <option value="impacto_10_oct">Impacto Producciones (10 Oct)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Tipo de Pase</label>
+          <select id="crud-tipo-entrada" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="pareja">Pareja ($100.000)</option>
+            <option value="single">Single (Hombre Solo - $120.000)</option>
+            <option value="unicornio">Unicornio (Mujer Sola - $30.000)</option>
+            <option value="vip_membresia">Membresía Anual VIP ($199.000)</option>
+          </select>
+        </div>
+
+        <div id="wrapper-monto">
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Monto Pagado (COP)</label>
+          <input type="number" id="crud-monto" value="100000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+
+        <div id="wrapper-metodo">
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Método de Pago</label>
+          <select id="crud-metodo" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="efectivo_sitio">Efectivo en Sitio</option>
+            <option value="bre_b">Bre-B (Transferencia Directa)</option>
+            <option value="transferencia">Transferencia Bancolombia / Nequi</option>
+            <option value="pasarela_digital">Pasarela Digital</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Estado</label>
+          <select id="crud-estado" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="confirmado">Confirmado (Aprobado)</option>
+            <option value="asistido">Asistido (Ingresó)</option>
+            <option value="pendiente">Pendiente</option>
+          </select>
+        </div>
+      `;
+
+      const catSelect = document.getElementById("crud-tipo-pago") as HTMLSelectElement;
+      const montoInput = document.getElementById("crud-monto") as HTMLInputElement;
+      const metodoSelect = document.getElementById("crud-metodo") as HTMLSelectElement;
+
+      catSelect?.addEventListener("change", () => {
+        if (catSelect.value === "cortesia") {
+          if (montoInput) { montoInput.value = "0"; montoInput.disabled = true; }
+          if (metodoSelect) {
+            metodoSelect.innerHTML = '<option value="cortesia_manual">Cortesía Manual</option>';
+          }
+        } else {
+          if (montoInput) { montoInput.value = "100000"; montoInput.disabled = false; }
+          if (metodoSelect) {
+            metodoSelect.innerHTML = `
+              <option value="efectivo_sitio">Efectivo en Sitio</option>
+              <option value="bre_b">Bre-B (Transferencia Directa)</option>
+              <option value="transferencia">Transferencia Bancolombia / Nequi</option>
+              <option value="pasarela_digital">Pasarela Digital</option>
+            `;
+          }
+        }
+      });
+    } else {
+      currentCrudEntity = "lead";
+      modalCrudTitle.textContent = "Nuevo Lead Manual";
+      crudFieldsContainer.innerHTML = `
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Alias / Nombre *</label>
+          <input type="text" id="crud-alias-nombre" required placeholder="Nombre o alias" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">WhatsApp</label>
+          <input type="tel" id="crud-wa" placeholder="310 000 0000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Email</label>
+          <input type="email" id="crud-email" placeholder="correo@ejemplo.com" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Modalidad / Rol</label>
+          <select id="crud-rol" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="pareja">👫 Pareja</option>
+            <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
+            <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Origen</label>
+          <select id="crud-origen" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+            <option value="web">El Placer DC (Web)</option>
+            <option value="the_corset">The Corset Society (VIP)</option>
+            <option value="aliado_centro_cultural">Aliados / Centro Cultural</option>
+            <option value="admin_manual">Creado Manualmente</option>
+          </select>
+        </div>
+      `;
+    }
+  }
+
+  formCrudCreate?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    let payloadData: any = {};
+
+    if (currentCrudEntity === "affiliate") {
+      const aliasInput = document.getElementById("crud-alias") as HTMLInputElement;
+      const nombreInput = document.getElementById("crud-nombre") as HTMLInputElement;
+      const waInput = document.getElementById("crud-wa") as HTMLInputElement;
+      payloadData = { alias: aliasInput.value, nombre: nombreInput.value, whatsapp: waInput.value };
+    } else if (currentCrudEntity === "ticket") {
+      const evInput = document.getElementById("crud-evento") as HTMLSelectElement;
+      const tipoInput = document.getElementById("crud-tipo-entrada") as HTMLSelectElement;
+      const tipoPagoInput = document.getElementById("crud-tipo-pago") as HTMLSelectElement;
+      const montoInput = document.getElementById("crud-monto") as HTMLInputElement;
+      const metodoInput = document.getElementById("crud-metodo") as HTMLSelectElement;
+      const estadoInput = document.getElementById("crud-estado") as HTMLSelectElement;
+      const leadIdInput = document.getElementById("crud-lead-id") as HTMLSelectElement | null;
+      payloadData = {
+        evento: evInput.value,
+        tipo_entrada: tipoInput.value,
+        tipo_pago: tipoPagoInput.value,
+        categoria: tipoPagoInput.value,
+        monto_pagado: montoInput.value,
+        metodo_pago: metodoInput.value,
+        estado: estadoInput.value,
+        lead_id: leadIdInput?.value || null,
+      };
+    } else {
+      const aliasInput = document.getElementById("crud-alias-nombre") as HTMLInputElement;
+      const waInput = document.getElementById("crud-wa") as HTMLInputElement;
+      const emailInput = document.getElementById("crud-email") as HTMLInputElement;
+      const rolInput = document.getElementById("crud-rol") as HTMLSelectElement;
+      const origenInput = document.getElementById("crud-origen") as HTMLSelectElement;
+      payloadData = { 
+        alias_nombre: aliasInput.value, 
+        whatsapp: waInput.value, 
+        email: emailInput.value, 
+        rol: rolInput.value,
+        origen: origenInput.value,
+        corset_vip: origenInput.value === "the_corset"
+      };
+    }
+
+    try {
+      const res = await fetch("/api/admin/records", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entity: currentCrudEntity, data: payloadData }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (crudCreateStatus) {
+          crudCreateStatus.className = "p-3 rounded-lg text-xs bg-[#2e7d32]/25 text-[#81c784] block";
+          crudCreateStatus.textContent = "✓ Registro creado exitosamente";
+        }
+        setTimeout(() => {
+          modalCrudCreate?.classList.add("hidden");
+          loadMetrics();
+        }, 800);
+      } else {
+        if (crudCreateStatus) {
+          crudCreateStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+          crudCreateStatus.textContent = data.error || "Error al crear registro";
+        }
+      }
+    } catch (e: any) {
+      if (crudCreateStatus) {
+        crudCreateStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+        crudCreateStatus.textContent = "Error de conexión al crear";
+      }
+    }
+  });
+
+  // 8. ESCÁNER QR DE CÁMARA AUTOMÁTICO
+  tabCameraScan?.addEventListener("click", () => {
+    tabCameraScan.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059] text-[#0e0410] transition-all";
+    tabManualScan!.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-[#f7f4ee]/70 hover:text-white transition-all";
+    panelCameraScanner?.classList.remove("hidden");
+    panelManualScanner?.classList.add("hidden");
+    startCamera();
+  });
+
+  tabManualScan?.addEventListener("click", () => {
+    tabManualScan.className = "px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#c5a059] text-[#0e0410] transition-all";
+    tabCameraScan!.className = "px-3 py-1.5 rounded-lg text-xs font-medium text-[#f7f4ee]/70 hover:text-white transition-all";
+    panelCameraScanner?.classList.add("hidden");
+    panelManualScanner?.classList.remove("hidden");
+    stopCamera();
+  });
+
+  btnStartCamera?.addEventListener("click", startCamera);
+
+  async function startCamera() {
+    try {
+      if (videoStream) {
+        stopCamera();
+      }
+
+      cameraLoadingOverlay?.classList.remove("hidden");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+
+      videoStream = stream;
+      if (qrVideoStream) {
+        qrVideoStream.srcObject = stream;
+        qrVideoStream.setAttribute("playsinline", "true");
+        await qrVideoStream.play();
+        cameraLoadingOverlay?.classList.add("hidden");
+        qrScanActive = true;
+        scanLoop();
+      }
+    } catch (err: any) {
+      console.warn("Camera access denied or failed:", err);
+      if (cameraLoadingOverlay) {
+        cameraLoadingOverlay.innerHTML = `
+          <span class="text-2xl text-[#ef5350]">⚠️</span>
+          <p class="text-xs text-[#ef5350]">No se pudo acceder a la cámara (${err.name || "Permiso denegado"}).</p>
+          <button type="button" id="btn-retry-camera" class="px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold">Reintentar</button>
+        `;
+        document.getElementById("btn-retry-camera")?.addEventListener("click", startCamera);
+      }
+    }
+  }
+
+  function stopCamera() {
+    qrScanActive = false;
+    if (videoStream) {
+      videoStream.getTracks().forEach((t) => t.stop());
+      videoStream = null;
+    }
+  }
+
+  // Scan detection loop with native BarcodeDetector API
+  async function scanLoop() {
+    if (!qrScanActive || !qrVideoStream) return;
+
+    if (!scanCooldown && qrVideoStream.readyState === qrVideoStream.HAVE_ENOUGH_DATA) {
+      if ("BarcodeDetector" in window) {
+        try {
+          const barcodeDetector = new (window as any).BarcodeDetector({ formats: ["qr_code"] });
+          const barcodes = await barcodeDetector.detect(qrVideoStream);
+          if (barcodes.length > 0 && barcodes[0].rawValue) {
+            handleDetectedCode(barcodes[0].rawValue);
+          }
+        } catch (e) {
+          // ignore detection frame error
+        }
+      }
+    }
+
+    if (qrScanActive) {
+      requestAnimationFrame(scanLoop);
+    }
+  }
+
+  async function handleDetectedCode(raw: string) {
+    if (scanCooldown) return;
+    scanCooldown = true;
+
+    // Haptic feedback if supported
+    if ("vibrate" in navigator) {
+      navigator.vibrate([100, 50, 100]);
+    }
+
+    await validateCheckin(raw);
+  }
+
+  // 9. CHECK-IN DISPATCHER WITH DISMISSIBLE MODAL POPUP
+  async function validateCheckin(rawCode: string) {
+    if (!modalQrResult) return;
+
+    try {
+      const res = await fetch("/api/admin/checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_hash: rawCode }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        if (data.already_checked_in) {
+          if (qrModalIcon) qrModalIcon.textContent = "⚠️";
+          if (qrModalTitle) qrModalTitle.textContent = "Entrada Previamente Utilizada";
+          if (qrModalSubtitle) qrModalSubtitle.textContent = "Este pase ya fue validado en el ingreso anteriormente.";
+          if (qrModalBody) {
+            qrModalBody.innerHTML = `
+              <div class="space-y-1.5 font-sans">
+                <div><span class="text-[#c5a059] font-bold">Titular:</span> ${data.ticket.titular}</div>
+                <div><span class="text-[#c5a059] font-bold">WhatsApp:</span> ${data.ticket.whatsapp || "No registrado"}</div>
+                <div><span class="text-[#c5a059] font-bold">Evento:</span> ${data.ticket.evento}</div>
+                <div><span class="text-[#c5a059] font-bold">Pase:</span> ${data.ticket.tipo_entrada} (${data.ticket.tipo_pago})</div>
+                <div class="text-[10px] text-[#ffb74d] font-mono break-all pt-1">Hash: ${data.ticket.ticket_hash || rawCode}</div>
+              </div>
+            `;
+          }
+        } else {
+          if (qrModalIcon) qrModalIcon.textContent = "✨";
+          if (qrModalTitle) qrModalTitle.textContent = "¡Acceso Concedido!";
+          if (qrModalSubtitle) qrModalSubtitle.textContent = "Entrada válida y registrada para el evento.";
+          if (qrModalBody) {
+            qrModalBody.innerHTML = `
+              <div class="space-y-1.5 font-sans">
+                <div><span class="text-[#81c784] font-bold">Titular:</span> ${data.ticket.titular}</div>
+                <div><span class="text-[#81c784] font-bold">WhatsApp:</span> ${data.ticket.whatsapp || "No registrado"}</div>
+                <div><span class="text-[#81c784] font-bold">Evento:</span> ${data.ticket.evento}</div>
+                <div><span class="text-[#81c784] font-bold">Pase:</span> ${data.ticket.tipo_entrada} (${data.ticket.tipo_pago})</div>
+                <div class="text-[10px] text-[#81c784] font-mono break-all pt-1">Hash: ${data.ticket.ticket_hash || rawCode}</div>
+              </div>
+            `;
+          }
+          loadMetrics();
+        }
+      } else {
+        if (qrModalIcon) qrModalIcon.textContent = "❌";
+        if (qrModalTitle) qrModalTitle.textContent = "Entrada Inválida";
+        if (qrModalSubtitle) qrModalSubtitle.textContent = "Código no encontrado o revocado.";
+        if (qrModalBody) {
+          qrModalBody.innerHTML = `
+            <div class="text-[#ef5350]">
+              <p>${data.error || "El código escaneado no coincide con ningún pase registrado en la base de datos."}</p>
+              <p class="font-mono text-[10px] text-[#f7f4ee]/50 mt-1 break-all">${rawCode}</p>
+            </div>
+          `;
+        }
+      }
+
+      modalQrResult.classList.remove("hidden");
+    } catch (e: any) {
+      if (qrModalIcon) qrModalIcon.textContent = "❌";
+      if (qrModalTitle) qrModalTitle.textContent = "Error de Conexión";
+      if (qrModalSubtitle) qrModalSubtitle.textContent = "No se pudo contactar el servidor de validación.";
+      if (qrModalBody) qrModalBody.textContent = "Revisa tu conexión a internet e intenta nuevamente.";
+      modalQrResult.classList.remove("hidden");
+    }
+  }
+
+  // Dismiss QR Modal
+  btnCloseQrModal?.addEventListener("click", () => {
+    modalQrResult?.classList.add("hidden");
+    scanCooldown = false;
+  });
+
+  // Manual Check-in Form Handler
+  checkinForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const raw = inputTicketHash.value.trim();
+    if (!raw) return;
+    btnCheckinSubmit.disabled = true;
+    btnCheckinSubmit.textContent = "Validando...";
+    await validateCheckin(raw);
+    inputTicketHash.value = "";
+    btnCheckinSubmit.disabled = false;
+    btnCheckinSubmit.textContent = "Validar Asistencia";
+  });
+
+  btnRefresh?.addEventListener("click", loadMetrics);
+
+  // Initialize only if authenticated dashboard is active
+  if (btnLogout) {
+    loadMetrics();
+
+    // If mobile or permission ready, start camera on load
+    if (tabCameraScan && window.innerWidth < 768) {
+      startCamera();
+    }
+  }
+</script>

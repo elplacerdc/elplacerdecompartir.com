@@ -10,7 +10,7 @@ import AmbassadorSection from "../components/AmbassadorSection.astro";
   <section class="relative min-h-[90vh] flex items-center justify-center pt-20 pb-16 px-4 sm:px-6 lg:px-8 overflow-hidden bg-transparent">
     <!-- Background Image from Media -->
     <div class="absolute inset-0 pointer-events-none -z-20">
-      <img src="/media/Gemini_Generated_Image_2.jpg" alt="Centro Cultural" class="w-full h-full object-cover opacity-20" />
+      <img src="/media/centro-cultural/fotos/salon-principal-1-a.jpg" alt="Centro Cultural" class="w-full h-full object-cover opacity-20" />
     </div>
     <!-- Delicadas texturas y halos ámbar cálidos y terciopelo vino -->
     <div class="absolute inset-0 bg-gradient-to-b from-[#200D28]/95 via-[#2C1237]/90 to-[#200D28] pointer-events-none -z-10"></div>
@@ -256,6 +256,16 @@ import AmbassadorSection from "../components/AmbassadorSection.astro";
             Gala Noir, antifaces y misterio en las noches de luna llena. Veladas de ticket alto y aforo estrictamente limitado, donde el acceso se concede y jamás se anuncia. Una experiencia sensorial reservada y protegida.
           </p>
 
+          <!-- Image Preview: Flyer Membresía Clean antes de los botones VIP -->
+          <a href="/the-corset-society" class="block rounded-2xl overflow-hidden border border-[#C5A059]/40 shadow-xl group my-4">
+            <img 
+              src="/media/corset-society/flyer_membresia_clean.jpg" 
+              alt="The Corset Society Membresía VIP" 
+              loading="lazy"
+              class="w-full h-64 sm:h-80 object-cover object-top group-hover:scale-105 transition-transform duration-700" 
+            />
+          </a>
+
           <div class="pt-2 flex flex-wrap items-center gap-4">
             <a 
               href="/the-corset-society" 
@@ -272,15 +282,18 @@ import AmbassadorSection from "../components/AmbassadorSection.astro";
           </div>
         </div>
 
-        <!-- Image Preview: Flyer Membresía Clean con Nuevo Logo The Corset Society -->
-        <a href="/the-corset-society" class="block rounded-2xl overflow-hidden border border-[#C5A059]/40 shadow-xl group">
-          <img 
-            src="/media/corset-society/flyer_membresia_clean.jpg" 
-            alt="The Corset Society Membresía VIP" 
-            loading="lazy"
-            class="w-full h-80 object-cover object-top group-hover:scale-105 transition-transform duration-700" 
-          />
-        </a>
+        <!-- Columna de detalles estéticos / Atmósfera Noir -->
+        <div class="hidden lg:flex flex-col justify-center space-y-6 p-8 rounded-2xl bg-[#140816]/70 border border-[#C5A059]/30 text-center">
+          <span class="text-xs font-serif text-[#EAD397] uppercase tracking-[0.2em] font-semibold">Atmósfera Exclusiva</span>
+          <p class="text-xs text-[#F7F4EE]/70 font-light leading-relaxed">
+            Un círculo protegido bajo estricto código de honor. El acceso requiere postulación previa y portación de credencial digital personalizada.
+          </p>
+          <div class="pt-2">
+            <span class="inline-block px-4 py-1.5 rounded-full text-[10px] uppercase font-mono tracking-widest text-[#C5A059] border border-[#C5A059]/40 bg-[#050505]">
+              Dress Code: Noir / Antifaz
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -288,11 +301,11 @@ import AmbassadorSection from "../components/AmbassadorSection.astro";
   <!-- Ambassador Section -->
   <AmbassadorSection />
 
-  <!-- Interactive Registration Form con espaciado optimizado -->
+  <!-- Interactive Registration Form con espaciado optimizado WhatsApp-first -->
   <section id="registro" class="pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-xl mx-auto">
     <LeadForm 
       title="Entrada a la Comunidad" 
-      subtitle="Ingresa tu WhatsApp o correo para recibir convocatorias privadas, talleres y eventos de la comunidad."
+      subtitle="Ingresa tu WhatsApp para recibir convocatorias privadas, talleres y eventos de la comunidad."
     />
   </section>
 </Layout>
