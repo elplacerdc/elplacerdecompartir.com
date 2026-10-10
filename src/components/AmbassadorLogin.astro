@@ -1,20 +1,21 @@
 ---
-// AmbassadorLogin.astro - Acceso Exclusivo de Embajadores con Estética Luxury Brandbook
+// AmbassadorLogin.astro - Acceso Exclusivo de Embajadores con Formulario de Comunidad Integrado
 ---
 
 <div id="ambassador-login" class="max-w-md mx-auto p-8 bg-[#140816]/95 border border-[#c5a059]/40 rounded-2xl shadow-[0_4px_30px_rgba(89,31,38,0.3)] mt-8">
   <div class="text-center mb-6">
     <span class="text-xs uppercase tracking-[0.25em] text-[#c5a059] font-medium block mb-1">Comunidad & Embajadores</span>
-    <h2 class="text-2xl font-serif font-bold text-[#ead397]">Acceso a Embajadores</h2>
-    <p class="text-xs text-[#f7f4ee]/70 mt-2">Gestiona tu enlace exclusivo, monitorea tus referidos y activa tus beneficios.</p>
+    <h2 id="login-title" class="text-2xl font-serif font-bold text-[#ead397]">Acceso a Embajadores</h2>
+    <p id="login-desc" class="text-xs text-[#f7f4ee]/70 mt-2">Gestiona tu enlace exclusivo, monitorea tus referidos y activa tus beneficios.</p>
   </div>
   
+  <!-- Paso 1: Ingreso de Teléfono -->
   <div id="step-phone" class="space-y-4">
     <div>
       <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-1">
         WhatsApp / Teléfono <span class="text-[#b84a39]">*</span>
       </label>
-      <p class="text-[11px] text-[#f7f4ee]/60 mb-2">Ingresa el número con el que te registraste en nuestra comunidad.</p>
+      <p class="text-[11px] text-[#f7f4ee]/60 mb-2">Ingresa tu número para recibir tu código de acceso por WhatsApp.</p>
       <input 
         type="tel" 
         id="phone-input" 
@@ -30,6 +31,7 @@
     </button>
   </div>
 
+  <!-- Paso 2: Verificación de Código OTP -->
   <div id="step-verify" class="space-y-4 hidden">
     <div>
       <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
@@ -59,6 +61,84 @@
       </button>
     </div>
   </div>
+
+  <!-- Paso 3: Formulario de Comunidad General para Nuevos Usuarios (Sin Registro Previo) -->
+  <div id="step-register" class="space-y-4 hidden">
+    <div class="p-3 bg-[#c5a059]/15 border border-[#c5a059]/30 rounded-xl text-center space-y-1">
+      <span class="text-xs uppercase tracking-wider text-[#81c784] font-bold block">✓ WhatsApp Verificado</span>
+      <p id="reg-verified-phone" class="text-xs font-mono text-[#f7f4ee]"></p>
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-1">
+        Pseudónimo / Alias <span class="text-[#b84a39]">*</span>
+      </label>
+      <p class="text-[11px] text-[#f7f4ee]/60 mb-2">Este será tu alias en la comunidad y tu enlace oficial de embajador.</p>
+      <input 
+        type="text" 
+        id="reg-alias" 
+        required 
+        placeholder="Ej: Carlos, Sofia, Fenix" 
+        class="w-full px-4 py-3 rounded-lg bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-1">
+        Modalidad de Participación <span class="text-[#b84a39]">*</span>
+      </label>
+      <select 
+        id="reg-rol" 
+        class="w-full px-4 py-3 rounded-lg bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+        <option value="pareja">👫 Pareja</option>
+        <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
+        <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-1">
+        Ciudad <span class="text-[#b84a39]">*</span>
+      </label>
+      <select 
+        id="reg-ciudad" 
+        class="w-full px-4 py-3 rounded-lg bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+        <option value="Bogotá">Bogotá</option>
+        <option value="Medellín">Medellín</option>
+        <option value="Otra">Otra ciudad</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-1">
+        Correo Electrónico <span class="text-[#f7f4ee]/40">(Opcional)</span>
+      </label>
+      <input 
+        type="email" 
+        id="reg-email" 
+        placeholder="ejemplo@correo.com" 
+        class="w-full px-4 py-3 rounded-lg bg-[#0a0608] border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+    </div>
+
+    <div class="flex gap-2 pt-2">
+      <button 
+        id="submit-register-btn" 
+        class="flex-1 py-3.5 rounded-lg font-serif font-bold uppercase tracking-wider text-xs bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all shadow-md"
+      >
+        Activar y Entrar al Panel
+      </button>
+      <button 
+        id="reg-back-btn" 
+        type="button"
+        class="px-4 py-3.5 rounded-lg text-xs text-[#f7f4ee]/60 hover:text-[#f7f4ee] border border-[#c5a059]/20"
+      >
+        Atrás
+      </button>
+    </div>
+  </div>
   
   <p id="auth-message" class="mt-4 text-xs text-center min-h-[16px]"></p>
 </div>
@@ -66,12 +146,23 @@
 <script>
   const stepPhone = document.getElementById('step-phone');
   const stepVerify = document.getElementById('step-verify');
+  const stepRegister = document.getElementById('step-register');
   const phoneInput = document.getElementById('phone-input') as HTMLInputElement;
   const codeInput = document.getElementById('code-input') as HTMLInputElement;
   const sendOtpBtn = document.getElementById('send-otp-btn') as HTMLButtonElement;
   const verifyOtpBtn = document.getElementById('verify-otp-btn') as HTMLButtonElement;
   const backBtn = document.getElementById('back-btn');
   const authMessage = document.getElementById('auth-message');
+
+  const regVerifiedPhone = document.getElementById('reg-verified-phone');
+  const regAlias = document.getElementById('reg-alias') as HTMLInputElement;
+  const regRol = document.getElementById('reg-rol') as HTMLSelectElement;
+  const regCiudad = document.getElementById('reg-ciudad') as HTMLSelectElement;
+  const regEmail = document.getElementById('reg-email') as HTMLInputElement;
+  const submitRegisterBtn = document.getElementById('submit-register-btn') as HTMLButtonElement;
+  const regBackBtn = document.getElementById('reg-back-btn');
+  const loginTitle = document.getElementById('login-title');
+  const loginDesc = document.getElementById('login-desc');
 
   let currentPhone = '';
 
@@ -86,6 +177,20 @@
     if (e.key === 'Enter') {
       e.preventDefault();
       verifyOtpBtn?.click();
+    }
+  });
+
+  regAlias?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitRegisterBtn?.click();
+    }
+  });
+
+  regEmail?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitRegisterBtn?.click();
     }
   });
 
@@ -118,6 +223,7 @@
       } else {
         stepPhone?.classList.add('hidden');
         stepVerify?.classList.remove('hidden');
+        stepRegister?.classList.add('hidden');
         if (authMessage) {
           authMessage.className = 'mt-4 text-xs text-center text-[#81c784]';
           authMessage.textContent = 'Código enviado a tu WhatsApp';
@@ -138,6 +244,7 @@
   backBtn?.addEventListener('click', () => {
     stepVerify?.classList.add('hidden');
     stepPhone?.classList.remove('hidden');
+    stepRegister?.classList.add('hidden');
     if (authMessage) authMessage.textContent = '';
   });
 
@@ -167,8 +274,19 @@
           authMessage.className = 'mt-4 text-xs text-center text-[#ef5350]';
           authMessage.textContent = data.error || 'Código inválido o expirado';
         }
-      } else {
-        // Save session identifier in localStorage
+        return;
+      }
+
+      // Validar si el usuario ya existe registrado en la comunidad
+      const checkRes = await fetch("/api/leads/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ whatsapp: currentPhone }),
+      });
+      const checkData = await checkRes.json();
+
+      if (checkData.exists) {
+        // Miembro existente: entra directamente al dashboard
         const cleanPhone = currentPhone.trim();
         localStorage.setItem("ambassador_session_phone", cleanPhone);
         if (authMessage) {
@@ -179,6 +297,18 @@
         setTimeout(() => {
           window.location.reload();
         }, 100);
+      } else {
+        // Usuario sin cuenta: Activar formulario de Comunidad General
+        stepVerify?.classList.add('hidden');
+        stepRegister?.classList.remove('hidden');
+        if (regVerifiedPhone) regVerifiedPhone.textContent = currentPhone;
+        if (loginTitle) loginTitle.textContent = 'Registro a la Comunidad';
+        if (loginDesc) loginDesc.textContent = 'Para acceder a tu panel de embajador, completa tus datos oficiales de la comunidad:';
+        if (authMessage) {
+          authMessage.className = 'mt-4 text-xs text-center text-[#ead397]';
+          authMessage.textContent = 'WhatsApp verificado. Ingresa tus datos para activar tu cuenta.';
+        }
+        regAlias?.focus();
       }
     } catch (e: any) {
       if (authMessage) {
@@ -189,5 +319,71 @@
       verifyOtpBtn.textContent = 'Verificar y Entrar';
       verifyOtpBtn.disabled = false;
     }
+  });
+
+  submitRegisterBtn?.addEventListener('click', async () => {
+    const alias = regAlias?.value.trim();
+    if (!alias || alias.length < 2) {
+      if (authMessage) {
+        authMessage.className = 'mt-4 text-xs text-center text-[#ef5350]';
+        authMessage.textContent = 'Por favor ingresa tu pseudónimo o alias';
+      }
+      regAlias?.focus();
+      return;
+    }
+
+    submitRegisterBtn.textContent = 'Registrando y Activando...';
+    submitRegisterBtn.disabled = true;
+
+    try {
+      const regRes = await fetch("/api/leads/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          alias_nombre: alias,
+          rol: regRol?.value || "pareja",
+          ciudad: regCiudad?.value || "Bogotá",
+          email: regEmail?.value.trim() || undefined,
+          whatsapp: currentPhone.trim(),
+          origen: "web_comunidad",
+          verified: true,
+        }),
+      });
+      const regData = await regRes.json();
+
+      if (!regData.success) {
+        if (authMessage) {
+          authMessage.className = 'mt-4 text-xs text-center text-[#ef5350]';
+          authMessage.textContent = regData.error || 'Error al completar registro';
+        }
+      } else {
+        const cleanPhone = currentPhone.trim();
+        localStorage.setItem("ambassador_session_phone", cleanPhone);
+        if (authMessage) {
+          authMessage.className = 'mt-4 text-xs text-center text-[#81c784]';
+          authMessage.textContent = '¡Registro completado exitosamente! Entrando al panel...';
+        }
+        window.dispatchEvent(new CustomEvent("ambassador-session-started", { detail: { phone: cleanPhone } }));
+        setTimeout(() => {
+          window.location.reload();
+        }, 150);
+      }
+    } catch (e: any) {
+      if (authMessage) {
+        authMessage.className = 'mt-4 text-xs text-center text-[#ef5350]';
+        authMessage.textContent = e.message || 'Error de conexión al registrar';
+      }
+    } finally {
+      submitRegisterBtn.textContent = 'Activar y Entrar al Panel';
+      submitRegisterBtn.disabled = false;
+    }
+  });
+
+  regBackBtn?.addEventListener('click', () => {
+    stepRegister?.classList.add('hidden');
+    stepPhone?.classList.remove('hidden');
+    if (loginTitle) loginTitle.textContent = 'Acceso a Embajadores';
+    if (loginDesc) loginDesc.textContent = 'Gestiona tu enlace exclusivo, monitorea tus referidos y activa tus beneficios.';
+    if (authMessage) authMessage.textContent = '';
   });
 </script>

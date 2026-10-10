@@ -587,34 +587,6 @@ export async function getAffiliateStats(identifier: string): Promise<{
            LIMIT 1`,
           [clean, phoneVariants.length > 0 ? phoneVariants : null]
         );
-      } else if (phoneNorm && phoneNorm.canonical) {
-        const newLeadRes = await client.query(
-          `INSERT INTO leads (alias_nombre, whatsapp, origen) 
-           VALUES ($1, $2, 'web_dashboard') 
-           ON CONFLICT (whatsapp) DO UPDATE SET updated_at = NOW() 
-           RETURNING *`,
-          ["Embajador", phoneNorm.canonical]
-        );
-        const createdLead = newLeadRes.rows[0];
-        const newAlias = await ensureAffiliateCode("Embajador", createdLead.whatsapp, null);
-        res = await client.query(
-          `SELECT * FROM afiliados WHERE LOWER(alias) = $1 LIMIT 1`,
-          [newAlias.toLowerCase()]
-        );
-      } else if (clean && clean.includes("@")) {
-        const newLeadRes = await client.query(
-          `INSERT INTO leads (alias_nombre, email, origen) 
-           VALUES ($1, $2, 'web_dashboard') 
-           ON CONFLICT (email) DO UPDATE SET updated_at = NOW() 
-           RETURNING *`,
-          ["Embajador", clean]
-        );
-        const createdLead = newLeadRes.rows[0];
-        const newAlias = await ensureAffiliateCode("Embajador", null, createdLead.email);
-        res = await client.query(
-          `SELECT * FROM afiliados WHERE LOWER(alias) = $1 LIMIT 1`,
-          [newAlias.toLowerCase()]
-        );
       }
     }
 
