@@ -121,7 +121,25 @@ export const POST: APIRoute = async ({ request }) => {
         ""
     ).trim();
 
-    // 2. Control de Intervención Humana del Operador (fromMe == true)
+    // 2. Extracción de Mensaje Citado (quotedMessage)
+    const contextInfo =
+      msgObj.extendedTextMessage?.contextInfo ||
+      msgObj.contextInfo ||
+      eventData.contextInfo;
+
+    const quotedMessage = contextInfo?.quotedMessage;
+    let quotedText = "";
+    if (quotedMessage) {
+      quotedText = String(
+        quotedMessage.conversation ||
+          quotedMessage.extendedTextMessage?.text ||
+          quotedMessage.imageMessage?.caption ||
+          quotedMessage.videoMessage?.caption ||
+          ""
+      ).trim();
+    }
+
+    // 3. Control de Intervención Humana del Operador (fromMe == true)
     if (fromMe) {
       if (messageText.includes("#bot")) {
         await clearHumanTakeover(targetDigitsList);
@@ -142,6 +160,14 @@ export const POST: APIRoute = async ({ request }) => {
           `[WhatsApp Bot] Intervención humana detectada del operador. Bot pausado 2h para:`,
           targetDigitsList
         );
+        // Guardar el mensaje del operador humano en la memoria de la conversación
+        if (messageText && !messageText.startsWith("#")) {
+          await appendSessionMessage(
+            primaryCustomerPhone,
+            "assistant",
+            `[Operador humano]: ${messageText}`
+          );
+        }
       }
 
       return new Response(JSON.stringify({ status: "human_takeover_updated" }), {
@@ -150,11 +176,19 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // 3. Comprobar si la conversación está en ventana de intervención humana activa
+    // 4. Comprobar si la conversación está en ventana de intervención humana activa
     const inTakeover = await isHumanTakeover(targetDigitsList);
     if (inTakeover) {
+      // Guardar el mensaje del cliente en el historial mientras el operador está atendiendo
+      if (messageText) {
+        let customerMsg = messageText;
+        if (quotedText) {
+          customerMsg = `[Mensaje citado al que responde el usuario: "${quotedText}"]\n${messageText}`;
+        }
+        await appendSessionMessage(primaryCustomerPhone, "user", customerMsg);
+      }
       console.log(
-        `[WhatsApp Bot] Mensaje de ${primaryCustomerPhone} silenciado por intervención humana activa.`
+        `[WhatsApp Bot] Mensaje de ${primaryCustomerPhone} guardado en memoria y silenciado por intervención humana activa.`
       );
       return new Response(
         JSON.stringify({ status: "ignored_human_takeover_active" }),
@@ -163,24 +197,6 @@ export const POST: APIRoute = async ({ request }) => {
           headers: { "Content-Type": "application/json" },
         }
       );
-    }
-
-    // 4. Extracción de Mensaje Citado (quotedMessage)
-    const contextInfo =
-      msgObj.extendedTextMessage?.contextInfo ||
-      msgObj.contextInfo ||
-      eventData.contextInfo;
-
-    const quotedMessage = contextInfo?.quotedMessage;
-    let quotedText = "";
-    if (quotedMessage) {
-      quotedText = String(
-        quotedMessage.conversation ||
-          quotedMessage.extendedTextMessage?.text ||
-          quotedMessage.imageMessage?.caption ||
-          quotedMessage.videoMessage?.caption ||
-          ""
-      ).trim();
     }
 
     // 5. Soporte y Transcripción de Notas de Voz (audioMessage)
@@ -224,17 +240,21 @@ export const POST: APIRoute = async ({ request }) => {
           );
           const audioBuffer = Buffer.from(cleanBase64, "base64");
 
+          const groqKey = process.env.GROQ_API_KEY;
+
           const formData = new FormData();
           const audioBlob = new Blob([audioBuffer], { type: "audio/ogg" });
           formData.append("file", audioBlob, "audio.ogg");
-          formData.append("model", "whisper-1");
+          formData.append("model", "whisper-large-v3-turbo");
+          formData.append("language", "es");
+          formData.append("response_format", "json");
 
           const transcriptionRes = await fetch(
-            `${BIFROST_URL}/audio/transcriptions`,
+            "https://api.groq.com/openai/v1/audio/transcriptions",
             {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${BIFROST_VIRTUAL_KEY}`,
+                Authorization: `Bearer ${groqKey}`,
               },
               body: formData,
             }
@@ -246,12 +266,14 @@ export const POST: APIRoute = async ({ request }) => {
             if (transcribed) {
               messageText = transcribed;
               console.log(
-                `[WhatsApp Bot] Audio de ${primaryCustomerPhone} transcrito exitosamente: "${messageText}"`
+                `[WhatsApp Bot] Audio de ${primaryCustomerPhone} transcrito con éxito por Groq Whisper: "${messageText}"`
               );
             }
           } else {
+            const errText = await transcriptionRes.text();
             console.warn(
-              `[WhatsApp Bot] Whisper HTTP ${transcriptionRes.status} al transcribir audio`
+              `[WhatsApp Bot] Groq Whisper HTTP ${transcriptionRes.status} al transcribir audio:`,
+              errText
             );
           }
         }

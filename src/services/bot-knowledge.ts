@@ -20,7 +20,7 @@ const STATIC_EVENTS: EventItem[] = [
     time: "8:00 P.M. — 2:00 A.M.",
     venue: "Centro Cultural El Placer DC (Calle 67 # 23-46, Barrio 7 de Agosto, Bogotá)",
     description: "Experiencia inmersiva de erotismo consciente, música, arte sensorial y coctelería.",
-    url: "https://elplacerdecompartir.com/eventos/sitio-9-oct",
+    url: "https://elplacerdecompartir.com/sitio",
   },
   {
     id: "impacto-10-oct",
@@ -29,7 +29,7 @@ const STATIC_EVENTS: EventItem[] = [
     time: "8:00 P.M. — 3:00 A.M.",
     venue: "Centro Cultural El Placer DC (Calle 67 # 23-46, Barrio 7 de Agosto, Bogotá)",
     description: "Velada de performance de impacto, exploración sensorial y espacio de comunidad.",
-    url: "https://elplacerdecompartir.com/eventos/impacto-10-oct",
+    url: "https://elplacerdecompartir.com/the-corset-society/impacto-10-oct",
   },
   {
     id: "luna-llena-31-oct",
@@ -105,32 +105,10 @@ export function getActiveEvents(currentIsoDate: string): EventItem[] {
 }
 
 /**
- * Detecta qué pasarelas de pago están configuradas en las variables de entorno.
+ * Pasarelas y métodos de pago oficiales sin revelar marcas técnicas procesadoras.
  */
 function getActivePaymentGateways(): string {
-  const hasDLocal = Boolean(
-    process.env.DLOCALGO_SECRET_KEY ||
-      process.env.DLOCAL_KEY ||
-      process.env.DLOCALGO_KEY
-  );
-  const hasWompi = Boolean(process.env.WOMPI_PRIVATE_KEY);
-  const hasStripe = Boolean(process.env.STRIPE_SECRET_KEY);
-
-  const active: string[] = [];
-  if (hasDLocal) {
-    active.push("dLocal Go (Tarjetas de crédito/débito, PSE, Efecty en Colombia)");
-  }
-  if (hasWompi) {
-    active.push("Wompi (Bancolombia, PSE, Tarjetas)");
-  }
-  if (hasStripe) {
-    active.push("Stripe (Pagos internacionales)");
-  }
-
-  if (active.length === 0) {
-    return "dLocal Go (PSE, Tarjetas, Efecty)";
-  }
-  return active.join(", ");
+  return "Plataforma de pago seguro en línea (PSE, Tarjetas de crédito/débito y Efecty en Colombia)";
 }
 
 export interface SystemPromptOptions {
@@ -140,7 +118,7 @@ export interface SystemPromptOptions {
 }
 
 /**
- * Construye el System Prompt dinámico, temporalmente consciente y adaptado a la realidad viva.
+ * Construye el System Prompt dinámico, temporalmente consciente y anclado a la verdad web irrefutable.
  */
 export function buildDynamicSystemPrompt(options: SystemPromptOptions = {}): string {
   const { readableText, isoDate } = getBogotaDateInfo();
@@ -190,9 +168,26 @@ Atiendes en WhatsApp con un tono cercano, sensual, sofisticado, cómplice y emp�
 --- AGENDA DE EVENTOS VIGENTES ---
 ${eventsDescription}
 
---- PASARELAS Y POLÍTICAS DE PAGO ---
-• Pasarelas habilitadas: ${paymentGateways}.
-• Para pagos y reservas, brinda siempre el enlace oficial del evento correspondiente.
+--- MAPA BÍBLICO DE ENLACES OFICIALES (ZERO 404 / PROHIBIDO INVENTAR) ---
+La página web https://elplacerdecompartir.com es tu única biblia irrefutable.
+SOLO tienes permitido brindar los siguientes enlaces oficiales exactos. NUNCA inventes enlaces ficticios ni agregues prefijos como /eventos/:
+• Página principal / Comunidad: https://elplacerdecompartir.com
+• Centro Cultural (sede permanente y salas): https://elplacerdecompartir.com/centro-cultural
+• Galería fotográfica oficial: https://elplacerdecompartir.com/galeria-centro-cultural
+• Velada Íntima 'Sitio': https://elplacerdecompartir.com/sitio
+• The Corset Society (círculo VIP y membresías): https://elplacerdecompartir.com/the-corset-society
+• Noche de Luna Llena (31 Octubre - Mascarada en el Bosque): https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas
+• Evento Impacto Producciones: https://elplacerdecompartir.com/the-corset-society/impacto-10-oct
+• Programa de Embajadores y Comunidad: https://elplacerdecompartir.com/dashboard
+
+--- PROTOCOLO DE TRANSFERENCIA A SEGISW (DIRECTORA) ---
+• Si un usuario pregunta algo que NO está documentado en la web o en este contexto (alianzas comerciales, reservas especiales, consultas corporativas, dudas complejas o inquietudes fuera de catálogo):
+  NUNCA inventes respuestas. Aclara con calidez y elegancia que esa consulta requiere atención personalizada y que con gusto lo comunicas con SegiSw (Directora de la comunidad) a través de nuestra línea directa de WhatsApp: https://wa.me/573194194785 (+57 319 419 4785) o en X: https://x.com/SegiSw (@SegiSw).
+
+--- PASARELAS Y MÉTODOS DE PAGO ---
+• Métodos habilitados: ${paymentGateways}.
+• REGLA ESTRICTA DE MARCA: NUNCA menciones marcas de pasarelas ni nombres de proveedores técnicos procesadores de pago. Di siempre 'a través de nuestra plataforma de pago seguro en línea (PSE, tarjetas de crédito/débito o Efecty)'.
+• Para pagos y reservas, brinda siempre el enlace oficial del evento correspondiente provisto arriba.
 
 --- PROGRAMA DE EMBAJADORES Y REFERIDOS ---
 • Beneficio: Por cada 3 compras de eventos pagos realizadas con tu enlace de embajador, obtienes 1 entrada gratuita para ti (hitos cíclicos: 3 compras = 1 pase libre). Tu amigo además recibe un 10% de descuento de cortesía al reservar con tu enlace.

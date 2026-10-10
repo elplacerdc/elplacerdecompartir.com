@@ -158,4 +158,52 @@ describe("Webhook End-to-End Simulation: Human Takeover & Quoted Context", () =>
     const json = await res.json();
     expect(json.status).toBe("processed");
   });
+
+  test("5. Contexto continuo: Valkey preserva lo hablado por operador y cliente durante el takeover", async () => {
+    const history = await getSessionHistory(customerPhone, 10);
+    const contents = history.map((m) => m.content);
+
+    // Debe contener el mensaje del operador humano
+    expect(contents.some((c) => c.includes("[Operador humano]: Dime?"))).toBe(true);
+
+    // Debe contener la respuesta del cliente durante el takeover
+    expect(contents.some((c) => c.includes("Que"))).toBe(true);
+  });
+
+  test("6. Nota de voz: webhook detecta audioMessage y ejecuta transcripción STT", async () => {
+    const audioPayload = {
+      event: "messages.upsert",
+      data: {
+        key: {
+          remoteJid: `${customerPhone}@s.whatsapp.net`,
+          fromMe: false,
+          id: "3EB0AUDIO123",
+        },
+        info: {
+          Chat: `${customerPhone}@s.whatsapp.net`,
+          Sender: `${customerPhone}@s.whatsapp.net`,
+          IsFromMe: false,
+        },
+        message: {
+          audioMessage: {
+            mimetype: "audio/ogg; codecs=opus",
+            seconds: 3,
+            base64: "T2dnUwACAAAAAAAAAAAAAAAARwAAAAAAAP8AAAA=",
+          },
+        },
+      },
+    };
+
+    const req = new Request("http://localhost:3000/api/webhooks/whatsapp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(audioPayload),
+    });
+
+    const res = await POST({ request: req } as any);
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(["processed", "audio_fallback_sent"]).toContain(json.status);
+  });
 });
+

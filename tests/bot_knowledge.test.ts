@@ -40,8 +40,14 @@ describe("Bot Knowledge & Temporal Awareness", () => {
     expect(prompt).toContain("Impacto Producciones");
     expect(prompt).toContain("The Corset Society");
 
-    // Invariante: Pasarelas activas
-    expect(prompt).toContain("dLocal Go");
+    // Invariante: Pasarelas activas sin mención a dLocal Go
+    expect(prompt).toContain("Plataforma de pago seguro en línea");
+    expect(prompt).not.toContain("dLocal Go");
+
+    // Invariante: URLs canónicas exactas y transferencia a SegiSw
+    expect(prompt).toContain("https://elplacerdecompartir.com/sitio");
+    expect(prompt).toContain("SegiSw");
+    expect(prompt).toContain("facilitadoras y facilitadores");
 
     // Invariante: Programa de embajadores
     expect(prompt).toContain("PROGRAMA DE EMBAJADORES");
