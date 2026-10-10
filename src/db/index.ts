@@ -587,6 +587,34 @@ export async function getAffiliateStats(identifier: string): Promise<{
            LIMIT 1`,
           [clean, phoneVariants.length > 0 ? phoneVariants : null]
         );
+      } else if (phoneNorm && phoneNorm.canonical) {
+        const newLeadRes = await client.query(
+          `INSERT INTO leads (alias_nombre, whatsapp, origen) 
+           VALUES ($1, $2, 'web_dashboard') 
+           ON CONFLICT (whatsapp) DO UPDATE SET updated_at = NOW() 
+           RETURNING *`,
+          ["Embajador", phoneNorm.canonical]
+        );
+        const createdLead = newLeadRes.rows[0];
+        const newAlias = await ensureAffiliateCode("Embajador", createdLead.whatsapp, null);
+        res = await client.query(
+          `SELECT * FROM afiliados WHERE LOWER(alias) = $1 LIMIT 1`,
+          [newAlias.toLowerCase()]
+        );
+      } else if (clean && clean.includes("@")) {
+        const newLeadRes = await client.query(
+          `INSERT INTO leads (alias_nombre, email, origen) 
+           VALUES ($1, $2, 'web_dashboard') 
+           ON CONFLICT (email) DO UPDATE SET updated_at = NOW() 
+           RETURNING *`,
+          ["Embajador", clean]
+        );
+        const createdLead = newLeadRes.rows[0];
+        const newAlias = await ensureAffiliateCode("Embajador", null, createdLead.email);
+        res = await client.query(
+          `SELECT * FROM afiliados WHERE LOWER(alias) = $1 LIMIT 1`,
+          [newAlias.toLowerCase()]
+        );
       }
     }
 
@@ -611,14 +639,19 @@ export async function getAffiliateStats(identifier: string): Promise<{
 
     // Consultar el estado VIP del propio embajador
     let vipStatus: "no_vip" | "posible_vip" | "vip_activo" = "no_vip";
+    const ambPhoneVariants = getPhoneVariants(row.whatsapp);
     const ambLeadRes = await client.query(
-      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado FROM leads WHERE email = $1 OR (whatsapp IS NOT NULL AND whatsapp = $2) LIMIT 1`,
-      [row.email, row.whatsapp]
+      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado FROM leads 
+       WHERE (email IS NOT NULL AND email = $1) 
+          OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[])) 
+       LIMIT 1`,
+      [row.email, ambPhoneVariants.length > 0 ? ambPhoneVariants : null]
     );
     if (ambLeadRes.rows.length > 0) {
       const ambLead = ambLeadRes.rows[0];
       const hasActiveVip = Boolean(
         (ambLead.vip_until && new Date(ambLead.vip_until) > new Date()) ||
+        (ambLead.metadata?.vip_until && new Date(ambLead.metadata.vip_until) > new Date()) ||
         (ambLead.corset_vip && ambLead.primer_pago_acreditado) ||
         (ambLead.metadata?.tags && ambLead.metadata.tags.includes("vip_activo"))
       );

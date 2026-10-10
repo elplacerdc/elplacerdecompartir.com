@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS leads (
   origen VARCHAR(100) DEFAULT 'web_comunidad',
   afiliado_id VARCHAR(100),
   corset_vip BOOLEAN DEFAULT false,
+  vip_until TIMESTAMPTZ,
   primer_pago_acreditado BOOLEAN DEFAULT false,
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),

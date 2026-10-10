@@ -260,9 +260,9 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
 
   let currentAlias = "";
   let activeShareUrl = "";
-  const sessionIdentifier = localStorage.getItem("ambassador_session_phone");
 
   async function loadDashboard() {
+    const sessionIdentifier = localStorage.getItem("ambassador_session_phone");
     if (!sessionIdentifier) {
       unauthView?.classList.remove("hidden");
       authView?.classList.add("hidden");
@@ -425,9 +425,17 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         }
 
       } else {
-        localStorage.removeItem("ambassador_session_phone");
-        unauthView?.classList.remove("hidden");
-        authView?.classList.add("hidden");
+        console.error("[Dashboard] Error al sincronizar estadísticas:", data?.error);
+        if (res.status === 404) {
+          localStorage.removeItem("ambassador_session_phone");
+          unauthView?.classList.remove("hidden");
+          authView?.classList.add("hidden");
+        } else {
+          // No cerrar sesion por error transitorio de servidor
+          unauthView?.classList.add("hidden");
+          authView?.classList.remove("hidden");
+          if (ambassadorName) ambassadorName.textContent = "Error al sincronizar datos";
+        }
       }
     } catch (e) {
       console.error("Error loading ambassador stats:", e);
@@ -520,6 +528,11 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
   btnLogout?.addEventListener("click", () => {
     localStorage.removeItem("ambassador_session_phone");
     window.location.reload();
+  });
+
+  // Escuchar inicio de sesión inmediato
+  window.addEventListener("ambassador-session-started", () => {
+    loadDashboard();
   });
 
   loadDashboard();

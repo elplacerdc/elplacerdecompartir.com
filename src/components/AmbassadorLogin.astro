@@ -169,12 +169,16 @@
         }
       } else {
         // Save session identifier in localStorage
-        localStorage.setItem("ambassador_session_phone", currentPhone);
+        const cleanPhone = currentPhone.trim();
+        localStorage.setItem("ambassador_session_phone", cleanPhone);
         if (authMessage) {
           authMessage.className = 'mt-4 text-xs text-center text-[#81c784]';
-          authMessage.textContent = 'Acceso concedido. Redirigiendo...';
+          authMessage.textContent = 'Acceso concedido. Entrando al panel...';
         }
-        window.location.href = '/dashboard';
+        window.dispatchEvent(new CustomEvent("ambassador-session-started", { detail: { phone: cleanPhone } }));
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       }
     } catch (e: any) {
       if (authMessage) {
