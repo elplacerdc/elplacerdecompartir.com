@@ -1,7 +1,18 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, beforeAll } from "bun:test";
 import { getAffiliateStats, upsertLead, ensureAffiliateCode } from "../src/db";
 
 describe("Dashboard Affiliate OTP & Community Invariants", () => {
+  beforeAll(async () => {
+    await upsertLead({
+      alias_nombre: "juan",
+      whatsapp: "+573158443002",
+      rol: "hombre_solo",
+      ciudad: "Bogotá",
+      origen: "web_test",
+    });
+    await ensureAffiliateCode("juan", "+573158443002", null);
+  });
+
   it("retrieves stats for an existing affiliate by phone without column vip_until crash", async () => {
     // Test with existing affiliate phone '3158443002'
     const stats = await getAffiliateStats("3158443002");
