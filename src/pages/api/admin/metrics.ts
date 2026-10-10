@@ -26,15 +26,19 @@ export const GET: APIRoute = async ({ cookies }) => {
       SELECT COUNT(*)::int AS count 
       FROM leads 
       WHERE (corset_vip = true OR metadata->'tags' ? 'posible vip' OR metadata->'tags' ? 'corset')
-        AND (vip_until IS NULL OR vip_until <= NOW())
+        AND (metadata->>'vip_until' IS NULL OR (metadata->>'vip_until')::timestamptz <= NOW())
     `);
     const activePaidVipCountRes = await client.query(`
       SELECT COUNT(*)::int AS count 
       FROM leads 
-      WHERE (vip_until IS NOT NULL AND vip_until > NOW())
+      WHERE (metadata->>'vip_until' IS NOT NULL AND (metadata->>'vip_until')::timestamptz > NOW())
          OR (metadata->'tags' ? 'vip_activo')
     `);
-    const vipCountRes = await client.query("SELECT COUNT(*)::int AS count FROM leads WHERE corset_vip = true OR (vip_until IS NOT NULL AND vip_until > NOW())");
+    const vipCountRes = await client.query(`
+      SELECT COUNT(*)::int AS count 
+      FROM leads 
+      WHERE corset_vip = true OR (metadata->>'vip_until' IS NOT NULL AND (metadata->>'vip_until')::timestamptz > NOW())
+    `);
     const ticketsCountRes = await client.query("SELECT COUNT(*)::int AS count FROM event_tickets");
     const checkinsCountRes = await client.query("SELECT COUNT(*)::int AS count FROM event_tickets WHERE estado = 'asistido'");
     const clicksSumRes = await client.query("SELECT COALESCE(SUM(clicks), 0)::int AS count FROM afiliados");
@@ -109,15 +113,16 @@ export const GET: APIRoute = async ({ cookies }) => {
     // 2. Enriched Leads (Unified Directory up to 200)
     const recentLeadsRes = await client.query(`
       SELECT 
-        l.id, l.alias_nombre, l.email, l.whatsapp, l.rol, l.ciudad, l.origen, l.corset_vip, l.vip_until, l.metadata, l.created_at,
+        l.id, l.alias_nombre, l.email, l.whatsapp, l.rol, l.ciudad, l.origen, l.corset_vip, 
+        (l.metadata->>'vip_until') AS vip_until, l.metadata, l.created_at,
         COALESCE(l.primer_pago_acreditado, false) AS primer_pago_acreditado,
         COALESCE(a.alias, '') AS affiliate_alias,
         COALESCE(a.clicks, 0) AS affiliate_clicks,
         COALESCE((SELECT COUNT(*)::int FROM leads ref WHERE LOWER(ref.afiliado_id) = LOWER(a.alias)), 0) AS affiliate_leads_count,
         COALESCE(a.referidos_pagados, 0) AS affiliate_sales_count,
         COALESCE(a.entradas_ganadas, 0) AS affiliate_tickets_won,
-        (CASE WHEN (l.vip_until IS NOT NULL AND l.vip_until > NOW()) OR (l.metadata->'tags' ? 'vip_activo') THEN true ELSE false END) AS is_active_vip,
-        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset') AND (l.vip_until IS NULL OR l.vip_until <= NOW()) THEN true ELSE false END) AS is_possible_vip,
+        (CASE WHEN ((l.metadata->>'vip_until') IS NOT NULL AND (l.metadata->>'vip_until')::timestamptz > NOW()) OR (l.metadata->'tags' ? 'vip_activo') THEN true ELSE false END) AS is_active_vip,
+        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset') AND ((l.metadata->>'vip_until') IS NULL OR (l.metadata->>'vip_until')::timestamptz <= NOW()) THEN true ELSE false END) AS is_possible_vip,
         (SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id) AS tickets_count
       FROM leads l
       LEFT JOIN afiliados a ON (

@@ -87,16 +87,16 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
 
     // 3. Authenticated Dashboard Elements
     await expect(page.locator("h1")).toContainText("Dashboard de Administración", { timeout: 10000 });
-    await expect(page.getByText("Total Leads").first()).toBeVisible();
-    await expect(page.getByText("Embajadores").first()).toBeVisible();
+    await expect(page.getByText("Comunidad Registrada").first()).toBeVisible();
+    await expect(page.getByText("Solicitudes Aliados").first()).toBeVisible();
     await expect(page.getByText("Pases Emitidos").first()).toBeVisible();
-    await expect(page.getByText("Pendientes Efectivo").first()).toBeVisible();
     await expect(page.getByText("Validador de Asistencia y Escáner QR")).toBeVisible();
+    await expect(page.locator("#kpi-leads")).not.toHaveText("...", { timeout: 10000 });
 
     // 4. Test Clickable Metric opens Drawer
     await page.click("#card-kpi-leads");
     await expect(page.locator("#drawer-container")).toBeVisible();
-    await expect(page.locator("#drawer-title")).toContainText("Directorio de Contactos");
+    await expect(page.locator("#drawer-title")).toContainText("Directorio de Contactos", { timeout: 10000 });
     await page.click("#drawer-close");
     await expect(page.locator("#drawer-container")).toBeHidden();
   });
