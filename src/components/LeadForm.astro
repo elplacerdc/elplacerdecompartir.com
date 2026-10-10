@@ -299,6 +299,35 @@ const {
     }
   });
 
+  // Enter key listeners for frictionless desktop UX
+  inputWhatsapp?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnSendWaOtp?.click();
+    }
+  });
+
+  inputWaOtp?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnVerifyWaOtp?.click();
+    }
+  });
+
+  inputEmail?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnSendEmailOtp?.click();
+    }
+  });
+
+  inputEmailOtp?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnVerifyEmailOtp?.click();
+    }
+  });
+
   // Back button to change phone number
   btnBackWaOtp?.addEventListener("click", () => {
     stepWaVerify?.classList.add("hidden");
@@ -344,7 +373,7 @@ const {
         waVerifiedBadge?.classList.remove("hidden");
         inputWhatsapp.readOnly = true;
 
-        // 2. Prevenir Doble Registro: Verificar si ya existe en Base de Datos
+        // 2. Prevenir Bloqueos: Verificar si ya existe en Base de Datos y acumular canales
         try {
           const checkRes = await fetch("/api/leads/check", {
             method: "POST",
@@ -361,6 +390,61 @@ const {
             const waMsg = encodeURIComponent(`¡Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
             const xMsg = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
 
+            // Pre-llenar campos existentes en memoria
+            if (inputAlias) inputAlias.value = existing.alias_nombre || "";
+            if (inputEmail && existing.email) {
+              inputEmail.value = existing.email;
+              if (isVip && existing.metadata?.email_verified) {
+                emailVerified = true;
+                emailVerifiedBadge?.classList.remove("hidden");
+                btnSendEmailOtp?.classList.add("hidden");
+                inputEmail.readOnly = true;
+              }
+            }
+            if (inputRol && existing.rol) inputRol.value = existing.rol;
+            if (inputCiudad && existing.ciudad) inputCiudad.value = existing.ciudad;
+
+            if (isVip) {
+              // Si ya es VIP con credencial anual activa
+              const hasActiveVip = existing.corset_vip && existing.vip_until && new Date(existing.vip_until) > new Date();
+              if (hasActiveVip) {
+                leadExistingBox.innerHTML = `
+                  <div class="flex items-center gap-2 text-sm font-serif font-bold text-[#ead397]">
+                    <span>✓</span> Membresía VIP Activa Confirmada
+                  </div>
+                  <p class="text-xs text-[#f7f4ee]/90 leading-relaxed">
+                    Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu membresía anual a The Corset Society está activa hasta el ${new Date(existing.vip_until).toLocaleDateString()}.
+                  </p>
+                  <div class="pt-2 border-t border-[#c5a059]/20 flex flex-wrap gap-2">
+                    <a href="/dashboard" class="px-4 py-2 rounded-lg bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all">
+                      Ir a mi Panel de Embajador →
+                    </a>
+                  </div>
+                `;
+                leadExistingBox.classList.remove("hidden");
+                leadRemainingFields.classList.add("hidden");
+                return;
+              }
+
+              // Lead registrado en la comunidad general que se postula a The Corset Society:
+              // NO BLOQUEAR. Mostrar banner y desplegar formulario para radicar la postulación
+              leadExistingBox.innerHTML = `
+                <div class="p-3 bg-[#140816] rounded border border-[#c5a059]/40 text-xs space-y-1">
+                  <div class="text-[#ead397] font-serif font-bold flex items-center gap-1.5">
+                    <span>✓</span> Registro previo encontrado en la comunidad general
+                  </div>
+                  <p class="text-[#f7f4ee]/80 text-[11px] leading-relaxed">
+                    Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>. Hemos precargado tus datos. Confírmalos a continuación para radicar tu postulación oficial a <strong>The Corset Society (Posible VIP)</strong>.
+                  </p>
+                </div>
+              `;
+              leadExistingBox.classList.remove("hidden");
+              leadRemainingFields.classList.remove("hidden");
+              inputAlias?.focus();
+              return;
+            }
+
+            // Formulario general con lead existente
             leadExistingBox.innerHTML = `
               <div class="flex items-center gap-2 text-sm font-serif font-bold text-[#ead397]">
                 <span>✓</span> Registro Previo Confirmado
@@ -369,7 +453,7 @@ const {
                 Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu número ya se encuentra registrado activamente en nuestra comunidad en modalidad <strong class="text-[#ead397] capitalize">${existing.rol ? existing.rol.replace('_', ' ') : 'General'}</strong>.
               </p>
               <p class="text-[11px] text-[#f7f4ee]/70">
-                Tu perfil ya está activo y protegido. No es necesario registrarte de nuevo. Tu enlace de embajador oficial es:
+                Tu perfil ya está activo y protegido. Tu enlace de embajador oficial es:
               </p>
               <div class="p-2.5 bg-[#0a0608] rounded border border-[#c5a059]/40 text-xs font-mono text-[#ead397] select-all">
                 ${shareUrl}
@@ -388,9 +472,20 @@ const {
                   Compartir en X (x.com)
                 </a>
               </div>
+              <div class="mt-2 pt-2 border-t border-[#c5a059]/10">
+                <button type="button" id="btn-edit-existing-lead" class="text-[11px] text-[#c5a059] hover:text-[#ead397] underline cursor-pointer">
+                  ¿Deseas actualizar tus datos personales (alias, correo, ciudad)? Pulsa aquí.
+                </button>
+              </div>
             `;
             leadExistingBox.classList.remove("hidden");
             leadRemainingFields.classList.add("hidden");
+
+            const btnEditExisting = document.getElementById("btn-edit-existing-lead");
+            btnEditExisting?.addEventListener("click", () => {
+              leadRemainingFields.classList.remove("hidden");
+              inputAlias?.focus();
+            });
             return;
           }
         } catch (checkErr) {

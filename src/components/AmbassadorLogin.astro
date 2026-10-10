@@ -75,6 +75,20 @@
 
   let currentPhone = '';
 
+  phoneInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendOtpBtn?.click();
+    }
+  });
+
+  codeInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      verifyOtpBtn?.click();
+    }
+  });
+
   sendOtpBtn?.addEventListener('click', async () => {
     currentPhone = phoneInput?.value.trim();
     if (!currentPhone) {

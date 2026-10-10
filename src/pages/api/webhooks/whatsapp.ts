@@ -216,11 +216,15 @@ export const POST: APIRoute = async ({ request }) => {
           eventData.data?.base64;
 
         if (!audioBase64) {
+          const evoApiKey = process.env.EVOLUTION_API_KEY || "481c8c43-0023-4028-bad5-9d1355a3674c";
           const downloadRes = await fetch(
             "http://evolution:8085/message/downloadmedia",
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                apikey: evoApiKey,
+              },
               body: JSON.stringify({ message: msgObj }),
             }
           );
@@ -355,7 +359,7 @@ export const POST: APIRoute = async ({ request }) => {
           body: JSON.stringify({
             model: "auto",
             messages: llmMessages,
-            temperature: 0.7,
+            temperature: 0.1,
             max_tokens: 800,
           }),
         });
@@ -375,7 +379,16 @@ export const POST: APIRoute = async ({ request }) => {
           completion.choices?.[0]?.message?.reasoning_content;
 
         if (replyText && replyText.trim()) {
-          const finalReply = replyText.trim();
+          let finalReply = replyText.trim();
+
+          // 1. Sanitización estricta anti-alucinaciones y blindaje cultural
+          finalReply = finalReply
+            .replace(/\banfitrionas\b/gi, "facilitadoras y anfitriones éticos")
+            .replace(/\banfitriona\b/gi, "facilitadora ética")
+            .replace(/\b(mi amor|amor|cariño|corazón|bebé|cielo|hermosa|linda)\b/gi, "")
+            .replace(/https?:\/\/elplacerdecompartir\.com\/sitio\b/g, "https://elplacerdecompartir.com/eventos/sitio-9-oct")
+            .replace(/https?:\/\/elplacerdecompartir\.com\/the-corset-society\/impacto-10-oct\b/g, "https://elplacerdecompartir.com/eventos/impacto-10-oct")
+            .trim();
 
           // Simulación de presencia y ritmo de conversación humano
           const typingDelayMs = Math.min(

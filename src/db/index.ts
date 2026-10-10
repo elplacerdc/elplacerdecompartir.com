@@ -246,14 +246,24 @@ export async function upsertLead(
         existingChannels.push(resolvedChannel);
       }
 
-      // Consolidate tags as an additive monotonic set
+      // Consolidate tags as an additive monotonic set with canonical names
       const existingTags: string[] = Array.isArray(existingMeta.tags) ? existingMeta.tags : [];
-      const newTagsToAdd: string[] = [resolvedChannel];
-      if (targetChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
-        newTagsToAdd.push("alianza");
+      const newTagsToAdd: string[] = [];
+      if (resolvedChannel === "elplacerdc" || data.origen === "web_comunidad" || (!existingTags.includes("general") && !existingTags.includes("corset") && !existingTags.includes("alianzas"))) {
+        newTagsToAdd.push("general");
       }
       if (data.corset_vip || resolvedChannel === "corset" || existingLead.corset_vip) {
+        newTagsToAdd.push("corset");
         newTagsToAdd.push("corset_vip");
+        if (!existingTags.includes("vip_activo")) {
+          newTagsToAdd.push("posible vip");
+        }
+      }
+      if (targetChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
+        newTagsToAdd.push("alianzas");
+      }
+      if (existingLead.vip_until && new Date(existingLead.vip_until) > new Date()) {
+        newTagsToAdd.push("vip_activo");
       }
       const consolidatedTags = Array.from(new Set([...existingTags, ...newTagsToAdd]));
 
@@ -312,13 +322,16 @@ export async function upsertLead(
       };
     }
 
-    // 3. New Lead Insertion Path (Ensure tags array is initialized monotonically)
-    const initialTags: string[] = [resolvedChannel];
+    // 3. New Lead Insertion Path (Ensure canonical tags array is initialized monotonically)
+    const initialTags: string[] = [];
     if (resolvedChannel === "corset" || Boolean(data.corset_vip)) {
+      initialTags.push("corset");
       initialTags.push("corset_vip");
-    }
-    if (resolvedChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
-      initialTags.push("alianza");
+      initialTags.push("posible vip");
+    } else if (resolvedChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
+      initialTags.push("alianzas");
+    } else {
+      initialTags.push("general");
     }
 
     const initialMeta = {
@@ -413,11 +426,11 @@ export async function recordAffiliatePayment(affiliateAlias: string, leadId?: st
       await client.query("UPDATE leads SET primer_pago_acreditado = true, updated_at = NOW() WHERE id::text = $1", [leadId]);
     }
 
-    // 2. Acreditar venta al embajador
+    // 2. Acreditar venta al embajador con tope de 3 entradas gratuitas
     const res = await client.query(
       `UPDATE afiliados 
        SET referidos_pagados = referidos_pagados + 1,
-           entradas_ganadas = FLOOR((referidos_pagados + 1) / 3)
+           entradas_ganadas = LEAST(3, FLOOR((referidos_pagados + 1) / 3))
        WHERE LOWER(alias) = $1
        RETURNING *`,
       [cleanAlias]
@@ -436,7 +449,8 @@ export async function recordAffiliatePayment(affiliateAlias: string, leadId?: st
           tickets
         ).catch((e) => console.error("[Notify Sale Acredited Err]:", e));
 
-        if (purchases % 3 === 0) {
+        // Solo notifica bono de entrada gratis hasta 3 veces máximo
+        if (purchases <= 9 && purchases % 3 === 0) {
           notifyAmbassadorFreeTicketWon(
             { alias: updatedRow.alias, nombre: updatedRow.nombre, whatsapp: updatedRow.whatsapp, email: updatedRow.email },
             tickets
@@ -587,13 +601,37 @@ export async function getAffiliateStats(identifier: string): Promise<{
     const leadsCount = leadsRes.rows[0]?.cnt || 0;
 
     const referredLeadsRes = await client.query(
-      `SELECT email, created_at, primer_pago_acreditado 
+      `SELECT email, created_at, primer_pago_acreditado, origen, metadata 
        FROM leads 
        WHERE LOWER(afiliado_id) = $1 
        ORDER BY created_at DESC 
        LIMIT 50`,
       [row.alias.toLowerCase()]
     );
+
+    // Consultar el estado VIP del propio embajador
+    let vipStatus: "no_vip" | "posible_vip" | "vip_activo" = "no_vip";
+    const ambLeadRes = await client.query(
+      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado FROM leads WHERE email = $1 OR (whatsapp IS NOT NULL AND whatsapp = $2) LIMIT 1`,
+      [row.email, row.whatsapp]
+    );
+    if (ambLeadRes.rows.length > 0) {
+      const ambLead = ambLeadRes.rows[0];
+      const hasActiveVip = Boolean(
+        (ambLead.vip_until && new Date(ambLead.vip_until) > new Date()) ||
+        (ambLead.corset_vip && ambLead.primer_pago_acreditado) ||
+        (ambLead.metadata?.tags && ambLead.metadata.tags.includes("vip_activo"))
+      );
+      if (hasActiveVip) {
+        vipStatus = "vip_activo";
+      } else if (Boolean(ambLead.corset_vip) || (ambLead.metadata?.tags && (ambLead.metadata.tags.includes("corset") || ambLead.metadata.tags.includes("posible vip")))) {
+        vipStatus = "posible_vip";
+      }
+    }
+
+    const purchases = row.referidos_pagados || 0;
+    const freeTicketsEarned = Math.min(3, Math.floor(purchases / 3));
+    const subsequentDiscounts = Math.max(0, purchases - 9);
 
     return {
       alias: row.alias,
@@ -602,13 +640,20 @@ export async function getAffiliateStats(identifier: string): Promise<{
       email: row.email,
       clicks: row.clicks || 0,
       leadsCount,
-      purchasesCount: row.referidos_pagados || 0,
-      freeTicketsEarned: row.entradas_ganadas || 0,
-      referredLeads: referredLeadsRes.rows.map((r) => ({
-        email_masked: maskEmail(r.email),
-        created_at: r.created_at,
-        compro_entrada: Boolean(r.primer_pago_acreditado),
-      })),
+      purchasesCount: purchases,
+      freeTicketsEarned,
+      subsequentDiscounts,
+      vipStatus,
+      referredLeads: referredLeadsRes.rows.map((r) => {
+        const tags = Array.isArray(r.metadata?.tags) ? r.metadata.tags : [];
+        const isCorset = tags.includes("corset") || r.origen === "web_corset";
+        return {
+          email_masked: maskEmail(r.email),
+          created_at: r.created_at,
+          compro_entrada: Boolean(r.primer_pago_acreditado),
+          channel_tag: isCorset ? "corset" : "general", // Excluye 'alianzas' para el embajador
+        };
+      }),
     };
   } finally {
     client.release();

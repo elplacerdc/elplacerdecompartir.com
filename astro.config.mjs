@@ -8,6 +8,10 @@ export default defineConfig({
     checkOrigin: false,
   },
   output: "server",
+  redirects: {
+    "/sitio": "/eventos/sitio-9-oct",
+    "/the-corset-society/impacto-10-oct": "/eventos/impacto-10-oct",
+  },
   adapter: node({
     mode: "standalone",
   }),

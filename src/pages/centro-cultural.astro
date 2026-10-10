@@ -3,6 +3,10 @@
 import Layout from "../layouts/Layout.astro";
 import AllianceForm from "../components/AllianceForm.astro";
 import AmbassadorSection from "../components/AmbassadorSection.astro";
+import { getUpcomingEvents, getPastEvents } from "../data/events";
+
+const upcomingEvents = getUpcomingEvents();
+const pastEvents = getPastEvents();
 ---
 
 <Layout 
@@ -111,86 +115,61 @@ import AmbassadorSection from "../components/AmbassadorSection.astro";
         <h2 class="font-serif text-2xl sm:text-3xl font-bold text-[#f7f4ee]">Próximos Eventos</h2>
       </div>
 
-      <!-- Evento Propio: Oportunidad de conocer el nuevo lugar de ElPlacerDC -->
-      <a href="/eventos/sitio-9-oct" class="block group max-w-4xl mx-auto rounded-3xl bg-[#250F22] border border-[#c5a059]/40 shadow-[0_4px_35px_rgba(89,31,38,0.25)] hover:shadow-[0_4px_35px_rgba(197,160,89,0.4)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
-        <div class="p-6 sm:p-8 space-y-4">
-          <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#c5a059] font-serif font-bold border border-[#c5a059]/30 mb-1">
-            Evento Oficial ElPlacerDC
-          </span>
-          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397] group-hover:text-white transition-colors">
-            Viernes 9 de Octubre
-          </h3>
-          <p class="text-xs sm:text-sm text-[#f7f4ee]/85 leading-relaxed font-light">
-            Tu gran <strong>oportunidad de conocer el nuevo lugar de ElPlacerDC</strong>. Un encuentro diseñado para explorar las nuevas instalaciones, compartir entre personas afines y disfrutar de una atmósfera de libertad sin presiones.
+      {upcomingEvents.length === 0 ? (
+        <div class="max-w-2xl mx-auto p-8 rounded-3xl bg-[#250F22]/50 border border-[#c5a059]/30 text-center space-y-4">
+          <p class="text-sm text-[#f7f4ee]/80 font-light leading-relaxed">
+            No hay eventos programados en agenda inmediata en este momento. Las nuevas fechas se anuncian periódicamente.
           </p>
-          <div class="pt-2 flex flex-wrap gap-3">
-            <span class="px-5 py-2.5 rounded-full bg-[#c5a059] text-[#180A1A] font-serif font-bold text-xs uppercase tracking-wider group-hover:bg-[#ead397] transition-all">
-              Ver Detalles y Reservar
-            </span>
-          </div>
+          <a href="/eventos-realizados" class="inline-block px-6 py-2.5 rounded-full bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs font-serif uppercase tracking-wider hover:bg-[#c5a059]/30 transition-all">
+            Ver Eventos Realizados ({pastEvents.length})
+          </a>
         </div>
-        <div class="p-4 sm:p-6 flex justify-center bg-[#1E0A1A]">
-          <img 
-            src="/media/eventos-elplacerdc/viernes-9-octubre-sitio.jpg" 
-            alt="Viernes 9 de Octubre" 
-            class="rounded-2xl max-h-[480px] w-full object-contain border border-[#c5a059]/30 shadow-lg group-hover:scale-105 transition-transform duration-500"
-          />
-        </div>
-      </a>
+      ) : (
+        upcomingEvents.map((ev) => (
+          <a 
+            href={ev.link || "/centro-cultural"} 
+            class={`block group max-w-4xl mx-auto rounded-3xl ${ev.cardBgClass || 'bg-[#250F22]'} border ${ev.cardBorderClass || 'border-[#c5a059]/40'} shadow-[0_4px_35px_rgba(89,31,38,0.25)] hover:shadow-[0_4px_35px_rgba(197,160,89,0.4)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center`}
+          >
+            <div class="p-6 sm:p-8 space-y-4">
+              <span class={`inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest font-serif font-bold border mb-1 ${ev.badgeClass || 'bg-[#c5a059]/20 border-[#c5a059]/30 text-[#c5a059]'}`}>
+                {ev.badge}
+              </span>
+              <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397] group-hover:text-white transition-colors">
+                {ev.title}
+              </h3>
+              <p class="text-xs sm:text-sm text-[#f7f4ee]/85 leading-relaxed font-light">
+                {ev.description}
+              </p>
+              {ev.buttonText && (
+                <div class="pt-2 flex flex-wrap gap-3">
+                  <span class={`px-5 py-2.5 rounded-full ${ev.buttonClass || 'bg-[#c5a059] text-[#180A1A]'} font-serif font-bold text-xs uppercase tracking-wider transition-all shadow-md`}>
+                    {ev.buttonText}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div class={`p-4 sm:p-6 flex justify-center ${ev.imgBgClass || 'bg-[#1E0A1A]'}`}>
+              <img 
+                src={ev.image} 
+                alt={ev.title} 
+                class="rounded-2xl max-h-[480px] w-full object-contain border border-[#c5a059]/30 shadow-lg group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+          </a>
+        ))
+      )}
 
-      <!-- Evento Aliado: Impacto Producciones con Paleta Más Oscura y Elegante -->
-      <a href="/eventos/impacto-10-oct" class="block group max-w-4xl mx-auto rounded-3xl bg-[#1E0C24] border border-[#8E4A8C]/40 shadow-[0_4px_35px_rgba(142,74,140,0.2)] hover:shadow-[0_4px_35px_rgba(142,74,140,0.35)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
-        <div class="p-6 sm:p-8 space-y-4">
-          <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#f3e5f5] font-serif font-bold bg-[#8E4A8C]/20 border border-[#8E4A8C]/40 mb-1">
-            Evento Aliado
-          </span>
-          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#f3e5f5] group-hover:text-white transition-colors">
-            Impacto Producciones - Sábado 10
-          </h3>
-          <p class="text-xs sm:text-sm text-[#f7f4ee]/80 leading-relaxed font-light">
-            Nuestros aliados de Impacto Producciones se toman la casa. Una noche distinta con música, shows y performances en vivo en nuestro escenario central.
-          </p>
-          <div class="pt-2 flex flex-wrap gap-3">
-            <span class="px-5 py-2.5 rounded-full bg-[#8E4A8C] hover:bg-[#a35da1] text-white font-serif font-bold text-xs uppercase tracking-wider transition-all shadow-md">
-              Ver Detalles y Reservar
-            </span>
-          </div>
+      {pastEvents.length > 0 && (
+        <div class="text-center pt-2">
+          <a 
+            href="/eventos-realizados" 
+            class="inline-flex items-center gap-2 text-xs font-serif uppercase tracking-widest text-[#c5a059] hover:text-[#ead397] transition-colors border border-[#c5a059]/30 px-5 py-2 rounded-full hover:bg-[#c5a059]/10"
+          >
+            <span>Explorar Memorias de Eventos Realizados ({pastEvents.length})</span>
+            <span>→</span>
+          </a>
         </div>
-        <div class="p-4 sm:p-6 flex justify-center bg-[#200d28]/60">
-          <img 
-            src="/media/eventos-aliados/sabado-10-octubre_impacto-producciones.jpg" 
-            alt="Sábado 10 de Octubre" 
-            class="rounded-2xl max-h-[480px] w-full object-contain border border-[#8E4A8C]/30 shadow-lg group-hover:scale-105 transition-transform duration-500"
-          />
-        </div>
-      </a>
-
-      <!-- Evento Luna Llena (The Corset Society) -->
-      <a href="/the-corset-society/luna-llena" class="block group max-w-4xl mx-auto rounded-3xl bg-[#0a050c] border border-[#c5a059]/50 shadow-[0_4px_35px_rgba(197,160,89,0.2)] hover:shadow-[0_4px_35px_rgba(197,160,89,0.4)] transition-all overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
-        <div class="p-6 sm:p-8 space-y-4">
-          <span class="inline-block px-3 py-1 rounded-full text-xs uppercase tracking-widest text-[#ead397] font-serif font-bold bg-[#c5a059]/20 border border-[#c5a059]/40 mb-1">
-            🌕 The Corset Society • Gala de Misterio
-          </span>
-          <h3 class="font-serif text-2xl sm:text-3xl font-bold text-[#ead397] group-hover:text-white transition-colors">
-            Noche de Luna Llena — Halloween
-          </h3>
-          <p class="text-xs sm:text-sm text-[#f7f4ee]/85 leading-relaxed font-light">
-            Máscarada exclusiva en nuestro Centro Cultural. Gala Noir, antifaces y misterio en las noches de luna llena. Tu asistencia incluye el primer año de membresía VIP gratis.
-          </p>
-          <div class="pt-2 flex flex-wrap gap-3">
-            <span class="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-md">
-              Ver Tarifas y Reservar Entrada
-            </span>
-          </div>
-        </div>
-        <div class="p-4 sm:p-6 flex justify-center bg-[#0a050c]">
-          <img 
-            src="/media/corset-society/flyer_halloween_clean.jpg" 
-            alt="Noche de Luna Llena Halloween" 
-            class="rounded-2xl max-h-[480px] w-full object-contain border border-[#c5a059]/40 shadow-lg group-hover:scale-105 transition-transform duration-500"
-          />
-        </div>
-      </a>
+      )}
 
       <!-- Botón 'Postularme como Aliado' ubicado debajo de la sección de eventos -->
       <div class="text-center pt-2">

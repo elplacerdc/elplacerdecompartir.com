@@ -239,6 +239,20 @@ import Layout from "../../layouts/Layout.astro";
 
   let waVerified = false;
 
+  inputWhatsapp?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnSendWaOtp?.click();
+    }
+  });
+
+  inputWaOtp?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      btnVerifyWaOtp?.click();
+    }
+  });
+
   btnSendWaOtp?.addEventListener("click", async () => {
     const whatsapp = inputWhatsapp.value.trim();
     if (!whatsapp) {

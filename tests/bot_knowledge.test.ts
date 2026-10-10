@@ -45,7 +45,7 @@ describe("Bot Knowledge & Temporal Awareness", () => {
     expect(prompt).not.toContain("dLocal Go");
 
     // Invariante: URLs canónicas exactas y transferencia a SegiSw
-    expect(prompt).toContain("https://elplacerdecompartir.com/sitio");
+    expect(prompt).toContain("https://elplacerdecompartir.com/eventos/sitio-9-oct");
     expect(prompt).toContain("SegiSw");
     expect(prompt).toContain("facilitadoras y facilitadores");
 

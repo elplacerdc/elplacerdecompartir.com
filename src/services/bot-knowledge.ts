@@ -20,7 +20,7 @@ const STATIC_EVENTS: EventItem[] = [
     time: "8:00 P.M. — 2:00 A.M.",
     venue: "Centro Cultural El Placer DC (Calle 67 # 23-46, Barrio 7 de Agosto, Bogotá)",
     description: "Experiencia inmersiva de erotismo consciente, música, arte sensorial y coctelería.",
-    url: "https://elplacerdecompartir.com/sitio",
+    url: "https://elplacerdecompartir.com/eventos/sitio-9-oct",
   },
   {
     id: "impacto-10-oct",
@@ -29,7 +29,7 @@ const STATIC_EVENTS: EventItem[] = [
     time: "8:00 P.M. — 3:00 A.M.",
     venue: "Centro Cultural El Placer DC (Calle 67 # 23-46, Barrio 7 de Agosto, Bogotá)",
     description: "Velada de performance de impacto, exploración sensorial y espacio de comunidad.",
-    url: "https://elplacerdecompartir.com/the-corset-society/impacto-10-oct",
+    url: "https://elplacerdecompartir.com/eventos/impacto-10-oct",
   },
   {
     id: "luna-llena-31-oct",
@@ -170,15 +170,16 @@ ${eventsDescription}
 
 --- MAPA BÍBLICO DE ENLACES OFICIALES (ZERO 404 / PROHIBIDO INVENTAR) ---
 La página web https://elplacerdecompartir.com es tu única biblia irrefutable.
-SOLO tienes permitido brindar los siguientes enlaces oficiales exactos. NUNCA inventes enlaces ficticios ni agregues prefijos como /eventos/:
+SOLO tienes permitido brindar los siguientes enlaces oficiales exactos. NUNCA inventes enlaces ficticios:
 • Página principal / Comunidad: https://elplacerdecompartir.com
 • Centro Cultural (sede permanente y salas): https://elplacerdecompartir.com/centro-cultural
 • Galería fotográfica oficial: https://elplacerdecompartir.com/galeria-centro-cultural
-• Velada Íntima 'Sitio': https://elplacerdecompartir.com/sitio
+• Velada Íntima 'Sitio': https://elplacerdecompartir.com/eventos/sitio-9-oct
+• Evento Aliado Impacto Producciones: https://elplacerdecompartir.com/eventos/impacto-10-oct
 • The Corset Society (círculo VIP y membresías): https://elplacerdecompartir.com/the-corset-society
 • Noche de Luna Llena (31 Octubre - Mascarada en el Bosque): https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas
-• Evento Impacto Producciones: https://elplacerdecompartir.com/the-corset-society/impacto-10-oct
 • Programa de Embajadores y Comunidad: https://elplacerdecompartir.com/dashboard
+• Memorias de Eventos Realizados: https://elplacerdecompartir.com/eventos-realizados
 
 --- PROTOCOLO DE TRANSFERENCIA A SEGISW (DIRECTORA) ---
 • Si un usuario pregunta algo que NO está documentado en la web o en este contexto (alianzas comerciales, reservas especiales, consultas corporativas, dudas complejas o inquietudes fuera de catálogo):

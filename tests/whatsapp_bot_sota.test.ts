@@ -17,10 +17,10 @@ describe("1. Grounding de Rutas Web y Eliminación de 404s", () => {
 
     for (const ev of events) {
       if (ev.id === "sitio-9-oct") {
-        expect(ev.url).toBe("https://elplacerdecompartir.com/sitio");
+        expect(ev.url).toBe("https://elplacerdecompartir.com/eventos/sitio-9-oct");
       }
       if (ev.id === "impacto-10-oct") {
-        expect(ev.url).toBe("https://elplacerdecompartir.com/the-corset-society/impacto-10-oct");
+        expect(ev.url).toBe("https://elplacerdecompartir.com/eventos/impacto-10-oct");
       }
       if (ev.id === "luna-llena-31-oct") {
         expect(ev.url).toBe("https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas");

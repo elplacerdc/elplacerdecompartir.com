@@ -55,10 +55,23 @@ export const POST: APIRoute = async ({ request }) => {
           // Acreditar venta al embajador si existe afiliado_ref
           if (ticket.afiliado_ref) {
             try {
-              const { recordAffiliateSale } = await import("../../../db");
-              await recordAffiliateSale(ticket.afiliado_ref, ticket.lead_id);
+              const { recordAffiliatePayment } = await import("../../../db");
+              await recordAffiliatePayment(ticket.afiliado_ref, ticket.lead_id);
             } catch (affErr) {
               console.error("[Affiliate Credit Err]:", affErr);
+            }
+          }
+
+          // Si compra entrada para Luna Llena, tiene automáticamente su primer año de credencial VIP activada sin costo adicional
+          if (ticket.evento === "luna_llena" && ticket.lead_id) {
+            try {
+              await client.query(
+                `UPDATE leads SET corset_vip = true, vip_until = NOW() + INTERVAL '1 year', updated_at = NOW() WHERE id = $1`,
+                [ticket.lead_id]
+              );
+              console.log(`[Gateway Webhook] 1 año de Membresía VIP Corset activada gratis para lead ${ticket.lead_id} por compra Luna Llena`);
+            } catch (vipAutoErr) {
+              console.error("[Auto VIP Luna Llena Err]:", vipAutoErr);
             }
           }
 
@@ -87,13 +100,13 @@ export const POST: APIRoute = async ({ request }) => {
           console.log(`[Gateway Webhook] Activando membresía VIP para orden ${orderId}`);
           if (payment.payer?.email) {
             const leadRes = await client.query(
-              `UPDATE leads SET corset_vip = true, updated_at = NOW() WHERE email = $1 RETURNING id, afiliado_id`,
+              `UPDATE leads SET corset_vip = true, vip_until = NOW() + INTERVAL '1 year', updated_at = NOW() WHERE email = $1 RETURNING id, afiliado_id`,
               [payment.payer.email]
             );
             if (leadRes.rows.length > 0 && leadRes.rows[0].afiliado_id) {
               try {
-                const { recordAffiliateSale } = await import("../../../db");
-                await recordAffiliateSale(leadRes.rows[0].afiliado_id, leadRes.rows[0].id);
+                const { recordAffiliatePayment } = await import("../../../db");
+                await recordAffiliatePayment(leadRes.rows[0].afiliado_id, leadRes.rows[0].id);
               } catch (affErr) {
                 console.error("[VIP Affiliate Credit Err]:", affErr);
               }

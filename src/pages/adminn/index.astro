@@ -70,9 +70,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#c5a059]/25 pb-6 gap-4">
             <div>
               <div class="flex items-center gap-2 mb-1.5">
-                <span class="py-1 px-3 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-[#ead397] text-[10px] uppercase tracking-[0.2em] font-semibold">
-                  Dirección & Control General
-                </span>
                 <span class="text-xs text-[#81c784] font-medium flex items-center gap-1">
                   <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Sesión Activa
                 </span>
@@ -272,39 +269,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
             <div id="checkin-result" class="hidden p-4 rounded-2xl text-sm transition-all duration-300"></div>
           </div>
 
-          <!-- Filtro por Etiquetas / Segmentos (Reubicado antes del Directorio) -->
-          <div class="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-[#1c081e] border border-[#c5a059]/25 shadow-sm text-xs">
-            <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold mr-1">Filtrar Vistas:</span>
-            <button 
-              type="button" 
-              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm"
-              data-tag="todos"
-            >
-              Todos
-            </button>
-            <button 
-              type="button" 
-              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
-              data-tag="elplacerdc"
-            >
-              🍷 El Placer DC
-            </button>
-            <button 
-              type="button" 
-              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
-              data-tag="corset"
-            >
-              🔒 The Corset Society
-            </button>
-            <button 
-              type="button" 
-              class="tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold"
-              data-tag="aliados"
-            >
-              🤝 Aliados & Centro Cultural
-            </button>
-          </div>
-
           <!-- Directorio Unificado de Usuarios & Embajadores (Lógica Indivisible Registro = Lead = Embajador) -->
           <div class="p-6 rounded-3xl bg-[#1c081e] border border-[#c5a059]/30 space-y-4 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#c5a059]/20 pb-3 gap-3">
@@ -319,6 +283,75 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 >
                   <span>👤</span> + Nuevo Usuario / Lead
                 </button>
+              </div>
+            </div>
+
+            <!-- Filtros Integrados y Minimalistas en Directorio Unificado -->
+            <div class="p-3 rounded-2xl bg-[#140816] border border-[#c5a059]/20 space-y-2.5 text-xs">
+              <!-- Fila 1: Pestañas de Segmentos -->
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold mr-1">Canal:</span>
+                <button 
+                  type="button" 
+                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm text-xs"
+                  data-tag="todos"
+                >
+                  Todos
+                </button>
+                <button 
+                  type="button" 
+                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
+                  data-tag="elplacerdc"
+                >
+                  🍷 General (El Placer DC)
+                </button>
+                <button 
+                  type="button" 
+                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
+                  data-tag="corset"
+                >
+                  🔒 The Corset Society
+                </button>
+                <button 
+                  type="button" 
+                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
+                  data-tag="aliados"
+                >
+                  🤝 Aliados & Centro Cultural
+                </button>
+              </div>
+
+              <!-- Fila 2: Selectores de Rol, Ciudad, VIP y Búsqueda Rápida -->
+              <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-2 border-t border-[#c5a059]/10">
+                <div>
+                  <select id="filter-rol" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
+                    <option value="">Todos los Roles</option>
+                    <option value="pareja">Pareja</option>
+                    <option value="mujer_sola">Mujer Sola (Unicornio)</option>
+                    <option value="hombre_solo">Hombre Solo (Single)</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <select id="filter-ciudad" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
+                    <option value="">Todas las Ciudades</option>
+                    <option value="bogota">Bogotá</option>
+                    <option value="medellin">Medellín</option>
+                    <option value="cali">Cali</option>
+                    <option value="otra">Otras</option>
+                  </select>
+                </div>
+                <div>
+                  <select id="filter-vip" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
+                    <option value="">Todos los Estados VIP</option>
+                    <option value="vip_activo">👑 VIP Activo (Anualidad Pagada)</option>
+                    <option value="posible_vip">⏳ Posible VIP (Postulado)</option>
+                    <option value="no_vip">Comunidad General (No VIP)</option>
+                  </select>
+                </div>
+                <div>
+                  <input type="text" id="filter-search" placeholder="🔍 Buscar alias, teléfono o email..." class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none" />
+                </div>
               </div>
             </div>
 
@@ -578,49 +611,112 @@ const isAuthenticated = verifyAdminSessionToken(token);
   document.querySelectorAll(".tag-filter-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".tag-filter-btn").forEach((b) => {
-        b.className = "tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold";
+        b.className = "tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs";
       });
-      btn.className = "tag-filter-btn px-3 py-1.5 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm";
+      btn.className = "tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm text-xs";
       activeTagFilter = btn.getAttribute("data-tag") || "todos";
       
       if (cachedMetrics) {
-        renderUnifiedTable(filterByTag(cachedMetrics.leads));
+        renderUnifiedTable(getFilteredLeads());
         if (activeDrawerType) renderDrawer(activeDrawerType);
       }
     });
   });
 
-  function filterByTag(items: any[]) {
-    if (!items) return [];
-    if (activeTagFilter === "todos") return items;
+  const filterRol = document.getElementById("filter-rol");
+  const filterCiudad = document.getElementById("filter-ciudad");
+  const filterVip = document.getElementById("filter-vip");
+  const filterSearch = document.getElementById("filter-search");
+
+  filterRol?.addEventListener("change", () => {
+    if (cachedMetrics) renderUnifiedTable(getFilteredLeads());
+  });
+  filterCiudad?.addEventListener("change", () => {
+    if (cachedMetrics) renderUnifiedTable(getFilteredLeads());
+  });
+  filterVip?.addEventListener("change", () => {
+    if (cachedMetrics) renderUnifiedTable(getFilteredLeads());
+  });
+  filterSearch?.addEventListener("input", () => {
+    if (cachedMetrics) renderUnifiedTable(getFilteredLeads());
+  });
+
+  function getFilteredLeads(): any[] {
+    if (!cachedMetrics?.leads) return [];
+    let items = cachedMetrics.leads;
+
+    // 1. Tag filter
     if (activeTagFilter === "elplacerdc") {
-      return items.filter((item) => {
+      items = items.filter((item: any) => {
         const org = (item.origen || "").toLowerCase();
         const tags = Array.isArray(item.metadata?.tags) ? item.metadata.tags : [];
         const channels = Array.isArray(item.metadata?.registered_channels) ? item.metadata.registered_channels : [];
         return org.includes("elplacerdc") || org.includes("comunidad") || org === "web" || org === "web_comunidad" ||
-               tags.includes("elplacerdc") || channels.includes("elplacerdc") ||
+               tags.includes("elplacerdc") || tags.includes("general") || channels.includes("elplacerdc") ||
                (!item.corset_vip && !org.includes("corset") && !org.includes("alianza"));
       });
-    }
-    if (activeTagFilter === "corset") {
-      return items.filter((item) => {
+    } else if (activeTagFilter === "corset") {
+      items = items.filter((item: any) => {
         const org = (item.origen || "").toLowerCase();
         const tags = Array.isArray(item.metadata?.tags) ? item.metadata.tags : [];
         const channels = Array.isArray(item.metadata?.registered_channels) ? item.metadata.registered_channels : [];
-        return item.corset_vip === true || org.includes("corset") || tags.includes("corset") || tags.includes("corset_vip") || channels.includes("corset");
+        return item.corset_vip === true || item.is_possible_vip === true || item.is_active_vip === true || org.includes("corset") || tags.includes("corset") || tags.includes("corset_vip") || channels.includes("corset");
       });
-    }
-    if (activeTagFilter === "aliados") {
-      return items.filter((item) => {
+    } else if (activeTagFilter === "aliados") {
+      items = items.filter((item: any) => {
         const org = (item.origen || "").toLowerCase();
         const tags = Array.isArray(item.metadata?.tags) ? item.metadata.tags : [];
         const channels = Array.isArray(item.metadata?.registered_channels) ? item.metadata.registered_channels : [];
         return org.includes("alianza") || org.includes("aliado") || org.includes("centro_cultural") || org.includes("impacto") ||
-               tags.includes("alianza") || tags.includes("centro_cultural") || channels.includes("centro_cultural");
+               tags.includes("alianzas") || tags.includes("centro_cultural") || channels.includes("centro_cultural");
       });
     }
+
+    // 2. Rol filter
+    const rolVal = (document.getElementById("filter-rol") as HTMLSelectElement)?.value;
+    if (rolVal) {
+      items = items.filter((item: any) => (item.rol || "").toLowerCase() === rolVal.toLowerCase());
+    }
+
+    // 3. Ciudad filter
+    const ciudadVal = (document.getElementById("filter-ciudad") as HTMLSelectElement)?.value;
+    if (ciudadVal) {
+      if (ciudadVal === "otra") {
+        items = items.filter((item: any) => {
+          const c = (item.ciudad || "").toLowerCase();
+          return !c.includes("bogot") && !c.includes("medell") && !c.includes("cali");
+        });
+      } else {
+        items = items.filter((item: any) => (item.ciudad || "").toLowerCase().includes(ciudadVal.toLowerCase()));
+      }
+    }
+
+    // 4. VIP filter
+    const vipVal = (document.getElementById("filter-vip") as HTMLSelectElement)?.value;
+    if (vipVal === "vip_activo") {
+      items = items.filter((item: any) => Boolean(item.is_active_vip));
+    } else if (vipVal === "posible_vip") {
+      items = items.filter((item: any) => Boolean(item.is_possible_vip) && !item.is_active_vip);
+    } else if (vipVal === "no_vip") {
+      items = items.filter((item: any) => !item.is_active_vip && !item.is_possible_vip);
+    }
+
+    // 5. Search filter
+    const searchVal = (document.getElementById("filter-search") as HTMLInputElement)?.value.trim().toLowerCase();
+    if (searchVal) {
+      items = items.filter((item: any) => 
+        (item.alias_nombre || "").toLowerCase().includes(searchVal) ||
+        (item.whatsapp || "").toLowerCase().includes(searchVal) ||
+        (item.email || "").toLowerCase().includes(searchVal) ||
+        (item.affiliate_alias || "").toLowerCase().includes(searchVal)
+      );
+    }
+
     return items;
+  }
+
+  function filterByTag(items: any[]) {
+    return getFilteredLeads();
   }
 
   // 1. LOGIN HANDLER
@@ -776,7 +872,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
             ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 VIP</span>' : '—'}
           </td>
           <td class="py-2.5 px-2 text-right">
-            <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}">Eliminar</button>
+            <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}" data-name="${l.alias_nombre || 'este usuario'}">Eliminar</button>
           </td>
         </tr>
       `;
@@ -828,7 +924,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <button type="button" class="btn-drawer-add-ticket flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase" data-lead-id="${lead.id}">
             + Asignar Pase o Cortesía
           </button>
-          <button type="button" class="btn-delete-record py-2.5 px-4 rounded-xl bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 font-semibold text-xs" data-entity="user" data-id="${lead.id}">
+          <button type="button" class="btn-delete-record py-2.5 px-4 rounded-xl bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 font-semibold text-xs" data-entity="user" data-id="${lead.id}" data-name="${lead.alias_nombre || 'este usuario'}">
             🗑️ Eliminar Usuario
           </button>
         </div>
@@ -840,7 +936,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
     });
 
     drawerContent.querySelector(".btn-delete-record")?.addEventListener("click", async () => {
-      if (!confirm("¿Eliminar este usuario y su embajador en cascada indivisible?")) return;
+      if (!confirm(`¿Estás seguro de eliminar a "${lead.alias_nombre || 'este usuario'}" (y su perfil de embajador en cascada indivisible)?`)) return;
       await fetch(`/api/admin/records?entity=user&id=${lead.id}`, { method: "DELETE" });
       drawerContainer?.classList.add("hidden");
       loadMetrics();
@@ -916,10 +1012,16 @@ const isAuthenticated = verifyAdminSessionToken(token);
     document.querySelectorAll(".btn-delete-record").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        const entity = btn.getAttribute("data-entity");
+        const entity = btn.getAttribute("data-entity") || "registro";
         const id = btn.getAttribute("data-id");
         const name = btn.getAttribute("data-name") || "este registro";
-        if (!confirm(`¿Estás seguro de eliminar a "${name}" de ${entity}?`)) return;
+        let confirmMsg = `¿Estás seguro de eliminar a "${name}"?`;
+        if (entity === "ticket") {
+          confirmMsg = `¿Estás seguro de eliminar el ${name}?`;
+        } else if (entity === "lead" || entity === "user" || entity === "affiliate") {
+          confirmMsg = `¿Estás seguro de eliminar a "${name}" (y su perfil de embajador en cascada indivisible)?`;
+        }
+        if (!confirm(confirmMsg)) return;
 
         try {
           const res = await fetch(`/api/admin/records?entity=${entity}&id=${id}`, { method: "DELETE" });
@@ -1174,7 +1276,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}" data-lead-name="${l.alias_nombre || ''}">
                     + Asignar Pase
                   </button>
-                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}">
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}" data-name="${l.alias_nombre || 'Contacto'}">
                     🗑️ Borrar
                   </button>
                 </div>
@@ -1213,7 +1315,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 <div class="text-[11px] text-[#c5a059]">Clics: ${a.clicks || 0} • Ventas Pagadas: ${a.referidos_pagados || 0} • Pases Ganados: ${a.entradas_ganadas || 0}</div>
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
-                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}">
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}" data-name="@${a.alias} (${a.nombre || 'Embajador'})">
                   🗑️ Borrar
                 </button>
               </div>
@@ -1355,7 +1457,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                       ✓ Confirmar Pago
                     </button>
                   ` : ''}
-                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="ticket" data-id="${t.id}">
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="ticket" data-id="${t.id}" data-name="Pase de ${t.alias_nombre || 'Invitado'} (${t.evento})">
                     🗑️ Borrar
                   </button>
                 </div>
@@ -1470,12 +1572,91 @@ const isAuthenticated = verifyAdminSessionToken(token);
       `;
     } else if (type === "tickets" || type === "pending_cash") {
       currentCrudEntity = "ticket";
-      modalCrudTitle.textContent = "Crear Pase o Cortesía (Asignado Obligatoriamente)";
-      
-      const usersList = (cachedMetrics?.leads || []).map((l: any) => `
-        <option value="${l.id}" ${optionalLeadId === l.id ? 'selected' : ''}>
-          ${l.alias_nombre || 'Invitado'} (${l.whatsapp || l.email || 'Sin contacto'})${l.affiliate_alias ? ' • Embajador: @' + l.affiliate_alias : ''}
-        </option>
+      modalCrudTitle.textContent = optionalLeadId 
+        ? "Asignar Pase o Cortesía a Usuario Seleccionado" 
+        : "Crear Pase o Cortesía (Asignado Obligatoriamente)";
+
+      const EVENT_CATALOG: Record<string, { name: string; isFree: boolean; options: { id: string; label: string; price: number }[] }> = {
+        luna_llena: {
+          name: "Noche de Luna Llena (Halloween)",
+          isFree: false,
+          options: [
+            { id: "pareja", label: "Pareja ($100.000 COP)", price: 100000 },
+            { id: "single", label: "Single / Hombre Solo ($120.000 COP)", price: 120000 },
+            { id: "unicornio", label: "Unicornio / Mujer Sola ($30.000 COP)", price: 30000 },
+          ]
+        },
+        sitio_9_oct: {
+          name: "Inauguración Sitio Licorera (9 Oct - Gratuito)",
+          isFree: true,
+          options: [
+            { id: "entrada_libre", label: "Entrada General ($0 COP)", price: 0 },
+            { id: "pase_especial", label: "Pase Especial Aliado ($0 COP)", price: 0 }
+          ]
+        },
+        impacto_10_oct: {
+          name: "Impacto Producciones (10 Oct - Gratuito)",
+          isFree: true,
+          options: [
+            { id: "entrada_libre", label: "Entrada General Gratuita ($0 COP)", price: 0 },
+            { id: "consumo_sitio", label: "Consumo en Sitio ($0 COP)", price: 0 }
+          ]
+        },
+        corset_gala: {
+          name: "The Corset Society — Gala Noir Privada",
+          isFree: false,
+          options: [
+            { id: "vip_membresia", label: "Membresía Anual VIP ($199.000 COP)", price: 199000 },
+            { id: "pareja_gala", label: "Pase Pareja Gala Noir ($150.000 COP)", price: 150000 },
+            { id: "single_gala", label: "Pase Individual Gala Noir ($180.000 COP)", price: 180000 }
+          ]
+        },
+        centro_cultural_taller: {
+          name: "Centro Cultural — Taller de Parejas",
+          isFree: false,
+          options: [
+            { id: "taller_pareja", label: "Pareja Taller ($80.000 COP)", price: 80000 },
+            { id: "taller_individual", label: "Individual Taller ($50.000 COP)", price: 50000 }
+          ]
+        }
+      };
+
+      let userBlockHtml = "";
+      if (optionalLeadId) {
+        const targetLead = (cachedMetrics?.leads || []).find((l: any) => l.id === optionalLeadId);
+        userBlockHtml = `
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Usuario Destinatario</label>
+            <div class="px-3.5 py-2.5 rounded-xl bg-[#250e29] border border-[#c5a059]/40 flex items-center justify-between text-xs">
+              <div>
+                <span class="font-bold text-[#ead397] font-serif">${targetLead ? (targetLead.alias_nombre || 'Invitado') : 'Usuario'}</span>
+                <span class="text-[#f7f4ee]/70 text-[11px] font-mono ml-1.5">(${targetLead ? (targetLead.whatsapp || targetLead.email || 'Sin contacto') : ''})</span>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30">Usuario Fijado</span>
+            </div>
+            <input type="hidden" id="crud-lead-id" value="${optionalLeadId}" />
+          </div>
+        `;
+      } else {
+        const usersList = (cachedMetrics?.leads || []).map((l: any) => `
+          <option value="${l.id}">
+            ${l.alias_nombre || 'Invitado'} (${l.whatsapp || l.email || 'Sin contacto'})${l.affiliate_alias ? ' • Embajador: @' + l.affiliate_alias : ''}
+          </option>
+        `).join("");
+        userBlockHtml = `
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Asignar a Usuario Existente *</label>
+            <input type="text" id="crud-user-search-filter" placeholder="🔍 Buscar usuario por nombre, teléfono o email..." class="w-full mb-2 px-3 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none focus:border-[#c5a059]" />
+            <select id="crud-lead-id" required class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-xs text-[#f7f4ee]">
+              <option value="">-- Seleccionar Usuario Obligatorio --</option>
+              ${usersList}
+            </select>
+          </div>
+        `;
+      }
+
+      const eventsOptions = Object.entries(EVENT_CATALOG).map(([key, ev]) => `
+        <option value="${key}">${ev.name}</option>
       `).join("");
 
       crudFieldsContainer.innerHTML = `
@@ -1487,30 +1668,18 @@ const isAuthenticated = verifyAdminSessionToken(token);
           </select>
         </div>
 
-        <div>
-          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Asignar a Usuario Existente *</label>
-          <select id="crud-lead-id" required class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-xs text-[#f7f4ee]">
-            <option value="">-- Seleccionar Usuario Obligatorio --</option>
-            ${usersList}
-          </select>
-        </div>
+        ${userBlockHtml}
 
         <div>
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Evento *</label>
           <select id="crud-evento" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
-            <option value="luna_llena">Noche de Luna Llena (Halloween)</option>
-            <option value="sitio_9_oct">Inauguración Sitio Licorera (9 Oct)</option>
-            <option value="impacto_10_oct">Impacto Producciones (10 Oct)</option>
+            ${eventsOptions}
           </select>
         </div>
 
         <div>
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Tipo de Pase</label>
           <select id="crud-tipo-entrada" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
-            <option value="pareja">Pareja ($100.000)</option>
-            <option value="single">Single (Hombre Solo - $120.000)</option>
-            <option value="unicornio">Unicornio (Mujer Sola - $30.000)</option>
-            <option value="vip_membresia">Membresía Anual VIP ($199.000)</option>
           </select>
         </div>
 
@@ -1540,17 +1709,57 @@ const isAuthenticated = verifyAdminSessionToken(token);
       `;
 
       const catSelect = document.getElementById("crud-tipo-pago") as HTMLSelectElement;
+      const eventoSelect = document.getElementById("crud-evento") as HTMLSelectElement;
+      const tipoEntradaSelect = document.getElementById("crud-tipo-entrada") as HTMLSelectElement;
       const montoInput = document.getElementById("crud-monto") as HTMLInputElement;
       const metodoSelect = document.getElementById("crud-metodo") as HTMLSelectElement;
 
-      catSelect?.addEventListener("change", () => {
-        if (catSelect.value === "cortesia") {
-          if (montoInput) { montoInput.value = "0"; montoInput.disabled = true; }
+      // Real-time search filter for users dropdown
+      if (!optionalLeadId) {
+        const userSearch = document.getElementById("crud-user-search-filter") as HTMLInputElement;
+        const leadSelect = document.getElementById("crud-lead-id") as HTMLSelectElement;
+        userSearch?.addEventListener("input", () => {
+          const q = userSearch.value.trim().toLowerCase();
+          const filtered = (cachedMetrics?.leads || []).filter((l: any) =>
+            (l.alias_nombre || "").toLowerCase().includes(q) ||
+            (l.whatsapp || "").toLowerCase().includes(q) ||
+            (l.email || "").toLowerCase().includes(q) ||
+            (l.affiliate_alias || "").toLowerCase().includes(q)
+          );
+          leadSelect.innerHTML = '<option value="">-- Seleccionar Usuario Obligatorio --</option>' + filtered.map((l: any) => `
+            <option value="${l.id}">${l.alias_nombre || 'Invitado'} (${l.whatsapp || l.email || 'Sin contacto'})${l.affiliate_alias ? ' • Embajador: @' + l.affiliate_alias : ''}</option>
+          `).join("");
+        });
+      }
+
+      function updatePricingState() {
+        const currentEventKey = eventoSelect?.value || "luna_llena";
+        const currentEvent = EVENT_CATALOG[currentEventKey] || EVENT_CATALOG.luna_llena;
+
+        if (tipoEntradaSelect) {
+          const prevVal = tipoEntradaSelect.value;
+          tipoEntradaSelect.innerHTML = currentEvent.options.map((opt) => `
+            <option value="${opt.id}" ${opt.id === prevVal ? 'selected' : ''}>${opt.label}</option>
+          `).join("");
+        }
+
+        const isCortesia = catSelect?.value === "cortesia";
+        if (currentEvent.isFree || isCortesia) {
+          if (montoInput) {
+            montoInput.value = "0";
+            montoInput.disabled = true;
+          }
           if (metodoSelect) {
-            metodoSelect.innerHTML = '<option value="cortesia_manual">Cortesía Manual</option>';
+            metodoSelect.innerHTML = currentEvent.isFree 
+              ? '<option value="gratuito_alianza">Evento Gratuito / Alianza ($0 COP)</option>'
+              : '<option value="cortesia_manual">Cortesía Manual ($0 COP)</option>';
           }
         } else {
-          if (montoInput) { montoInput.value = "100000"; montoInput.disabled = false; }
+          if (montoInput) {
+            montoInput.disabled = false;
+            const selectedOpt = currentEvent.options.find(o => o.id === tipoEntradaSelect?.value) || currentEvent.options[0];
+            montoInput.value = selectedOpt.price.toString();
+          }
           if (metodoSelect) {
             metodoSelect.innerHTML = `
               <option value="efectivo_sitio">Efectivo en Sitio</option>
@@ -1560,7 +1769,21 @@ const isAuthenticated = verifyAdminSessionToken(token);
             `;
           }
         }
+      }
+
+      eventoSelect?.addEventListener("change", () => {
+        const curEv = EVENT_CATALOG[eventoSelect.value];
+        if (curEv && curEv.isFree && catSelect) {
+          catSelect.value = "cortesia";
+        }
+        updatePricingState();
       });
+
+      tipoEntradaSelect?.addEventListener("change", updatePricingState);
+      catSelect?.addEventListener("change", updatePricingState);
+
+      // Initial populate
+      updatePricingState();
     } else {
       currentCrudEntity = "lead";
       modalCrudTitle.textContent = "Nuevo Lead Manual";
