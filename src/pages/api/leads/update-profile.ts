@@ -22,16 +22,24 @@ export const POST: APIRoute = async ({ request }) => {
 
     const phoneNorm = normalizePhone(cleanIdentifier);
     const phoneVariants = phoneNorm ? phoneNorm.variants : [];
+    const cleanAliasIdent = cleanIdentifier.replace(/^@/, "").toLowerCase();
 
     const client = await pool.connect();
     try {
-      // 1. Buscar el lead por teléfono o email
+      // 1. Buscar el lead por teléfono, email o alias
       let leadRes = await client.query(
-        `SELECT * FROM leads 
-         WHERE (whatsapp IS NOT NULL AND whatsapp = ANY($1)) 
-            OR (email IS NOT NULL AND LOWER(email) = $2)
+        `SELECT l.* FROM leads l
+         LEFT JOIN afiliados a ON (
+           (a.email IS NOT NULL AND LOWER(a.email) = LOWER(l.email)) OR 
+           (a.whatsapp IS NOT NULL AND RIGHT(regexp_replace(a.whatsapp, '\\D', '', 'g'), 10) = RIGHT(regexp_replace(l.whatsapp, '\\D', '', 'g'), 10)) OR
+           (a.alias IS NOT NULL AND LOWER(a.alias) = LOWER(l.alias_nombre))
+         )
+         WHERE (l.whatsapp IS NOT NULL AND l.whatsapp = ANY($1)) 
+            OR (l.email IS NOT NULL AND LOWER(l.email) = $2)
+            OR (l.alias_nombre IS NOT NULL AND LOWER(l.alias_nombre) = $3)
+            OR (a.alias IS NOT NULL AND LOWER(a.alias) = $3)
          LIMIT 1`,
-        [phoneVariants.length > 0 ? phoneVariants : [cleanIdentifier], cleanIdentifier.toLowerCase()]
+        [phoneVariants.length > 0 ? phoneVariants : [cleanIdentifier], cleanIdentifier.toLowerCase(), cleanAliasIdent]
       );
 
       if (leadRes.rows.length === 0) {
@@ -73,12 +81,14 @@ export const POST: APIRoute = async ({ request }) => {
             updated_at = NOW()
           WHERE (whatsapp IS NOT NULL AND whatsapp = ANY($3::text[])) 
              OR (email IS NOT NULL AND LOWER(email) = $4)
-             OR id::text = $5`,
+             OR LOWER(alias) = $5
+             OR id::text = $6`,
           [
             cleanAlias || null,
             cleanEmail || null,
             phoneVariants.length > 0 ? phoneVariants : [cleanIdentifier],
             cleanIdentifier.toLowerCase(),
+            cleanAliasIdent,
             String(existingLead.id),
           ]
         );

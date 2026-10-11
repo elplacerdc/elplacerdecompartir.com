@@ -31,9 +31,12 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           <div>
             <span class="text-xs text-[#c5a059] uppercase tracking-widest font-semibold block">Embajador Activo</span>
             <div class="flex flex-wrap items-baseline gap-2">
-              <h2 id="ambassador-name" class="text-xl font-serif font-bold text-[#f7f4ee]">Cargando...</h2>
-              <a href="#section-custom-code" class="text-xs text-[#c5a059] hover:text-[#ead397] underline underline-offset-2 transition-colors">
-                Cambiar el alias a mostrar →
+              <a href="#section-profile-settings" class="hover:text-[#ead397] transition-colors group flex items-center gap-1.5" title="Ir a ajustes de perfil">
+                <h2 id="ambassador-name" class="text-xl font-serif font-bold text-[#f7f4ee] group-hover:text-[#ead397]">Cargando...</h2>
+                <span class="text-xs text-[#c5a059]/70 group-hover:text-[#ead397]">⚙️</span>
+              </a>
+              <a href="#section-profile-settings" class="text-xs text-[#c5a059] hover:text-[#ead397] underline underline-offset-2 transition-colors">
+                Ajustes de perfil →
               </a>
             </div>
             <p id="ambassador-contact" class="text-xs text-[#f7f4ee]/50 mt-0.5 font-mono"></p>
@@ -56,9 +59,9 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         </div>
 
         <!-- VIP Membership & Privileges Card -->
-        <div id="vip-status-card" class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div id="vip-status-card" class="p-5 rounded-2xl bg-[#140816] border border-[#c5a059]/30 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
-            <div id="vip-status-icon" class="w-10 h-10 rounded-xl bg-[#c5a059]/20 border border-[#c5a059]/40 flex items-center justify-center text-lg">
+            <div id="vip-status-icon" class="w-10 h-10 rounded-xl bg-[#c5a059]/20 border border-[#c5a059]/40 flex items-center justify-center text-lg shrink-0">
               👑
             </div>
             <div>
@@ -69,7 +72,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               <p id="vip-status-desc" class="text-xs text-[#f7f4ee]/80 mt-0.5"></p>
             </div>
           </div>
-          <div id="vip-action-container">
+          <div id="vip-action-container" class="w-full sm:w-auto shrink-0">
             <!-- CTA Button injected via JS -->
           </div>
         </div>
@@ -79,7 +82,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
             <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Registros con tu Enlace</span>
             <span id="metric-leads" class="text-3xl font-serif font-bold text-[#ead397]">0</span>
-            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Personas registradas con tu link (10% descuento al comprar)</span>
+            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Personas registradas con tu link</span>
           </div>
 
           <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
@@ -156,15 +159,15 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
                   <td colspan="4" class="py-4 text-center text-[#f7f4ee]/40 font-sans">No hay registros acreditados aún. Comparte tu enlace para comenzar a sumar.</td>
                 </tr>
               </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Section: Tu Enlace de Afiliado Exclusivo (LAST, with code change first) -->
+        <!-- Section: Tu Enlace de Afiliado Exclusivo -->
         <div id="section-custom-code" class="p-6 sm:p-8 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-6">
           <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-4">
             <div>
               <h3 class="text-lg font-serif font-bold text-[#ead397]">Tu Enlace de Afiliado Exclusivo</h3>
-              <p class="text-xs text-[#f7f4ee]/60 mt-0.5">Personaliza tu alias y comparte tu acceso oficial.</p>
             </div>
             <span class="text-xs text-[#81c784] font-medium flex items-center gap-1">
               <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Activo y comisionable
@@ -174,7 +177,6 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           <!-- 1. Custom Code Editor (Optimized for Mobile & Desktop) -->
           <div class="space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-              <h4 class="text-sm font-semibold text-[#f7f4ee]/90">Personalizar tu Alias de Enlace</h4>
               <span class="text-[11px] text-[#f7f4ee]/50 font-mono hidden sm:inline">Mínimo 3 caracteres alfanuméricos</span>
             </div>
             <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
@@ -448,7 +450,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           if (vipDesc) vipDesc.textContent = "Membresía anual activa. Cuentas con 10% de descuento permanente en todas las entradas y acceso al círculo cerrado.";
           if (vipActionContainer) {
             vipActionContainer.innerHTML = `
-              <a href="/centro-cultural#proximos-eventos" class="px-4 py-2 rounded-lg bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all inline-block whitespace-nowrap">
+              <a href="/centro-cultural#proximos-eventos" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all inline-block text-center shadow-md">
                 Ver Próximos Eventos VIP →
               </a>
             `;
@@ -469,7 +471,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
             const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
             const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] text-[#81c784] font-normal font-sans ml-1">(-10% Embajador)</span>' : '';
             vipActionContainer.innerHTML = `
-              <a href="/corset/checkout" class="px-4 py-2 rounded-lg bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-block whitespace-nowrap shadow-md">
+              <a href="/corset/checkout" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-block text-center shadow-md">
                 Hazte VIP (${vipPriceDisplay})${vipDiscountTag} →
               </a>
             `;
@@ -490,7 +492,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
             const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
             const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] text-[#81c784] font-normal font-sans ml-1">(-10% Embajador)</span>' : '';
             vipActionContainer.innerHTML = `
-              <a href="/the-corset-society" class="px-4 py-2 rounded-lg border border-[#c5a059]/60 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all inline-block whitespace-nowrap">
+              <a href="/the-corset-society" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#c5a059]/60 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all inline-block text-center">
                 Solicita VIP (${vipPriceDisplay})${vipDiscountTag} →
               </a>
             `;
@@ -662,10 +664,19 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
   const profileRolSelect = document.getElementById("profile-rol") as HTMLSelectElement | null;
   const profileCiudadSelect = document.getElementById("profile-ciudad") as HTMLSelectElement | null;
 
-  profileForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const sessionIdentifier = localStorage.getItem("ambassador_session_phone");
-    if (!sessionIdentifier) return;
+  async function handleProfileSave(e?: Event) {
+    if (e) e.preventDefault();
+    const sessionIdentifier = localStorage.getItem("ambassador_session_phone") || 
+                              localStorage.getItem("user_phone") || 
+                              localStorage.getItem("user_email") || 
+                              currentAlias;
+    if (!sessionIdentifier) {
+      if (profileFeedback) {
+        profileFeedback.className = "text-xs p-3 rounded-lg bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350] block";
+        profileFeedback.textContent = "Sesión no identificada. Por favor recarga la página o inicia sesión nuevamente.";
+      }
+      return;
+    }
 
     if (btnSaveProfile) {
       btnSaveProfile.disabled = true;
@@ -713,7 +724,10 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         btnSaveProfile.textContent = "Guardar Cambios de Perfil";
       }
     }
-  });
+  }
+
+  profileForm?.addEventListener("submit", handleProfileSave);
+  btnSaveProfile?.addEventListener("click", handleProfileSave);
 
   // Manual Refresh
   btnRefresh?.addEventListener("click", () => {
