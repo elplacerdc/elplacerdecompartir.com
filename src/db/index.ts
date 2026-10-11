@@ -292,9 +292,10 @@ export async function upsertLead(
           rol = CASE WHEN rol IS NOT NULL AND rol != 'otro' THEN rol WHEN $4 != 'otro' THEN $4 ELSE rol END,
           ciudad = COALESCE(ciudad, $5),
           corset_vip = CASE WHEN ($6 = true OR corset_vip = true) THEN true ELSE false END,
-          metadata = $7,
+          afiliado_id = COALESCE(afiliado_id, $7),
+          metadata = $8,
           updated_at = NOW()
-        WHERE id = $8
+        WHERE id = $9
         RETURNING *`,
         [
           data.alias_nombre || null,
@@ -303,6 +304,7 @@ export async function upsertLead(
           normalizedRol,
           data.ciudad || null,
           Boolean(resolvedChannel === "corset" || data.corset_vip || existingLead.corset_vip),
+          data.afiliado_id || null,
           JSON.stringify(mergedMeta),
           existingLead.id,
         ]
@@ -553,6 +555,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
   rol?: string | null;
   ciudad?: string | null;
   alias_nombre?: string | null;
+  referredBy?: string | null;
   clicks: number;
   leadsCount: number;
   purchasesCount: number;
@@ -628,7 +631,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
     let vipStatus: "no_vip" | "posible_vip" | "vip_activo" = "no_vip";
     const ambPhoneVariants = getPhoneVariants(row.whatsapp);
     const ambLeadRes = await client.query(
-      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado, rol, ciudad, alias_nombre, email FROM leads 
+      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado, rol, ciudad, alias_nombre, email, afiliado_id FROM leads 
        WHERE (email IS NOT NULL AND email = $1) 
           OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[])) 
        LIMIT 1`,
@@ -661,6 +664,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
       rol: ambLead?.rol || null,
       ciudad: ambLead?.ciudad || null,
       alias_nombre: ambLead?.alias_nombre || row.nombre || row.alias,
+      referredBy: ambLead?.afiliado_id || null,
       clicks: row.clicks || 0,
       leadsCount,
       purchasesCount: purchases,

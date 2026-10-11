@@ -78,10 +78,14 @@ export async function sendTransactionalEmail({
   const errors: string[] = [];
 
   // 1. Tier 1: AWS SES SMTP (Verified, high deliverability, SPF/DKIM aligned)
+  const plainText = (html || "").replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   const ses = getSESTransporter();
   if (ses) {
     try {
-      const headers: Record<string, string> = {};
+      const headers: Record<string, string> = {
+        "Content-Language": "es",
+        "Accept-Language": "es",
+      };
       if (process.env.AWS_SES_CONFIGURATION_SET) {
         headers["X-SES-CONFIGURATION-SET"] = process.env.AWS_SES_CONFIGURATION_SET;
       }
@@ -90,6 +94,7 @@ export async function sendTransactionalEmail({
         from: formattedFrom,
         to: formattedTo,
         subject,
+        text: plainText,
         html,
         replyTo: replyTo || senderEmail,
         headers,
@@ -111,12 +116,18 @@ export async function sendTransactionalEmail({
   const spacemail = getSpaceMailTransporter();
   if (spacemail) {
     try {
+      const headers: Record<string, string> = {
+        "Content-Language": "es",
+        "Accept-Language": "es",
+      };
       const info = await spacemail.sendMail({
         from: formattedFrom,
         to: formattedTo,
         subject,
+        text: plainText,
         html,
         replyTo: replyTo || senderEmail,
+        headers,
       });
 
       console.info(`[Email Success] Dispatched via SpaceMail to ${to} (MessageId: ${info.messageId})`);

@@ -171,28 +171,54 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
             </span>
           </div>
 
-          <!-- 1. Custom Code Editor (FIRST inside this section) -->
-          <div class="space-y-2">
-            <h4 class="text-sm font-semibold text-[#f7f4ee]/80">Personalizar tu Código de Embajador</h4>
-            <p class="text-xs text-[#f7f4ee]/60">Modifica tu alias para que tu enlace sea más memorable y exclusivo (mínimo 3 caracteres alfanuméricos).</p>
-            <div class="flex flex-col sm:flex-row gap-3 pt-2">
-              <div class="flex items-center flex-1 bg-[#0a0608] border border-[#c5a059]/30 rounded-lg px-3">
-                <span class="text-xs text-[#f7f4ee]/40 font-mono">elplacerdecompartir.com/?ref=</span>
-                <input 
-                  type="text" 
-                  id="input-new-code" 
-                  placeholder="tu-alias" 
-                  class="flex-1 bg-transparent py-2.5 px-1 text-sm text-[#ead397] font-mono focus:outline-none"
-                />
-              </div>
-              <button 
-                id="btn-update-code" 
-                class="px-5 py-2.5 rounded-lg text-xs uppercase tracking-wider font-semibold border border-[#c5a059]/50 hover:bg-[#c5a059]/20 text-[#ead397] transition-all whitespace-nowrap"
-              >
-                Cambiar Código
-              </button>
+          <!-- 1. Custom Code Editor (Optimized for Mobile & Desktop) -->
+          <div class="space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <h4 class="text-sm font-semibold text-[#f7f4ee]/90">Personalizar tu Alias de Enlace</h4>
+              <span class="text-[11px] text-[#f7f4ee]/50 font-mono hidden sm:inline">Mínimo 3 caracteres alfanuméricos</span>
             </div>
-            <p id="code-update-feedback" class="text-xs mt-2 min-h-[16px]"></p>
+            <p class="text-xs text-[#f7f4ee]/70 leading-relaxed">
+              Modifica tu alias personalizado para que tu enlace sea fácil de recordar al compartirlo con tus contactos.
+            </p>
+
+            <div class="space-y-3 pt-1">
+              <!-- Mobile friendly adaptive input box -->
+              <div class="bg-[#0a0608] border border-[#c5a059]/40 rounded-xl p-3 sm:py-2 sm:px-4 focus-within:border-[#c5a059] focus-within:ring-1 focus-within:ring-[#c5a059] transition-all shadow-inner">
+                <!-- Mobile top pill: shows domain context cleanly without clipping -->
+                <div class="flex items-center justify-between pb-2 mb-2 border-b border-[#c5a059]/20 sm:hidden">
+                  <span class="text-[10px] uppercase font-bold text-[#c5a059] tracking-wider">Prefijo de tu enlace</span>
+                  <span class="text-[11px] text-[#f7f4ee]/50 font-mono">elplacerdecompartir.com/?ref=</span>
+                </div>
+                
+                <div class="flex items-center">
+                  <!-- Desktop inline prefix -->
+                  <span class="hidden sm:inline text-xs text-[#f7f4ee]/40 font-mono pr-1 select-none">
+                    elplacerdecompartir.com/?ref=
+                  </span>
+                  <input 
+                    type="text" 
+                    id="input-new-code" 
+                    placeholder="tu-alias" 
+                    class="w-full sm:flex-1 bg-transparent py-1.5 px-0 text-base sm:text-sm text-[#ead397] font-mono font-bold focus:outline-none min-w-0 placeholder-[#f7f4ee]/30"
+                    autocomplete="off"
+                    autocapitalize="none"
+                    spellcheck="false"
+                  />
+                </div>
+              </div>
+
+              <!-- Button & feedback row -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <p id="code-update-feedback" class="text-xs min-h-[16px] font-medium order-2 sm:order-1"></p>
+                <button 
+                  id="btn-update-code" 
+                  type="button"
+                  class="w-full sm:w-auto order-1 sm:order-2 px-6 py-3 rounded-xl text-xs uppercase tracking-wider font-bold bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all shadow-md active:scale-95 text-center cursor-pointer"
+                >
+                  Guardar Nuevo Alias
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- 2. Share Actions (SECOND inside this section, no raw URL text input) -->
@@ -384,6 +410,12 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         if (stats.rol) {
           localStorage.setItem("user_role", stats.rol);
         }
+        if (stats.referredBy) {
+          try {
+            localStorage.setItem("affiliate_ref", stats.referredBy);
+            document.cookie = `affiliate_ref=${encodeURIComponent(stats.referredBy)}; path=/; max-age=2592000; SameSite=Lax`;
+          } catch (_) {}
+        }
 
         if (metricLeads) metricLeads.textContent = stats.leadsCount.toString();
         if (metricPurchases) metricPurchases.textContent = stats.purchasesCount.toString();
@@ -428,9 +460,17 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           }
           if (vipDesc) vipDesc.textContent = "Tu solicitud a The Corset Society está registrada. Activa tu credencial oficial para gozar de descuentos y accesos de honor.";
           if (vipActionContainer) {
+            const isReferredUser = Boolean(
+              stats.referredBy ||
+              localStorage.getItem("affiliate_ref") ||
+              document.cookie.includes("affiliate_ref") ||
+              new URLSearchParams(window.location.search).get("ref")
+            );
+            const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
+            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] text-[#81c784] font-normal font-sans ml-1">(-10% Embajador)</span>' : '';
             vipActionContainer.innerHTML = `
               <a href="/corset/checkout" class="px-4 py-2 rounded-lg bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-block whitespace-nowrap shadow-md">
-                Hazte VIP ($199.000 COP) →
+                Hazte VIP (${vipPriceDisplay})${vipDiscountTag} →
               </a>
             `;
           }
@@ -441,9 +481,17 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           }
           if (vipDesc) vipDesc.textContent = "Accede a las veladas secretas de The Corset Society solicitando tu admisión al círculo exclusivo.";
           if (vipActionContainer) {
+            const isReferredUser = Boolean(
+              stats.referredBy ||
+              localStorage.getItem("affiliate_ref") ||
+              document.cookie.includes("affiliate_ref") ||
+              new URLSearchParams(window.location.search).get("ref")
+            );
+            const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
+            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] text-[#81c784] font-normal font-sans ml-1">(-10% Embajador)</span>' : '';
             vipActionContainer.innerHTML = `
               <a href="/the-corset-society" class="px-4 py-2 rounded-lg border border-[#c5a059]/60 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all inline-block whitespace-nowrap">
-                Solicita VIP →
+                Solicita VIP (${vipPriceDisplay})${vipDiscountTag} →
               </a>
             `;
           }

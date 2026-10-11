@@ -154,19 +154,20 @@ export async function notifyNewLead(
               <li>Ubicación permanente: Centro Cultural El Placer de Compartir, Bogotá.</li>
             </ul>
 
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="https://elplacerdecompartir.com/corset/checkout" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online</a>
-            </div>
-
             <p style="color: #ead397; font-style: italic; font-family: 'Cinzel', Georgia, serif; text-align: center; margin: 25px 0; font-size: 15px;">
               «El acceso se concede, no se anuncia.»
             </p>
 
-            <!-- Invitación de Embajador -->
-            <div style="background-color: #140816; border: 1px solid rgba(197, 160, 89, 0.3); padding: 16px; border-radius: 8px; margin-top: 25px; text-align: center;">
-              <p style="font-size: 12px; color: #ead397; margin: 0 0 10px 0; font-weight: bold;">¿Deseas compartir este círculo con personas de tu confianza?</p>
-              <p style="font-size: 11px; color: rgba(247, 244, 238, 0.7); margin: 0 0 12px 0;">Únete como Embajador: por cada 3 compras generadas con tu enlace, obtienes una entrada 100% gratuita.</p>
-              <a href="https://elplacerdecompartir.com/dashboard" style="display: inline-block; font-size: 11px; color: #c5a059; border: 1px solid #c5a059; padding: 8px 16px; border-radius: 20px; text-decoration: none; text-transform: uppercase; font-weight: bold;">Acceder a mi Panel de Embajador →</a>
+            <!-- Invitación de Embajador (ANTES del botón final) -->
+            <div style="background-color: #140816; border: 1px solid rgba(197, 160, 89, 0.3); padding: 16px; border-radius: 8px; margin: 25px 0; text-align: center;">
+              <p style="font-size: 12px; color: #ead397; margin: 0 0 8px 0; font-weight: bold;">¿Deseas compartir este círculo con personas de tu confianza?</p>
+              <p style="font-size: 11px; color: rgba(247, 244, 238, 0.7); margin: 0 0 10px 0;">Únete como Embajador: por cada 3 compras generadas con tu enlace, obtienes una entrada 100% gratuita.</p>
+              <a href="https://elplacerdecompartir.com/dashboard" style="display: inline-block; font-size: 11px; color: #c5a059; border: 1px solid #c5a059; padding: 6px 14px; border-radius: 20px; text-decoration: none; text-transform: uppercase; font-weight: bold;">Acceder a mi Panel de Embajador →</a>
+            </div>
+
+            <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
+            <div style="text-align: center; margin: 30px 0 10px 0;">
+              <a href="https://elplacerdecompartir.com/corset/checkout" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
             </div>
 
           </div>
@@ -208,15 +209,16 @@ export async function notifyNewLead(
               <li>Privacidad recíproca: Lo que se comparte en nuestras veladas permanece en la intimidad del grupo.</li>
             </ul>
 
-            <div style="text-align: center; margin: 25px 0;">
-              <a href="https://elplacerdecompartir.com/galeria-centro-cultural" style="background-color: #c5a059; color: #180a1a; padding: 12px 24px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería del Centro Cultural 🏛️</a>
-            </div>
-
-            <!-- Invitación de Embajador -->
-            <div style="background-color: #250f22; border: 1px solid rgba(197, 160, 89, 0.3); padding: 16px; border-radius: 8px; margin-top: 25px; text-align: center;">
+            <!-- Invitación de Embajador (ANTES del botón final) -->
+            <div style="background-color: #250f22; border: 1px solid rgba(197, 160, 89, 0.3); padding: 16px; border-radius: 8px; margin: 25px 0; text-align: center;">
               <p style="font-size: 12px; color: #ead397; margin: 0 0 8px 0; font-weight: bold;">Gana Entradas como Embajador</p>
               <p style="font-size: 11px; color: rgba(247, 244, 238, 0.7); margin: 0 0 10px 0;">Invita a personas de mente abierta y obtén entradas gratuitas a todos nuestros eventos.</p>
               <a href="https://elplacerdecompartir.com/dashboard" style="display: inline-block; font-size: 11px; color: #ead397; border: 1px solid #c5a059; padding: 6px 14px; border-radius: 20px; text-decoration: none; text-transform: uppercase;">Ir al Panel de Embajadores →</a>
+            </div>
+
+            <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
+            <div style="text-align: center; margin: 30px 0 10px 0;">
+              <a href="https://elplacerdecompartir.com/galeria-centro-cultural" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Explorar Centro Cultural & Galería 🏛️ →</a>
             </div>
 
           </div>
@@ -293,11 +295,16 @@ export async function notifyNewTicket(
     alias_nombre?: string;
     whatsapp: string;
     email?: string;
+  },
+  options?: {
+    affiliateCode?: string;
   }
 ): Promise<void> {
   const ticketUrl = `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticket.ticket_hash}`;
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
+  const affCode = options?.affiliateCode || "embajador";
+  const eventShareUrl = `https://elplacerdecompartir.com/the-corset-society/luna-llena?ref=${encodeURIComponent(affCode)}`;
 
   // 1. WhatsApp Directo al Comprador
   const buyerWaText = 
@@ -307,6 +314,9 @@ export async function notifyNewTicket(
     `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()}\n` +
     `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n\n` +
     `🔐 *Accede a tu credencial digital con código QR scannable:*\n${ticketUrl}\n\n` +
+    `💎 *TU ENLACE EXCLUSIVO DE EMBAJADOR:*\n` +
+    `Comparte esta velada con tus contactos. Por cada 3 compras generadas con tu link, recibes 1 pase 100% gratuito:\n` +
+    `🔗 ${eventShareUrl}\n\n` +
     `🛡️ *Seguridad y Confianza:* Tu transacción ha sido procesada de manera segura a nombre de *Baiosfera* (nuestro operador tecnológico y fiduciario oficial).\n\n` +
     `📍 *Lugar:* Centro Cultural El Placer de Compartir, Bogotá. Presenta tu credencial digital en puerta.\n\n` +
     `_«El acceso se concede, no se anuncia.»_\n\n` +
@@ -335,12 +345,29 @@ export async function notifyNewTicket(
             <p style="margin: 5px 0;"><strong>Monto:</strong> $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP</p>
             <p style="margin: 5px 0;"><strong>ID Lacrado:</strong> ${ticket.ticket_hash.substring(0, 16)}</p>
           </div>
-          <div style="text-align: center; margin: 25px 0;">
-            <a href="${ticketUrl}" style="background-color: #c5a059; color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Ver Credencial Digital con QR</a>
-          </div>
           <p style="font-size: 12px; color: #aaa;">Recuerda presentar el código QR scannable de tu credencial al ingresar. Ubicación: Centro Cultural El Placer de Compartir, Bogotá.</p>
           <div style="margin-top: 20px; padding: 10px; background-color: #1a0b1c; border: 1px solid rgba(197, 160, 89, 0.4); border-radius: 6px; text-align: center;">
             <p style="margin: 0; font-size: 11px; color: #ead397;">🛡️ <strong>Seguridad Transaccional:</strong> Pagos y transacciones procesadas con seguridad a nombre de <strong>Baiosfera</strong>.</p>
+          </div>
+
+          <!-- Invitación de Embajador con enlace del evento (ANTES del botón final) -->
+          <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
+            <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; font-weight: bold; display: block; margin-bottom: 6px;">Programa de Embajadores</span>
+            <h3 style="color: #ead397; font-size: 15px; margin: 0 0 8px 0;">Gana Entradas Gratuitas por Recomendar</h3>
+            <p style="font-size: 12px; color: rgba(247, 244, 238, 0.8); line-height: 1.5; margin: 0 0 12px 0;">
+              ¡Nos vemos en la Luna Llena! Comparte esta velada con tus contactos para que asistan contigo: por cada 3 compras generadas con tu enlace, recibes 1 entrada 100% gratuita.
+            </p>
+            <div style="padding: 10px; background-color: #0a0608; border-radius: 6px; font-family: monospace; font-size: 13px; color: #ead397; margin-bottom: 14px; word-break: break-all;">
+              ${eventShareUrl}
+            </div>
+            <a href="https://elplacerdecompartir.com/dashboard" style="background-color: transparent; color: #c5a059; border: 1px solid #c5a059; padding: 8px 18px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; text-transform: uppercase; font-size: 10px; letter-spacing: 1px;">
+              Entrar a mi Panel de Embajador →
+            </a>
+          </div>
+
+          <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
+          <div style="text-align: center; margin: 30px 0 10px 0;">
+            <a href="${ticketUrl}" style="background-color: #c5a059; color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Ver Credencial Digital con QR →</a>
           </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.3); margin: 30px 0;" />
@@ -422,7 +449,17 @@ export async function notifyEventReservation(
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
   const isNew = Boolean(options?.isNewLead);
   const affCode = options?.affiliateCode || "embajador";
-  const affLink = `https://elplacerdecompartir.com/?ref=${affCode}`;
+
+  // URL del evento específico para el enlace de embajador
+  const eventPageUrl = isSitio
+    ? `https://elplacerdecompartir.com/eventos/sitio-9-oct`
+    : ticket.evento.includes("impacto") || ticket.evento.includes("10-oct")
+    ? `https://elplacerdecompartir.com/eventos/impacto-10-oct`
+    : ticket.evento.includes("luna-llena")
+    ? `https://elplacerdecompartir.com/the-corset-society/luna-llena`
+    : `https://elplacerdecompartir.com/centro-cultural#proximos-eventos`;
+
+  const affLink = `${eventPageUrl}?ref=${encodeURIComponent(affCode)}`;
 
   // 1. WhatsApp al asistente
   let waText = "";
@@ -433,7 +470,7 @@ export async function notifyEventReservation(
       `🎫 *Pase ID:* \`${ticket.ticket_hash}\`\n` +
       `📍 *Ubicación:* Centro Cultural El Placer de Compartir, Bogotá.\n\n` +
       `📲 *Ingreso Requerido con QR:* Es requerido para el ingreso presentar tu código QR en tu pantalla al llegar. Lo hemos enviado a tu correo *${lead.email || "registrado"}*.\n\n` +
-      `💎 *TU ENLACE DE EMBAJADOR EXCLUSIVO:*\n` +
+      `💎 *TU ENLACE DE EMBAJADOR EXCLUSIVO PARA ESTE EVENTO:*\n` +
       `Al registrarte, ya cuentas con tu enlace oficial de embajador. Por cada 3 compras generadas con tu link, ¡recibes 1 entrada 100% gratuita!\n` +
       `🔗 *Enlace:* ${affLink}\n` +
       `⚙️ *Personaliza tu código y sigue tus pases en:* https://elplacerdecompartir.com/dashboard\n\n` +
@@ -462,12 +499,12 @@ export async function notifyEventReservation(
         <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; font-weight: bold; display: block; margin-bottom: 6px;">Programa de Embajadores</span>
         <h3 style="color: #ead397; font-size: 15px; margin: 0 0 8px 0;">Gana Entradas Gratuitas por Recomendar</h3>
         <p style="font-size: 12px; color: rgba(247, 244, 238, 0.8); line-height: 1.5; margin: 0 0 12px 0;">
-          ¡Nos vemos en el evento! Comparte tu enlace exclusivo con tus amigos para que reserven contigo: por cada 3 compras de entradas generadas, el sistema te otorga automáticamente 1 pase gratuito.
+          ¡Nos vemos en el evento! Comparte este evento exclusivo con tus amigos para que reserven contigo: por cada 3 compras de entradas generadas, el sistema te otorga automáticamente 1 pase gratuito.
         </p>
         <div style="padding: 10px; background-color: #0a0608; border-radius: 6px; font-family: monospace; font-size: 13px; color: #ead397; margin-bottom: 14px; word-break: break-all;">
           ${affLink}
         </div>
-        <a href="https://elplacerdecompartir.com/dashboard" style="background-color: #c5a059; color: #0a0608; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; text-transform: uppercase; font-size: 11px; letter-spacing: 1px;">
+        <a href="https://elplacerdecompartir.com/dashboard" style="background-color: transparent; color: #c5a059; border: 1px solid #c5a059; padding: 8px 18px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; text-transform: uppercase; font-size: 10px; letter-spacing: 1px;">
           Entrar a mi Panel y Personalizar Código →
         </a>
       </div>
@@ -496,7 +533,13 @@ export async function notifyEventReservation(
           <strong>Requerido para el ingreso:</strong> Presenta este código QR desde tu pantalla en la recepción del Centro Cultural para validar tu acceso.
         </p>
 
+        <!-- Sección de Embajador con Enlace del Evento (ANTES del botón final) -->
         ${ambassadorEmailSnippet}
+
+        <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
+        <div style="text-align: center; margin: 30px 0 10px 0;">
+          <a href="${eventPageUrl}" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Ver Detalles y Cómo Llegar al Evento 📍 →</a>
+        </div>
         
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 25px 0;" />
         <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Centro Cultural El Placer de Compartir • Bogotá<br/>Línea Oficial: +57 319 419 4785</p>
@@ -602,6 +645,11 @@ export async function notifyNewAlliance(
           </div>
           <p>Nuestro equipo de dirección y producción analiza la viabilidad logística, técnica y conceptual de cada iniciativa para preservar un entorno seguro, ético y de máxima comodidad.</p>
           <p>Nos comunicaremos directamente contigo vía WhatsApp para acordar disponibilidad de fechas, tarifas de coproducción o visita técnica a la sede.</p>
+
+          <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
+          <div style="text-align: center; margin: 30px 0 10px 0;">
+            <a href="https://elplacerdecompartir.com/galeria-centro-cultural" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería de Espacios del Centro Cultural 🏛️ →</a>
+          </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
         <p style="font-size: 11px; color: #888; font-family: sans-serif; margin: 0;">Centro Cultural El Placer de Compartir • Bogotá<br/>Línea de Dirección Cultural: +57 319 419 4785</p>

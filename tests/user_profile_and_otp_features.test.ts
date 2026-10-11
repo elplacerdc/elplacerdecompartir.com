@@ -95,4 +95,66 @@ describe("User Profile, Dynamic Roles & OTP Revocation Invariants", () => {
   test("3. deleteWhatsAppMessage service contract is exported and ready for OTP message revocations", () => {
     expect(typeof deleteWhatsAppMessage).toBe("function");
   });
+
+  test("4. getAffiliateStats exposes referredBy when lead was referred", async () => {
+    const referredLead = await upsertLead(
+      {
+        alias_nombre: "InvitadoConReferido",
+        email: "invitado_ref@elplacerdecompartir.com",
+        whatsapp: "3199887711",
+        rol: "pareja",
+        ciudad: "Bogotá",
+        afiliado_id: "embajador123",
+      },
+      "elplacerdc"
+    );
+    expect(referredLead.status).toBe("created");
+
+    await ensureAffiliateCode("InvitadoConReferido", "3199887711", "invitado_ref@elplacerdecompartir.com");
+    const stats = await getAffiliateStats("3199887711");
+    expect(stats?.referredBy).toBe("embajador123");
+
+    const client = await pool.connect();
+    try {
+      await client.query("DELETE FROM leads WHERE email = $1", ["invitado_ref@elplacerdecompartir.com"]);
+      await client.query("DELETE FROM afiliados WHERE email = $1", ["invitado_ref@elplacerdecompartir.com"]);
+    } finally {
+      client.release();
+    }
+  });
+
+  test("5. upsertLead updates afiliado_id when lead visits via referral later", async () => {
+    const unreferred = await upsertLead(
+      {
+        alias_nombre: "InvitadoTardio",
+        email: "invitado_tardio@elplacerdecompartir.com",
+        whatsapp: "3199887722",
+        rol: "pareja",
+        ciudad: "Bogotá",
+      },
+      "elplacerdc"
+    );
+    expect(unreferred.status).toBe("created");
+    expect(unreferred.lead?.afiliado_id).toBeNull();
+
+    // Now updates with affiliate ref
+    const updatedWithRef = await upsertLead(
+      {
+        alias_nombre: "InvitadoTardio",
+        email: "invitado_tardio@elplacerdecompartir.com",
+        whatsapp: "3199887722",
+        afiliado_id: "mentorvip",
+      },
+      "corset"
+    );
+    expect(updatedWithRef.lead?.afiliado_id).toBe("mentorvip");
+
+    const client = await pool.connect();
+    try {
+      await client.query("DELETE FROM leads WHERE email = $1", ["invitado_tardio@elplacerdecompartir.com"]);
+      await client.query("DELETE FROM afiliados WHERE email = $1", ["invitado_tardio@elplacerdecompartir.com"]);
+    } finally {
+      client.release();
+    }
+  });
 });

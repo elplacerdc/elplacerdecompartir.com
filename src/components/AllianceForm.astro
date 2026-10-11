@@ -323,4 +323,15 @@ const {
       submitBtn.textContent = "Enviar Propuesta a Dirección";
     }
   });
+
+  // Auto-verificar WhatsApp si el usuario ya tiene sesión activa
+  const activeSessionPhone = localStorage.getItem("ambassador_session_phone");
+  if (activeSessionPhone) {
+    inputWhatsapp.value = activeSessionPhone;
+    waVerified = true;
+    waOtpBox?.classList.add("hidden");
+    btnSendWaOtp?.classList.add("hidden");
+    inputWhatsapp.readOnly = true;
+    waVerifiedBadge?.classList.remove("hidden");
+  }
 </script>

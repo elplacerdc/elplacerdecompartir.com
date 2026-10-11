@@ -26,7 +26,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
     {cookieRef ? (
       <>
         <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$199.000</span>
-        <span class="text-[#81c784]">$179.100</span>
+        <span class="text-[#81c784]">$179.000</span>
         <span class="text-sm font-sans font-normal text-[#c5a059] ml-1">COP / año</span>
       </>
     ) : (
@@ -55,7 +55,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
       id="vip-submit-btn"
       class="w-full sm:w-auto px-8 py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
     >
-      Adquirir Membresía Anual VIP {cookieRef ? "($179.100 COP)" : "($199.000 COP)"}
+      Adquirir Membresía Anual VIP {cookieRef ? "($179.000 COP)" : "($199.000 COP)"}
     </button>
   </form>
   <p class="text-[10px] text-[#f7f4ee]/40 font-sans">Pago cifrado y seguro en pesos colombianos (COP). Activación inmediata.</p>
@@ -91,14 +91,14 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
         if (priceDisplay) {
           priceDisplay.innerHTML = `
             <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$199.000</span>
-            <span class="text-[#81c784] font-bold">$179.100</span>
+            <span class="text-[#81c784] font-bold">$179.000</span>
             <span class="text-sm font-sans font-normal text-[#c5a059] ml-1">COP / año</span>
           `;
         }
 
         const submitBtn = document.getElementById("vip-submit-btn");
         if (submitBtn) {
-          submitBtn.textContent = "Adquirir Membresía Anual VIP ($179.100 COP)";
+          submitBtn.textContent = "Adquirir Membresía Anual VIP ($179.000 COP)";
         }
       }
     } catch (e) {}

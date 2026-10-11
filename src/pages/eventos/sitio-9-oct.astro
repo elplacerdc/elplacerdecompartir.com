@@ -278,8 +278,68 @@ import Layout from "../../layouts/Layout.astro";
     stepOtpVerify.classList.add("hidden");
     stepPhoneInput.classList.remove("hidden");
     inputWhatsapp.readOnly = false;
+    inputWhatsapp.value = "";
     inputWhatsapp.focus();
   });
+
+  async function handleVerifiedPhone(whatsapp: string) {
+    try {
+      const checkRes = await fetch("/api/leads/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ whatsapp }),
+      });
+      const checkData = await checkRes.json();
+
+      if (checkData.exists && checkData.lead) {
+        const lead = checkData.lead;
+        localStorage.setItem("ambassador_session_phone", whatsapp);
+        if (inputAlias) {
+          inputAlias.value = lead.alias_nombre || "";
+          inputAlias.readOnly = true;
+        }
+        if (inputEmail) {
+          inputEmail.value = lead.email || "";
+          inputEmail.readOnly = true;
+        }
+        if (selectRol) {
+          selectRol.value = lead.rol || "pareja";
+          selectRol.disabled = true;
+        }
+
+        if (leadStatusMsg) {
+          leadStatusMsg.innerHTML = `✓ <strong>Hola ${lead.alias_nombre || 'Miembro'}</strong>, reconocemos tu perfil registrado. Tus datos están protegidos contra sobreescritura accidental.`;
+        }
+        const btnEditProfile = document.getElementById("btn-enable-edit-profile");
+        if (btnEditProfile) {
+          btnEditProfile.classList.remove("hidden");
+          btnEditProfile.onclick = () => {
+            if (inputAlias) inputAlias.readOnly = false;
+            if (inputEmail) inputEmail.readOnly = false;
+            if (selectRol) selectRol.disabled = false;
+            btnEditProfile.classList.add("hidden");
+            leadStatusMsg.innerHTML = `✏️ <strong>Edición habilitada</strong>: puedes modificar tus datos.`;
+          };
+        }
+        if (submitBtn) submitBtn.textContent = "Confirmar Reserva & Generar Pase QR";
+      } else {
+        if (inputAlias) inputAlias.readOnly = false;
+        if (inputEmail) inputEmail.readOnly = false;
+        if (selectRol) selectRol.disabled = false;
+        const btnEditProfile = document.getElementById("btn-enable-edit-profile");
+        if (btnEditProfile) btnEditProfile.classList.add("hidden");
+        if (leadStatusMsg) {
+          leadStatusMsg.innerHTML = `✨ <strong>Número verificado</strong>. Completa tus datos para radicar tu registro en la comunidad y generar tu pase QR con beneficios de embajador.`;
+        }
+        if (submitBtn) submitBtn.textContent = "Completar Registro & Generar Pase QR";
+      }
+    } catch (checkErr) {
+      console.warn("[Check Lead Err]:", checkErr);
+    }
+
+    remainingFields.classList.remove("hidden");
+    inputAlias.focus();
+  }
 
   btnVerifyWaOtp?.addEventListener("click", async () => {
     const whatsapp = inputWhatsapp.value.trim();
@@ -308,62 +368,7 @@ import Layout from "../../layouts/Layout.astro";
         waVerifiedBadge.classList.remove("hidden");
         inputWhatsapp.readOnly = true;
 
-        // Comprobar si ya existe en la comunidad (WhatsApp-first)
-        try {
-          const checkRes = await fetch("/api/leads/check", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ whatsapp }),
-          });
-          const checkData = await checkRes.json();
-
-          if (checkData.exists && checkData.lead) {
-            const lead = checkData.lead;
-            if (inputAlias) {
-              inputAlias.value = lead.alias_nombre || "";
-              inputAlias.readOnly = true;
-            }
-            if (inputEmail) {
-              inputEmail.value = lead.email || "";
-              inputEmail.readOnly = true;
-            }
-            if (selectRol) {
-              selectRol.value = lead.rol || "pareja";
-              selectRol.disabled = true;
-            }
-
-            if (leadStatusMsg) {
-              leadStatusMsg.innerHTML = `✓ <strong>Hola ${lead.alias_nombre || 'Miembro'}</strong>, reconocemos tu perfil registrado. Tus datos están protegidos contra sobreescritura accidental.`;
-            }
-            const btnEditProfile = document.getElementById("btn-enable-edit-profile");
-            if (btnEditProfile) {
-              btnEditProfile.classList.remove("hidden");
-              btnEditProfile.onclick = () => {
-                if (inputAlias) inputAlias.readOnly = false;
-                if (inputEmail) inputEmail.readOnly = false;
-                if (selectRol) selectRol.disabled = false;
-                btnEditProfile.classList.add("hidden");
-                leadStatusMsg.innerHTML = `✏️ <strong>Edición habilitada</strong>: puedes modificar tus datos.`;
-              };
-            }
-            if (submitBtn) submitBtn.textContent = "Confirmar Reserva & Generar Pase QR";
-          } else {
-            if (inputAlias) inputAlias.readOnly = false;
-            if (inputEmail) inputEmail.readOnly = false;
-            if (selectRol) selectRol.disabled = false;
-            const btnEditProfile = document.getElementById("btn-enable-edit-profile");
-            if (btnEditProfile) btnEditProfile.classList.add("hidden");
-            if (leadStatusMsg) {
-              leadStatusMsg.innerHTML = `✨ <strong>Número verificado</strong>. Completa tus datos para radicar tu registro en la comunidad y generar tu pase QR con beneficios de embajador.`;
-            }
-            if (submitBtn) submitBtn.textContent = "Completar Registro & Generar Pase QR";
-          }
-        } catch (checkErr) {
-          console.warn("[Check Lead Err]:", checkErr);
-        }
-
-        remainingFields.classList.remove("hidden");
-        inputAlias.focus();
+        await handleVerifiedPhone(whatsapp);
       } else {
         if (waOtpStatus) waOtpStatus.textContent = "Código inválido o expirado";
       }
@@ -374,6 +379,19 @@ import Layout from "../../layouts/Layout.astro";
       btnVerifyWaOtp.textContent = "Verificar Código";
     }
   });
+
+  // Auto-verificar si el usuario ya tiene sesión con WhatsApp en el navegador
+  const activeSessionPhone = localStorage.getItem("ambassador_session_phone");
+  if (activeSessionPhone) {
+    inputWhatsapp.value = activeSessionPhone;
+    waVerified = true;
+    stepPhoneInput.classList.add("hidden");
+    stepOtpVerify.classList.add("hidden");
+    if (waDisplayPhone) waDisplayPhone.textContent = activeSessionPhone;
+    waVerifiedBadge.classList.remove("hidden");
+    inputWhatsapp.readOnly = true;
+    handleVerifiedPhone(activeSessionPhone);
+  }
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();

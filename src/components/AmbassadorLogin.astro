@@ -392,4 +392,15 @@
     if (loginDesc) loginDesc.textContent = 'Gestiona tu enlace exclusivo, monitorea tus referidos y activa tus beneficios.';
     if (authMessage) authMessage.textContent = '';
   });
+
+  // Si ya tiene sesión activa en WhatsApp y está en /login, redirigir directo a /dashboard
+  try {
+    const existingSessionPhone = localStorage.getItem("ambassador_session_phone");
+    if (existingSessionPhone) {
+      if (phoneInput) phoneInput.value = existingSessionPhone;
+      if (window.location.pathname === "/login") {
+        window.location.replace("/dashboard");
+      }
+    }
+  } catch (_) {}
 </script>

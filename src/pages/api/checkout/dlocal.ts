@@ -32,7 +32,7 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
 
   const affiliateRef = (bodyRef || cookies.get("affiliate_ref")?.value || "").toString().trim().toLowerCase() || null;
   const discountRate = affiliateRef ? 0.10 : 0;
-  const finalAmount = Math.round(199000.00 * (1 - discountRate));
+  const finalAmount = discountRate > 0 ? 179000.00 : 199000.00;
 
   const orderId = `CORSET_VIP_${userId}_${Date.now()}`;
   const baseUrl = `${url.protocol}//${url.host}`;
