@@ -144,10 +144,15 @@ export const GET: APIRoute = async ({ cookies }) => {
       LIMIT 150
     `);
 
-    // 4. All Tickets & Reservations with Bre-B flag (up to 150)
+    // 4. All Tickets & Reservations with Bre-B flag and payment category (up to 150)
     const ticketsRes = await client.query(`
       SELECT t.id, t.evento, t.tipo_entrada, t.tipo_pago, t.monto_pagado, t.metodo_pago, t.referencia_transaccion, t.estado, t.ticket_hash, t.created_at,
-             l.alias_nombre, l.whatsapp, l.email,
+             l.alias_nombre, l.whatsapp, l.email, COALESCE(l.rol, 'general') AS lead_rol,
+             (CASE 
+               WHEN COALESCE(t.monto_pagado, 0) > 0 AND t.tipo_pago != 'cortesia_100' AND t.tipo_entrada NOT ILIKE '%cortesia%' 
+               THEN 'pago' 
+               ELSE 'gratuito' 
+             END) AS categoria_pago,
              (CASE WHEN t.metodo_pago ILIKE '%bre%' OR t.referencia_transaccion ILIKE '%bre%' THEN true ELSE false END) AS is_bre_b
       FROM event_tickets t
       LEFT JOIN leads l ON t.lead_id = l.id

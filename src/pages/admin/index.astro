@@ -520,6 +520,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
   let cachedMetrics: any = null;
   let activeDrawerType: "leads" | "affiliates" | "tickets" | "pending_cash" | "checkins" | null = null;
   let activeTagFilter = "todos";
+  let ticketsCategoryFilter: "todos" | "pagos" | "gratuitos" = "todos";
   let videoStream: MediaStream | null = null;
   let qrScanActive = false;
   let scanCooldown = false;
@@ -699,7 +700,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
 
       if (kpiLeads) kpiLeads.textContent = data.counts.totalLeads.toString();
       if (kpiAffiliates) kpiAffiliates.textContent = data.counts.totalAffiliates.toString();
-      if (kpiTickets) kpiTickets.textContent = data.counts.totalTickets.toString();
+      if (kpiTickets) {
+        const total = data.counts.totalTickets ?? 0;
+        const checkins = data.counts.totalCheckins ?? 0;
+        kpiTickets.innerHTML = `
+          <span>${total}</span>
+          <span class="text-xs font-sans font-semibold text-[#81c784] block mt-0.5">✓ ${checkins} Asistidos</span>
+        `;
+      }
       if (kpiPendingCash) {
         const breCount = data.counts.pendingBreB || 0;
         kpiPendingCash.textContent = breCount > 0 
@@ -752,7 +760,13 @@ const isAuthenticated = verifyAdminSessionToken(token);
     }
 
     leadsTableBody.innerHTML = leads.slice(0, 10).map((l) => {
-      const isVip = l.is_possible_vip || l.corset_vip;
+      const isPaidVip = Boolean(l.is_active_vip || (l.vip_until && new Date(l.vip_until) > new Date()));
+      const isPossibleVip = Boolean((l.is_possible_vip || l.corset_vip) && !isPaidVip);
+      const vipBadge = isPaidVip
+        ? '<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">👑 VIP</span>'
+        : isPossibleVip
+        ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">🤴 Posible VIP</span>'
+        : '—';
       const leadName = l.alias_nombre || l.whatsapp || l.email || `Lead #${l.id.substring(0, 8)}`;
       return `
         <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-lead-id="${l.id}">
@@ -760,7 +774,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <td class="py-2.5 px-2 text-[11px] capitalize text-[#ead397]">${l.rol ? l.rol.replace('_', ' ') : "general"}</td>
           <td class="py-2.5 px-2 text-[10px] text-[#f7f4ee]/70">${l.origen || "web"}</td>
           <td class="py-2.5 px-2 text-center">
-            ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 VIP</span>' : '—'}
+            ${vipBadge}
           </td>
           <td class="py-2.5 px-2 text-right">
             <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}" data-name="${leadName}">Eliminar</button>
@@ -896,13 +910,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
       drawerContent.innerHTML = `
         <div class="space-y-3">
           ${filteredLeads.map((l: any) => {
-            const isVip = l.is_possible_vip || l.corset_vip;
+            const isPaidVip = Boolean(l.is_active_vip || (l.vip_until && new Date(l.vip_until) > new Date()));
+            const isPossibleVip = Boolean((l.is_possible_vip || l.corset_vip) && !isPaidVip);
             return `
               <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="space-y-1">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Invitado"}</span>
-                    ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 Posible VIP</span>' : ''}
+                    ${isPaidVip ? '<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">👑 VIP Activo</span>' : isPossibleVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">🤴 Posible VIP</span>' : ''}
                     ${l.affiliate_alias ? `<span class="px-2 py-0.5 rounded-full bg-[#8E4A8C]/30 text-[#f3e5f5] text-[10px] font-mono">Embajador: @${l.affiliate_alias}</span>` : ''}
                   </div>
                   <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
@@ -969,7 +984,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
     }
 
     if (type === "tickets" || type === "pending_cash" || type === "checkins") {
-      let list = cachedMetrics.tickets;
+      let list = cachedMetrics.tickets || [];
       if (type === "pending_cash") {
         list = list.filter((t: any) => t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion");
         if (drawerBadge) drawerBadge.textContent = "Gestión de Cobros & Bre-B";
@@ -980,33 +995,77 @@ const isAuthenticated = verifyAdminSessionToken(token);
         if (drawerTitle) drawerTitle.textContent = `Asistencias Validadas (${list.length})`;
       } else {
         if (drawerBadge) drawerBadge.textContent = "Boletería & Pases";
-        if (drawerTitle) drawerTitle.textContent = `Pases Emitidos Totales (${list.length})`;
+        const countPagos = list.filter((t: any) => t.categoria_pago === "pago").length;
+        const countGratis = list.filter((t: any) => t.categoria_pago === "gratuito").length;
+        if (drawerTitle) drawerTitle.textContent = `Pases Emitidos (${list.length} Total: ${countPagos} Pagos, ${countGratis} Cortesías)`;
+      }
+
+      let tabsHtml = "";
+      if (type === "tickets") {
+        const countAll = list.length;
+        const countPagos = list.filter((t: any) => t.categoria_pago === "pago").length;
+        const countGratis = list.filter((t: any) => t.categoria_pago === "gratuito").length;
+
+        if (ticketsCategoryFilter === "pagos") {
+          list = list.filter((t: any) => t.categoria_pago === "pago");
+        } else if (ticketsCategoryFilter === "gratuitos") {
+          list = list.filter((t: any) => t.categoria_pago === "gratuito");
+        }
+
+        tabsHtml = `
+          <div class="flex items-center gap-2 p-1 bg-[#140816] rounded-xl border border-[#c5a059]/30 mb-3 text-xs">
+            <button type="button" class="btn-ticket-tab flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'todos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="todos">
+              Todos (${countAll})
+            </button>
+            <button type="button" class="btn-ticket-tab flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'pagos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="pagos">
+              💰 Eventos Pagos (${countPagos})
+            </button>
+            <button type="button" class="btn-ticket-tab flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'gratuitos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="gratuitos">
+              🎁 Gratuitos / Cortesías (${countGratis})
+            </button>
+          </div>
+        `;
       }
 
       const filtered = list.filter((t: any) =>
         (t.alias_nombre || "").toLowerCase().includes(filter) ||
         (t.ticket_hash || "").toLowerCase().includes(filter) ||
         (t.evento || "").toLowerCase().includes(filter) ||
-        (t.tipo_entrada || "").toLowerCase().includes(filter)
+        (t.tipo_entrada || "").toLowerCase().includes(filter) ||
+        (t.lead_rol || "").toLowerCase().includes(filter)
       );
 
       drawerContent.innerHTML = `
+        ${tabsHtml}
         <div class="space-y-3">
-          ${filtered.map((t: any) => {
+          ${filtered.length === 0 ? '<p class="text-xs text-[#f7f4ee]/40 text-center py-4">No hay pases en esta categoría.</p>' : filtered.map((t: any) => {
             const isPending = t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion";
+            const isPago = t.categoria_pago === 'pago';
+            const formattedDate = t.created_at ? new Date(t.created_at).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" }) : "—";
+            const roleName = (t.lead_rol || "general").replace('_', ' ');
             return `
-              <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="space-y-1">
+              <div class="p-4 rounded-2xl bg-[#250e29] border ${isPago ? 'border-[#c5a059]/40' : 'border-[#81c784]/30'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-1.5">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-bold text-[#ead397] text-sm">${t.alias_nombre || "Invitado"}</span>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${t.estado === 'asistido' ? 'bg-[#2e7d32]/30 text-[#81c784]' : isPending ? 'bg-[#f57c00]/30 text-[#ffb74d]' : 'bg-[#c5a059]/20 text-[#ead397]'}">
                       ${t.estado}
                     </span>
+                    ${isPago 
+                      ? `<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">💰 Evento Pago</span>` 
+                      : `<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">🎁 Gratuito / Cortesía</span>`
+                    }
                     ${t.is_bre_b ? '<span class="px-2 py-0.5 rounded-full bg-[#8E4A8C]/30 text-[#f3e5f5] text-[10px] font-bold border border-[#8E4A8C]/50">⚡ Bre-B</span>' : ''}
-                    ${t.tipo_pago === 'cortesia_100' ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/30 text-[#ead397] text-[10px] font-bold">100% Cortesía</span>' : ''}
                   </div>
-                  <div class="text-xs text-[#f7f4ee]/80 font-mono">Evento: ${t.evento} • Pase: ${t.tipo_entrada} • Monto: $${Number(t.monto_pagado).toLocaleString("es-CO")} (${t.metodo_pago})</div>
-                  <div class="text-[10px] text-[#c5a059] font-mono break-all">Hash: ${t.ticket_hash}</div>
+                  <div class="text-xs text-[#f7f4ee]/90 font-medium">
+                    🎟️ Evento: <strong class="text-[#ead397]">${t.evento || "General"}</strong> • Pase: <strong>${t.tipo_entrada || "General"}</strong>
+                  </div>
+                  <div class="text-xs text-[#f7f4ee]/70 font-mono flex flex-wrap gap-x-3 gap-y-1">
+                    <span>👤 Rol: <strong class="text-[#ead397] capitalize">${roleName}</strong></span>
+                    <span>📅 Fecha: <strong>${formattedDate}</strong></span>
+                    <span>Monto: <strong class="${isPago ? 'text-[#81c784]' : 'text-[#f7f4ee]/60'}">$${Number(t.monto_pagado || 0).toLocaleString("es-CO")}</strong> (${t.metodo_pago || 'cortesía'})</span>
+                  </div>
+                  <div class="text-[10px] text-[#c5a059]/70 font-mono break-all">Hash: ${t.ticket_hash}</div>
                 </div>
                 <div class="flex items-center gap-2 self-end sm:self-center">
                   ${isPending ? `
@@ -1023,6 +1082,17 @@ const isAuthenticated = verifyAdminSessionToken(token);
           }).join("")}
         </div>
       `;
+
+      // Bind tabs
+      drawerContent.querySelectorAll(".btn-ticket-tab").forEach((tabBtn) => {
+        tabBtn.addEventListener("click", () => {
+          const tab = tabBtn.getAttribute("data-tab") as "todos" | "pagos" | "gratuitos";
+          if (tab) {
+            ticketsCategoryFilter = tab;
+            renderDrawer(type);
+          }
+        });
+      });
 
       // Bind mark paid
       document.querySelectorAll(".btn-mark-paid").forEach((btn) => {
