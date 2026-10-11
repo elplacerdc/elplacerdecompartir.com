@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { upsertLead, ensureAffiliateCode } from "../../../db";
 import { notifyNewLead } from "../../../services/notifications";
 import { verifyChannelOTP } from "../../../services/evolution";
-import { addSubscriber } from "../../../services/listmonk";
+import { dispatchDomainEvent } from "../../../services/automation";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -19,10 +19,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Verify OTP if provided (or if already verified inline via /api/otp/verify)
-    if (!verified) {
+    let isOtpValid = Boolean(verified);
+    if (!verified && otp) {
       const otpDestination = whatsapp || email;
-      const isValidOtp = otp && (await verifyChannelOTP(otpDestination, otp));
-      if (!isValidOtp) {
+      isOtpValid = Boolean(await verifyChannelOTP(otpDestination, otp));
+      if (!isOtpValid) {
         return new Response(JSON.stringify({ success: false, error: "Código de verificación inválido o expirado" }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
@@ -47,6 +48,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         origen: origen || (isCorsetVip ? "web_corset" : "web_comunidad"),
         afiliado_id: affiliateRef || undefined,
         corset_vip: isCorsetVip,
+        whatsapp_verified: Boolean(body.whatsapp_verified || (isOtpValid && whatsapp) || body.verified_wa),
+        email_verified: Boolean(body.email_verified || (isOtpValid && email) || body.verified_email),
       },
       targetChannel
     );
@@ -84,7 +87,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // 3. Nuevo registro o nuevo canal habilitado: Disparo controlado de notificaciones
+    // 3. Nuevo registro o nuevo canal habilitado: Disparo controlado de notificaciones y automatizaciones
     if (result.lead) {
       notifyNewLead(result.lead as any, targetChannel).catch((e) =>
         console.error("[Lead Notifications Err]:", e)
@@ -107,10 +110,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         });
       }
 
-      if (email) {
-        addSubscriber(email, alias_nombre || "Lead", [1]).catch((e) =>
-          console.error("[Listmonk Register Sync Err]:", e)
-        );
+      // Sincronización asíncrona mediante Automation Engine hacia Listmonk
+      if (result.lead.email) {
+        dispatchDomainEvent("lead.registered", {
+          leadId: result.lead.id,
+          email: result.lead.email,
+          whatsapp: result.lead.whatsapp,
+          name: result.lead.alias_nombre,
+          rol: result.lead.rol,
+          ciudad: result.lead.ciudad,
+          channel: targetChannel,
+          metadata: result.lead.metadata,
+        }).catch((e) => console.error("[Listmonk Automation Sync Err]:", e));
       }
     }
 

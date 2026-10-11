@@ -32,6 +32,8 @@ export const POST: APIRoute = async ({ request }) => {
             rol: lead.rol,
             ciudad: lead.ciudad,
             corset_vip: lead.corset_vip,
+            whatsapp_verified: Boolean(lead.whatsapp_verified || (lead as any).metadata?.whatsapp_verified),
+            email_verified: Boolean(lead.email_verified || (lead as any).metadata?.email_verified),
             affiliate_code: affiliateCode,
           },
         }),

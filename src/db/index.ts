@@ -23,6 +23,8 @@ export interface Lead {
   origen: string | null;
   afiliado_id: string | null;
   corset_vip: boolean;
+  whatsapp_verified?: boolean;
+  email_verified?: boolean;
   primer_pago_acreditado?: boolean;
   metadata?: Record<string, any>;
   created_at: Date;
@@ -191,6 +193,8 @@ export async function upsertLead(
     origen?: string;
     afiliado_id?: string;
     corset_vip?: boolean;
+    whatsapp_verified?: boolean;
+    email_verified?: boolean;
     metadata?: Record<string, any>;
   },
   targetChannel?: "elplacerdc" | "corset" | "centro_cultural" | string
@@ -219,6 +223,17 @@ export async function upsertLead(
     if (cleanEmail) {
       const emailRes = await client.query("SELECT * FROM leads WHERE email = $1 LIMIT 1", [cleanEmail]);
       leadByEmail = emailRes.rows[0] || null;
+    }
+
+    // Strict Cross-Data Prevention: Phone and Email cannot belong to different registered leads
+    if (leadByPhone && leadByEmail && leadByPhone.id !== leadByEmail.id) {
+      return {
+        status: "conflict",
+        isDuplicate: false,
+        isChannelNew: false,
+        channel: resolvedChannel,
+        error: "El número de WhatsApp y el correo electrónico pertenecen a registros distintos. No se permiten cruces entre usuarios registrados.",
+      };
     }
 
     // Resolve unified lead (phone priority as primary contact key)
@@ -284,6 +299,9 @@ export async function upsertLead(
         journey,
       };
 
+      const isWhatsappVerified = Boolean(data.whatsapp_verified || (existingLead as any).whatsapp_verified);
+      const isEmailVerified = Boolean(data.email_verified || (existingLead as any).email_verified);
+
       const updatedLeadRes = await client.query(
         `UPDATE leads SET
           alias_nombre = COALESCE(alias_nombre, $1),
@@ -294,6 +312,8 @@ export async function upsertLead(
           corset_vip = CASE WHEN ($6 = true OR corset_vip = true) THEN true ELSE false END,
           afiliado_id = COALESCE(afiliado_id, $7),
           metadata = $8,
+          whatsapp_verified = CASE WHEN $10 = true THEN true ELSE whatsapp_verified END,
+          email_verified = CASE WHEN $11 = true THEN true ELSE email_verified END,
           updated_at = NOW()
         WHERE id = $9
         RETURNING *`,
@@ -307,6 +327,8 @@ export async function upsertLead(
           data.afiliado_id || null,
           JSON.stringify(mergedMeta),
           existingLead.id,
+          isWhatsappVerified,
+          isEmailVerified,
         ]
       );
 
@@ -359,10 +381,13 @@ export async function upsertLead(
     };
 
     try {
+      const isWhatsappVerified = Boolean(data.whatsapp_verified);
+      const isEmailVerified = Boolean(data.email_verified);
+
       const inserted = await client.query(
         `INSERT INTO leads (
-          alias_nombre, email, whatsapp, rol, ciudad, origen, afiliado_id, corset_vip, metadata
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          alias_nombre, email, whatsapp, rol, ciudad, origen, afiliado_id, corset_vip, metadata, whatsapp_verified, email_verified
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *`,
         [
           data.alias_nombre || null,
@@ -374,6 +399,8 @@ export async function upsertLead(
           data.afiliado_id || null,
           Boolean(resolvedChannel === "corset" || data.corset_vip),
           JSON.stringify(initialMeta),
+          isWhatsappVerified,
+          isEmailVerified,
         ]
       );
 
