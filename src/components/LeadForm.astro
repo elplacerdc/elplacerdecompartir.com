@@ -400,116 +400,231 @@ const {
             return;
           }
 
-          // Lead registrado en la comunidad general que se postula a The Corset Society:
-          leadExistingBox.innerHTML = `
-            <div class="p-4 bg-[#140816] rounded-2xl border border-[#c5a059]/50 text-xs space-y-3">
-              <div class="flex items-center justify-between">
-                <div class="text-[#ead397] font-serif font-bold text-sm flex items-center gap-1.5">
-                  <span>✓</span> Registro Previo en Comunidad General
-                </div>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30">Perfil Vinculado</span>
-              </div>
-              <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
-                Hola <strong class="text-[#ead397] font-bold">${existing.alias_nombre || "Miembro"}</strong>. Tu número ya está validado en modalidad <strong class="text-[#ead397] capitalize">${existing.rol ? existing.rol.replace('_', ' ') : 'General'}</strong> (${existing.ciudad || 'Bogotá'}).
-              </p>
-              
-              <!-- Correo editable pre-cargado para la credencial -->
-              <div class="space-y-1.5 text-left pt-1">
-                <label for="corset-apply-email" class="block text-[11px] font-bold text-[#ead397] uppercase tracking-wider">
-                  Correo Electrónico (para confirmación y credencial)
-                </label>
-                <input 
-                  type="email" 
-                  id="corset-apply-email" 
-                  value="${existing.email || ''}" 
-                  placeholder="tu@correo.com" 
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-xs text-[#f7f4ee] focus:border-[#ead397] outline-none transition-all placeholder-[#f7f4ee]/30"
-                />
-                <span class="text-[10px] text-[#f7f4ee]/60 block">Si deseas actualizar tu correo electrónico, puedes modificarlo libremente antes de enviar.</span>
-              </div>
+          // Si el usuario ya verificó ambos canales (whatsapp_verified && email_verified):
+          const isWaVerified = Boolean(existing.whatsapp_verified || (existing as any).metadata?.whatsapp_verified || waVerified);
+          const isMailVerified = Boolean(existing.email_verified || (existing as any).metadata?.email_verified);
 
-              <div class="p-3 bg-[#0a050c] rounded-xl border border-[#c5a059]/30 text-[11px] text-[#f7f4ee]/80 leading-relaxed">
-                Tus datos oficiales se encuentran protegidos. Para solicitar tu admisión al círculo exclusivo de <strong>The Corset Society</strong>, radica tu postulación a continuación:
-              </div>
-              <button 
-                type="button" 
-                id="btn-apply-corset-seamless" 
-                class="w-full py-3.5 px-4 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] hover:brightness-110 transition-all shadow-md cursor-pointer"
-              >
-                Radicar Postulación a The Corset Society →
-              </button>
-              <div id="corset-apply-status" class="hidden text-xs text-center"></div>
-            </div>
-          `;
-          leadExistingBox.classList.remove("hidden");
-          leadRemainingFields.classList.add("hidden");
-
-          const btnApplySeamless = document.getElementById("btn-apply-corset-seamless");
-          const applyStatus = document.getElementById("corset-apply-status");
-
-          btnApplySeamless?.addEventListener("click", async () => {
-            const applyEmailInput = document.getElementById("corset-apply-email") as HTMLInputElement | null;
-            const targetEmail = applyEmailInput?.value.trim() || existing.email || undefined;
-
-            if (btnApplySeamless) {
-              btnApplySeamless.setAttribute("disabled", "true");
-              btnApplySeamless.textContent = "Radicando Postulación...";
-            }
-            try {
-              const applyRes = await fetch("/api/leads/register", {
+          if (isWaVerified && isMailVerified) {
+            if (!existing.corset_vip) {
+              fetch("/api/leads/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   alias_nombre: existing.alias_nombre,
                   whatsapp: whatsapp,
-                  email: targetEmail,
+                  email: existing.email,
                   rol: existing.rol || "pareja",
                   ciudad: existing.ciudad || "Bogotá",
                   origen: "web_corset",
                   corset_vip: true,
                   verified: true,
+                  whatsapp_verified: true,
+                  email_verified: true,
                   ref: localStorage.getItem("affiliate_ref") || undefined,
                 }),
+              }).catch(() => {});
+            }
+
+            const hasAffiliateRef = Boolean(localStorage.getItem("affiliate_ref") || document.cookie.includes("affiliate_ref"));
+            const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($179.000 COP) (-10% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
+
+            leadExistingBox.innerHTML = `
+              <div class="p-5 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
+                <div class="text-[#81c784] font-serif font-bold text-sm flex items-center gap-1.5">
+                  <span>✓</span> Postulación Radicada con Éxito
+                </div>
+                <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
+                  Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> está radicada con éxito. Tus credenciales oficiales (WhatsApp <span class="font-mono text-[#ead397]">${whatsapp}</span> y correo <span class="font-mono text-[#ead397]">${existing.email || ""}</span>) se encuentran verificadas.
+                </p>
+                <div class="pt-2 flex flex-col sm:flex-row gap-2">
+                  <a href="/corset/checkout" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                    ${vipPriceLabel}
+                  </a>
+                  <a href="/dashboard" class="py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
+                    Ir al Panel de Embajador →
+                  </a>
+                </div>
+              </div>
+            `;
+            leadExistingBox.classList.remove("hidden");
+            leadRemainingFields.classList.add("hidden");
+            return;
+          }
+
+          // Lead existente que tiene WhatsApp verificado pero falta verificar correo electrónico (Paso 2 secuencial obligatorio):
+          leadExistingBox.innerHTML = `
+            <div class="p-5 bg-[#140816] rounded-2xl border border-[#c5a059]/50 text-xs space-y-4">
+              <div class="flex items-center justify-between">
+                <div class="text-[#ead397] font-serif font-bold text-sm flex items-center gap-1.5">
+                  <span>②</span> Paso 2: Verificación de Correo Electrónico
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30">Paso Requerido</span>
+              </div>
+              <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
+                Hola <strong class="text-[#ead397] font-bold">${existing.alias_nombre || "Miembro"}</strong>. Tu WhatsApp ya está verificado. Para la admisión a The Corset Society requerimos verificar tu correo oficial con código OTP.
+              </p>
+              
+              <div class="space-y-2 text-left">
+                <label for="corset-step2-email" class="block text-[11px] font-bold text-[#ead397] uppercase tracking-wider">
+                  Correo Electrónico Oficial <span class="text-[#c5a059]">*</span>
+                </label>
+                <div class="flex flex-col sm:flex-row gap-2">
+                  <input 
+                    type="email" 
+                    id="corset-step2-email" 
+                    value="${existing.email || ''}" 
+                    placeholder="tu@correo.com" 
+                    class="flex-1 px-3.5 py-2.5 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-xs text-[#f7f4ee] focus:border-[#ead397] outline-none transition-all placeholder-[#f7f4ee]/30"
+                  />
+                  <button 
+                    type="button" 
+                    id="btn-corset-step2-send-otp"
+                    class="px-4 py-2.5 text-xs font-bold uppercase rounded-xl bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all shadow cursor-pointer whitespace-nowrap"
+                  >
+                    Enviar Código al Correo
+                  </button>
+                </div>
+              </div>
+
+              <div id="corset-step2-otp-container" class="hidden p-3 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 space-y-2">
+                <label class="block text-[10px] uppercase tracking-wider text-[#ead397]">
+                  Código recibido en tu correo:
+                </label>
+                <div class="flex items-center gap-2">
+                  <input
+                    type="text"
+                    id="input-corset-step2-otp"
+                    maxlength="6"
+                    placeholder="123456"
+                    class="w-32 px-3 py-2 text-center font-mono tracking-widest text-sm rounded-lg bg-[#140816] border border-[#c5a059]/40 text-[#ead397] focus:outline-none focus:border-[#c5a059]"
+                  />
+                  <button
+                    type="button"
+                    id="btn-corset-step2-verify-otp"
+                    class="px-4 py-2 text-xs font-bold uppercase rounded-lg bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    Verificar y Radicar
+                  </button>
+                </div>
+                <span id="corset-step2-otp-status" class="text-xs text-[#ead397] block"></span>
+              </div>
+            </div>
+          `;
+          leadExistingBox.classList.remove("hidden");
+          leadRemainingFields.classList.add("hidden");
+
+          const step2EmailInput = document.getElementById("corset-step2-email") as HTMLInputElement | null;
+          const btnStep2SendOtp = document.getElementById("btn-corset-step2-send-otp") as HTMLButtonElement | null;
+          const step2OtpContainer = document.getElementById("corset-step2-otp-container");
+          const inputStep2Otp = document.getElementById("input-corset-step2-otp") as HTMLInputElement | null;
+          const btnStep2VerifyOtp = document.getElementById("btn-corset-step2-verify-otp") as HTMLButtonElement | null;
+          const step2OtpStatus = document.getElementById("corset-step2-otp-status");
+
+          btnStep2SendOtp?.addEventListener("click", async () => {
+            const targetMail = step2EmailInput?.value.trim();
+            if (!targetMail || !targetMail.includes("@")) {
+              alert("Por favor ingresa un correo electrónico válido");
+              step2EmailInput?.focus();
+              return;
+            }
+            btnStep2SendOtp.disabled = true;
+            btnStep2SendOtp.textContent = "Enviando...";
+            try {
+              const res = await fetch("/api/otp/send", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ destination: targetMail, channel: "email" }),
               });
-              const applyData = await applyRes.json();
-              if (applyData.success) {
-                leadExistingBox.innerHTML = `
-                  <div class="p-4 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
-                    <div class="text-[#81c784] font-serif font-bold text-sm flex items-center gap-1.5">
-                      <span>✓</span> ¡Postulación Radicada con Éxito!
-                    </div>
-                    <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
-                      Hola <strong class="text-[#ead397]">${existing.alias_nombre}</strong>, tu postulación a <strong>The Corset Society</strong> ha sido registrada exitosamente. Puedes activar tu credencial oficial o ir a tu panel:
-                    </p>
-                    <div class="pt-2 flex flex-col sm:flex-row gap-2">
-                      <a href="/corset/checkout" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
-                        Adquirir Membresía Anual VIP →
-                      </a>
-                      <a href="/dashboard" class="py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
-                        Ir al Panel de Embajador →
-                      </a>
-                    </div>
-                  </div>
-                `;
+              const data = await res.json();
+              if (data.success) {
+                step2OtpContainer?.classList.remove("hidden");
+                btnStep2SendOtp.textContent = "Reenviar Código";
+                if (step2OtpStatus) step2OtpStatus.textContent = "Código enviado a " + targetMail;
+                inputStep2Otp?.focus();
               } else {
-                if (applyStatus) {
-                  applyStatus.className = "text-xs text-[#ef5350] mt-2 block";
-                  applyStatus.textContent = applyData.error || "Error al radicar postulación.";
-                }
-                if (btnApplySeamless) {
-                  btnApplySeamless.removeAttribute("disabled");
-                  btnApplySeamless.textContent = "Reintentar Radicación →";
-                }
+                alert(data.error || "No se pudo enviar el código al correo.");
+                btnStep2SendOtp.textContent = "Enviar Código al Correo";
               }
             } catch (e: any) {
-              if (applyStatus) {
-                applyStatus.className = "text-xs text-[#ef5350] mt-2 block";
-                applyStatus.textContent = "Error de conexión. Intenta de nuevo.";
+              alert("Error de conexión al enviar código.");
+              btnStep2SendOtp.textContent = "Enviar Código al Correo";
+            } finally {
+              btnStep2SendOtp.disabled = false;
+            }
+          });
+
+          btnStep2VerifyOtp?.addEventListener("click", async () => {
+            const targetMail = step2EmailInput?.value.trim();
+            const otpCode = inputStep2Otp?.value.trim();
+            if (!otpCode || otpCode.length < 4) {
+              alert("Ingresa el código de 6 dígitos recibido.");
+              inputStep2Otp?.focus();
+              return;
+            }
+            btnStep2VerifyOtp.disabled = true;
+            btnStep2VerifyOtp.textContent = "Verificando...";
+            try {
+              const res = await fetch("/api/otp/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ destination: targetMail, code: otpCode, channel: "email" }),
+              });
+              const data = await res.json();
+              if (data.success) {
+                // Radicar postulación oficial con ambos canales verificados
+                const applyRes = await fetch("/api/leads/register", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    alias_nombre: existing.alias_nombre,
+                    whatsapp: whatsapp,
+                    email: targetMail,
+                    rol: existing.rol || "pareja",
+                    ciudad: existing.ciudad || "Bogotá",
+                    origen: "web_corset",
+                    corset_vip: true,
+                    verified: true,
+                    whatsapp_verified: true,
+                    email_verified: true,
+                    ref: localStorage.getItem("affiliate_ref") || undefined,
+                  }),
+                });
+                const applyData = await applyRes.json();
+                if (applyData.success) {
+                  const hasAffiliateRef = Boolean(localStorage.getItem("affiliate_ref") || document.cookie.includes("affiliate_ref"));
+                  const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($179.000 COP) (-10% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
+                  leadExistingBox.innerHTML = `
+                    <div class="p-5 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
+                      <div class="text-[#81c784] font-serif font-bold text-sm flex items-center gap-1.5">
+                        <span>✓</span> Postulación Radicada con Éxito
+                      </div>
+                      <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
+                        Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> ha sido radicada exitosamente y tus credenciales oficiales han quedado verificadas.
+                      </p>
+                      <div class="pt-2 flex flex-col sm:flex-row gap-2">
+                        <a href="/corset/checkout" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                          ${vipPriceLabel}
+                        </a>
+                        <a href="/dashboard" class="py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
+                          Ir al Panel de Embajador →
+                        </a>
+                      </div>
+                    </div>
+                  `;
+                } else {
+                  if (step2OtpStatus) step2OtpStatus.textContent = applyData.error || "Error al radicar postulación.";
+                  btnStep2VerifyOtp.disabled = false;
+                  btnStep2VerifyOtp.textContent = "Verificar y Radicar";
+                }
+              } else {
+                if (step2OtpStatus) step2OtpStatus.textContent = "Código incorrecto.";
+                btnStep2VerifyOtp.disabled = false;
+                btnStep2VerifyOtp.textContent = "Verificar y Radicar";
               }
-              if (btnApplySeamless) {
-                btnApplySeamless.removeAttribute("disabled");
-                btnApplySeamless.textContent = "Reintentar Radicación →";
-              }
+            } catch (e: any) {
+              if (step2OtpStatus) step2OtpStatus.textContent = "Error de conexión.";
+              btnStep2VerifyOtp.disabled = false;
+              btnStep2VerifyOtp.textContent = "Verificar y Radicar";
             }
           });
           return;
@@ -735,6 +850,8 @@ const {
           ref: localStorage.getItem("affiliate_ref") || undefined,
           verified: true,
           corset_vip: formIsVip,
+          whatsapp_verified: waVerified,
+          email_verified: emailVerified,
         }),
       });
       const data = await res.json();
