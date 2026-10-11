@@ -11,7 +11,7 @@ const EVOLUTION_API_URL = (rawUrl && !rawUrl.startsWith("${")) ? rawUrl : "http:
 
 // Redis / Valkey Client with In-Memory Map Fallback
 let redisClient: Redis | null = null;
-const memoryOtpStore = new Map<string, { code: string; expiresAt: number }>();
+const memoryOtpStore = new Map<string, { code: string; expiresAt: number; messageId?: string; chat?: string }>();
 
 try {
   if (process.env.VALKEY_URL) {
@@ -49,7 +49,31 @@ export function formatEvolutionNumber(phone: string): string {
   return digits;
 }
 
-export async function sendWhatsAppMessage(phone: string, text: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteWhatsAppMessage(chat: string, messageId: string): Promise<boolean> {
+  try {
+    const endpoint = `${EVOLUTION_API_URL.replace(/\/$/, "")}/message/delete`;
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: EVOLUTION_API_KEY,
+      },
+      body: JSON.stringify({
+        chat,
+        messageId,
+      }),
+    });
+    return response.ok;
+  } catch (error: any) {
+    console.warn("[Evolution WhatsApp] Message delete error:", error.message);
+    return false;
+  }
+}
+
+export async function sendWhatsAppMessage(
+  phone: string,
+  text: string
+): Promise<{ success: boolean; error?: string; messageId?: string; chat?: string }> {
   try {
     const cleanNumber = formatEvolutionNumber(phone);
     if (!cleanNumber) {
@@ -70,7 +94,10 @@ export async function sendWhatsAppMessage(phone: string, text: string): Promise<
     });
 
     if (response.ok) {
-      return { success: true };
+      const data = await response.json();
+      const messageId = data?.data?.Info?.ID || data?.data?.key?.id;
+      const chat = data?.data?.Info?.Chat || data?.data?.key?.remoteJid || `${cleanNumber}@s.whatsapp.net`;
+      return { success: true, messageId, chat };
     }
 
     const errText = await response.text();
@@ -90,20 +117,17 @@ export async function sendChannelOTP(
   const key = normalizeDestinationKey(destination, channel);
   const ttlSeconds = 600; // 10 minutes
 
-  if (redisClient) {
-    try {
-      await redisClient.set(key, code, "EX", ttlSeconds);
-    } catch (e) {
-      memoryOtpStore.set(key, { code, expiresAt: Date.now() + ttlSeconds * 1000 });
-    }
-  } else {
-    memoryOtpStore.set(key, { code, expiresAt: Date.now() + ttlSeconds * 1000 });
-  }
+  let messageId: string | undefined;
+  let chat: string | undefined;
 
   if (channel === "whatsapp") {
     const waText = `✨ *El Placer de Compartir*\n\nTu código de verificación es: *${code}*\n\nEste código expira en 10 minutos. Úsalo para confirmar tu solicitud.`;
     const res = await sendWhatsAppMessage(destination, waText);
-    return { success: res.success, code, error: res.error };
+    if (!res.success) {
+      return { success: false, error: res.error };
+    }
+    messageId = res.messageId;
+    chat = res.chat;
   } else {
     const emailHtml = `
       <div style="background-color: #180A1A; color: #F7F4EE; padding: 35px; font-family: 'Cinzel', Georgia, serif; max-width: 500px; margin: 0 auto; border: 2px solid #C5A059; text-align: center; border-radius: 12px;">
@@ -126,8 +150,24 @@ export async function sendChannelOTP(
       fromName: "El Placer de Compartir",
       html: emailHtml,
     });
-    return { success: res.success, code, error: res.error };
+    if (!res.success) {
+      return { success: false, error: res.error };
+    }
   }
+
+  // Store OTP with metadata
+  const payload = JSON.stringify({ code, messageId, chat });
+  if (redisClient) {
+    try {
+      await redisClient.set(key, payload, "EX", ttlSeconds);
+    } catch (e) {
+      memoryOtpStore.set(key, { code, expiresAt: Date.now() + ttlSeconds * 1000, messageId, chat });
+    }
+  } else {
+    memoryOtpStore.set(key, { code, expiresAt: Date.now() + ttlSeconds * 1000, messageId, chat });
+  }
+
+  return { success: true, code };
 }
 
 export async function verifyChannelOTP(
@@ -156,12 +196,37 @@ export async function verifyChannelOTP(
 }
 
 async function verifyKey(key: string, code: string): Promise<boolean> {
+  let storedCode: string | null = null;
+  let messageId: string | undefined;
+  let chat: string | undefined;
+
   if (redisClient) {
     try {
       const stored = await redisClient.get(key);
-      if (stored && stored === code) {
-        await redisClient.del(key);
-        return true;
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (parsed && typeof parsed === "object" && parsed.code) {
+            storedCode = parsed.code;
+            messageId = parsed.messageId;
+            chat = parsed.chat;
+          } else {
+            storedCode = stored;
+          }
+        } catch {
+          storedCode = stored;
+        }
+
+        if (storedCode && storedCode === code) {
+          await redisClient.del(key);
+          // Revoke/Delete validated OTP message on WhatsApp for everyone
+          if (chat && messageId) {
+            deleteWhatsAppMessage(chat, messageId).catch((err) =>
+              console.warn("[Evolution Revoke OTP Warn]:", err)
+            );
+          }
+          return true;
+        }
       }
     } catch (e) {
       // Fall through to memory check
@@ -175,7 +240,15 @@ async function verifyKey(key: string, code: string): Promise<boolean> {
       return false;
     }
     if (memoryStored.code === code) {
+      messageId = memoryStored.messageId;
+      chat = memoryStored.chat;
       memoryOtpStore.delete(key);
+      // Revoke/Delete validated OTP message on WhatsApp for everyone
+      if (chat && messageId) {
+        deleteWhatsAppMessage(chat, messageId).catch((err) =>
+          console.warn("[Evolution Revoke OTP Warn]:", err)
+        );
+      }
       return true;
     }
   }

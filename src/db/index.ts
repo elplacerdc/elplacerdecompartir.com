@@ -287,7 +287,7 @@ export async function upsertLead(
       const updatedLeadRes = await client.query(
         `UPDATE leads SET
           alias_nombre = COALESCE(alias_nombre, $1),
-          email = COALESCE(email, $2),
+          email = CASE WHEN $2::text IS NOT NULL AND $2::text != '' THEN $2::text ELSE email END,
           whatsapp = COALESCE(whatsapp, $3),
           rol = CASE WHEN rol IS NOT NULL AND rol != 'otro' THEN rol WHEN $4 != 'otro' THEN $4 ELSE rol END,
           ciudad = COALESCE(ciudad, $5),
@@ -298,7 +298,7 @@ export async function upsertLead(
         RETURNING *`,
         [
           data.alias_nombre || null,
-          cleanEmail || existingLead.email,
+          cleanEmail,
           canonicalPhone || existingLead.whatsapp,
           normalizedRol,
           data.ciudad || null,
@@ -309,6 +309,16 @@ export async function upsertLead(
       );
 
       const updatedLead = updatedLeadRes.rows[0];
+
+      // Sincronizar email en afiliados si el embajador ya existía
+      if (cleanEmail && phoneVariants.length > 0) {
+        try {
+          await client.query(
+            `UPDATE afiliados SET email = $1 WHERE (whatsapp IS NOT NULL AND whatsapp = ANY($2::text[])) OR email = $1`,
+            [cleanEmail, phoneVariants]
+          );
+        } catch (_) {}
+      }
 
       return {
         status: isChannelNew ? "new_channel" : "updated",
@@ -540,11 +550,16 @@ export async function getAffiliateStats(identifier: string): Promise<{
   nombre: string;
   whatsapp: string | null;
   email: string | null;
+  rol?: string | null;
+  ciudad?: string | null;
+  alias_nombre?: string | null;
   clicks: number;
   leadsCount: number;
   purchasesCount: number;
   freeTicketsEarned: number;
-  referredLeads: Array<{ alias_nombre: string | null; rol: string | null; ciudad: string | null; created_at: Date }>;
+  subsequentDiscounts: number;
+  vipStatus: "no_vip" | "posible_vip" | "vip_activo";
+  referredLeads: Array<{ email_masked: string; created_at: Date; compro_entrada: boolean; channel_tag: string }>;
 } | null> {
   const client = await pool.connect();
   try {
@@ -613,14 +628,14 @@ export async function getAffiliateStats(identifier: string): Promise<{
     let vipStatus: "no_vip" | "posible_vip" | "vip_activo" = "no_vip";
     const ambPhoneVariants = getPhoneVariants(row.whatsapp);
     const ambLeadRes = await client.query(
-      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado FROM leads 
+      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado, rol, ciudad, alias_nombre, email FROM leads 
        WHERE (email IS NOT NULL AND email = $1) 
           OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[])) 
        LIMIT 1`,
       [row.email, ambPhoneVariants.length > 0 ? ambPhoneVariants : null]
     );
-    if (ambLeadRes.rows.length > 0) {
-      const ambLead = ambLeadRes.rows[0];
+    const ambLead = ambLeadRes.rows[0] || null;
+    if (ambLead) {
       const hasActiveVip = Boolean(
         (ambLead.vip_until && new Date(ambLead.vip_until) > new Date()) ||
         (ambLead.metadata?.vip_until && new Date(ambLead.metadata.vip_until) > new Date()) ||
@@ -642,7 +657,10 @@ export async function getAffiliateStats(identifier: string): Promise<{
       alias: row.alias,
       nombre: row.nombre || row.alias,
       whatsapp: row.whatsapp,
-      email: row.email,
+      email: ambLead?.email || row.email,
+      rol: ambLead?.rol || null,
+      ciudad: ambLead?.ciudad || null,
+      alias_nombre: ambLead?.alias_nombre || row.nombre || row.alias,
       clicks: row.clicks || 0,
       leadsCount,
       purchasesCount: purchases,

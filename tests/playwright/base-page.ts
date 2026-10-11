@@ -4,8 +4,7 @@ export class BasePage {
   constructor(protected page: Page) {}
 
   async goto(path: string): Promise<void> {
-    await this.page.goto(path);
-    await this.page.waitForLoadState("domcontentloaded");
+    await this.page.goto(path, { waitUntil: "domcontentloaded" });
   }
 
   async getTitle(): Promise<string> {

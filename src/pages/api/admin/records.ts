@@ -84,10 +84,83 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
         );
       }
 
+      // Eliminar de ambassadors
+      if (leadId || cleanEmail || phoneEnd) {
+        try {
+          await client.query(
+            `DELETE FROM ambassadors 
+             WHERE id::text = $1 
+                OR ($2 != '' AND LOWER(email) = $2) 
+                OR ($3 != '' AND RIGHT(regexp_replace(phone, '\\D', '', 'g'), 10) = $3)`,
+            [leadId || id, cleanEmail, phoneEnd]
+          );
+        } catch (_) {}
+      }
+
+      // Eliminar de tablas auth (user, verification, session)
+      if (leadId || cleanEmail || phoneEnd) {
+        try {
+          await client.query(
+            `DELETE FROM "user" 
+             WHERE id::text = $1 
+                OR ($2 != '' AND LOWER(email) = $2) 
+                OR ($3 != '' AND RIGHT(regexp_replace("phoneNumber", '\\D', '', 'g'), 10) = $3)`,
+            [leadId || id, cleanEmail, phoneEnd]
+          );
+        } catch (_) {}
+
+        try {
+          await client.query(
+            `DELETE FROM "verification" 
+             WHERE ($1 != '' AND LOWER(identifier) = $1) 
+                OR ($2 != '' AND RIGHT(regexp_replace(identifier, '\\D', '', 'g'), 10) = $2)`,
+            [cleanEmail, phoneEnd]
+          );
+        } catch (_) {}
+
+        try {
+          await client.query(
+            `DELETE FROM "session" WHERE "userId"::text = $1`,
+            [leadId || id]
+          );
+        } catch (_) {}
+      }
+
+      // Desbloqueo y purga total de Valkey (OTP, human takeover, sesiones y flags)
+      if (process.env.VALKEY_URL) {
+        try {
+          const Redis = (await import("ioredis")).default;
+          const redis = new Redis(process.env.VALKEY_URL, { lazyConnect: true });
+          await redis.connect();
+          const keysToPurge: string[] = [];
+          if (phoneEnd) {
+            keysToPurge.push(
+              `otp:wa:${phoneEnd}`,
+              `otp:wa:57${phoneEnd}`,
+              `wa:human_takeover:${phoneEnd}`,
+              `wa:human_takeover:57${phoneEnd}`,
+              `wa:affiliate_pitched:${phoneEnd}`,
+              `wa:affiliate_pitched:57${phoneEnd}`,
+              `chat:sessions:${phoneEnd}`,
+              `chat:sessions:57${phoneEnd}`
+            );
+          }
+          if (cleanEmail) {
+            keysToPurge.push(`otp:email:${cleanEmail}`);
+          }
+          if (keysToPurge.length > 0) {
+            await redis.del(...keysToPurge);
+          }
+          redis.disconnect();
+        } catch (vErr: any) {
+          console.warn("[Valkey purge on lead delete]:", vErr.message);
+        }
+      }
+
       return new Response(
         JSON.stringify({
           success: true,
-          message: "Registro y perfil de embajador eliminados de forma indivisible",
+          message: "Registro y perfil de embajador eliminados y desbloqueados de forma indivisible",
         }),
         {
           status: 200,

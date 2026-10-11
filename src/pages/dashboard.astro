@@ -227,6 +227,96 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           </div>
         </div>
 
+        <!-- Section: Ajustes de Perfil / Modificar Datos Oficiales -->
+        <div id="section-profile-settings" class="p-6 sm:p-8 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-6">
+          <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-4">
+            <div>
+              <h3 class="text-lg font-serif font-bold text-[#ead397]">Ajustes de Perfil</h3>
+              <p class="text-xs text-[#f7f4ee]/60 mt-0.5">Modifica tu alias, modalidad/rol o ciudad oficial para adaptar tus entradas y membresía.</p>
+            </div>
+            <span class="text-xs text-[#c5a059] font-mono flex items-center gap-1.5">
+              <span>👤</span> Perfil de Miembro
+            </span>
+          </div>
+
+          <form id="profile-settings-form" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Alias / Nombre -->
+              <div class="space-y-1.5">
+                <label for="profile-alias" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
+                  Alias / Pseudónimo
+                </label>
+                <input 
+                  type="text" 
+                  id="profile-alias" 
+                  name="alias_nombre" 
+                  placeholder="Tu alias" 
+                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
+                />
+              </div>
+
+              <!-- Correo Electrónico -->
+              <div class="space-y-1.5">
+                <label for="profile-email" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
+                  Correo Electrónico
+                </label>
+                <input 
+                  type="email" 
+                  id="profile-email" 
+                  name="email" 
+                  placeholder="tu@correo.com" 
+                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
+                />
+              </div>
+
+              <!-- Modalidad / Rol -->
+              <div class="space-y-1.5">
+                <label for="profile-rol" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
+                  Modalidad / Rol
+                </label>
+                <select 
+                  id="profile-rol" 
+                  name="rol" 
+                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
+                >
+                  <option value="pareja">👫 Pareja</option>
+                  <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
+                  <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
+                </select>
+                <span class="text-[10px] text-[#f7f4ee]/50 block">Define las opciones de entradas a eventos que se mostrarán en la plataforma.</span>
+              </div>
+
+              <!-- Ciudad -->
+              <div class="space-y-1.5">
+                <label for="profile-ciudad" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
+                  Ciudad
+                </label>
+                <select 
+                  id="profile-ciudad" 
+                  name="ciudad" 
+                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
+                >
+                  <option value="Bogotá">Bogotá</option>
+                  <option value="Medellín">Medellín</option>
+                  <option value="Otra">Otra ciudad</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="profile-update-feedback" class="hidden text-xs p-3 rounded-lg"></div>
+
+            <div class="pt-2 flex justify-end">
+              <button 
+                type="submit" 
+                id="btn-save-profile" 
+                class="px-6 py-2.5 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] hover:brightness-110 transition-all shadow-md cursor-pointer"
+              >
+                Guardar Cambios de Perfil
+              </button>
+            </div>
+          </form>
+        </div>
+
       </div>
 
     </div>
@@ -280,6 +370,20 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
 
         if (ambassadorName) ambassadorName.textContent = stats.nombre || stats.alias;
         if (ambassadorContact) ambassadorContact.textContent = stats.whatsapp || stats.email || "";
+
+        // Pre-llenar campos de ajustes de perfil
+        const profileAlias = document.getElementById("profile-alias") as HTMLInputElement | null;
+        const profileEmail = document.getElementById("profile-email") as HTMLInputElement | null;
+        const profileRol = document.getElementById("profile-rol") as HTMLSelectElement | null;
+        const profileCiudad = document.getElementById("profile-ciudad") as HTMLSelectElement | null;
+
+        if (profileAlias) profileAlias.value = stats.alias_nombre || stats.nombre || stats.alias || "";
+        if (profileEmail) profileEmail.value = stats.email || "";
+        if (profileRol && stats.rol) profileRol.value = stats.rol;
+        if (profileCiudad && stats.ciudad) profileCiudad.value = stats.ciudad;
+        if (stats.rol) {
+          localStorage.setItem("user_role", stats.rol);
+        }
 
         if (metricLeads) metricLeads.textContent = stats.leadsCount.toString();
         if (metricPurchases) metricPurchases.textContent = stats.purchasesCount.toString();
@@ -497,6 +601,68 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
       if (codeUpdateFeedback) {
         codeUpdateFeedback.className = "text-xs mt-2 text-[#ef5350]";
         codeUpdateFeedback.textContent = "Error al actualizar código";
+      }
+    }
+  });
+
+  // Profile Settings Form Update
+  const profileForm = document.getElementById("profile-settings-form");
+  const btnSaveProfile = document.getElementById("btn-save-profile") as HTMLButtonElement | null;
+  const profileFeedback = document.getElementById("profile-update-feedback");
+  const profileAliasInput = document.getElementById("profile-alias") as HTMLInputElement | null;
+  const profileEmailInput = document.getElementById("profile-email") as HTMLInputElement | null;
+  const profileRolSelect = document.getElementById("profile-rol") as HTMLSelectElement | null;
+  const profileCiudadSelect = document.getElementById("profile-ciudad") as HTMLSelectElement | null;
+
+  profileForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const sessionIdentifier = localStorage.getItem("ambassador_session_phone");
+    if (!sessionIdentifier) return;
+
+    if (btnSaveProfile) {
+      btnSaveProfile.disabled = true;
+      btnSaveProfile.textContent = "Guardando...";
+    }
+
+    try {
+      const res = await fetch("/api/leads/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: sessionIdentifier,
+          alias_nombre: profileAliasInput?.value.trim(),
+          email: profileEmailInput?.value.trim(),
+          rol: profileRolSelect?.value,
+          ciudad: profileCiudadSelect?.value,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (profileFeedback) {
+          profileFeedback.className = "text-xs p-3 rounded-lg bg-[#2e7d32]/20 border border-[#81c784]/40 text-[#81c784] block";
+          profileFeedback.textContent = "✓ Perfil actualizado exitosamente. Tus modalidades y entradas a eventos han sido sincronizadas.";
+        }
+        if (data.lead?.rol) {
+          localStorage.setItem("user_role", data.lead.rol);
+        }
+        if (ambassadorName && data.lead?.alias_nombre) {
+          ambassadorName.textContent = data.lead.alias_nombre;
+        }
+      } else {
+        if (profileFeedback) {
+          profileFeedback.className = "text-xs p-3 rounded-lg bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350] block";
+          profileFeedback.textContent = data.error || "No se pudo actualizar el perfil.";
+        }
+      }
+    } catch (err: any) {
+      if (profileFeedback) {
+        profileFeedback.className = "text-xs p-3 rounded-lg bg-[#b71c1c]/20 border border-[#b71c1c]/40 text-[#ef5350] block";
+        profileFeedback.textContent = "Error de conexión al guardar.";
+      }
+    } finally {
+      if (btnSaveProfile) {
+        btnSaveProfile.disabled = false;
+        btnSaveProfile.textContent = "Guardar Cambios de Perfil";
       }
     }
   });

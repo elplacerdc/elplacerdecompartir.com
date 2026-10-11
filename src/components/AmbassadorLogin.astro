@@ -289,6 +289,9 @@
         // Miembro existente: entra directamente al dashboard
         const cleanPhone = currentPhone.trim();
         localStorage.setItem("ambassador_session_phone", cleanPhone);
+        if (checkData.lead?.rol) {
+          localStorage.setItem("user_role", checkData.lead.rol);
+        }
         if (authMessage) {
           authMessage.className = 'mt-4 text-xs text-center text-[#81c784]';
           authMessage.textContent = 'Acceso concedido. Entrando al panel...';
@@ -359,6 +362,9 @@
       } else {
         const cleanPhone = currentPhone.trim();
         localStorage.setItem("ambassador_session_phone", cleanPhone);
+        if (regRol?.value) {
+          localStorage.setItem("user_role", regRol.value);
+        }
         if (authMessage) {
           authMessage.className = 'mt-4 text-xs text-center text-[#81c784]';
           authMessage.textContent = '¡Registro completado exitosamente! Entrando al panel...';

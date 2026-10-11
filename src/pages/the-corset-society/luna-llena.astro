@@ -160,10 +160,19 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
           </span>
         </div>
 
+        <!-- Dynamic Role Filter Banner -->
+        <div id="role-filter-banner" class="hidden p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/40 text-xs text-[#ead397] mb-6 flex items-center justify-between shadow-md">
+          <div class="flex items-center gap-2">
+            <span>🎭</span>
+            <span>Mostrando pase adaptado a tu modalidad: <strong id="role-filter-label" class="text-white capitalize"></strong></span>
+          </div>
+          <a href="/dashboard" class="underline text-xs text-[#ead397] hover:text-white transition-colors shrink-0">Cambiar en Dashboard →</a>
+        </div>
+
         <!-- Cover Tier Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div id="tier-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Pareja -->
-          <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
+          <div id="tier-card-pareja" class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
             <div class="space-y-2">
               <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
                 <span class="flex items-center gap-1.5"><span>👫</span> <span>Pase Pareja</span></span>
@@ -204,7 +213,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
           </div>
 
           <!-- Single (Hombre Solo) -->
-          <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
+          <div id="tier-card-single" class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
             <div class="space-y-2">
               <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
                 <span class="flex items-center gap-1.5"><span>🙋‍♂️</span> <span>Pase Single (Hombre Solo)</span></span>
@@ -248,7 +257,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
           </div>
 
           <!-- Unicornio (Mujer Sola) -->
-          <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
+          <div id="tier-card-unicornio" class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
             <div class="space-y-2">
               <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
                 <span class="flex items-center gap-1.5"><span>🦄</span> <span>Pase Unicornio (Mujer Sola)</span></span>
@@ -592,9 +601,104 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
       }
     }
 
+    function applyRoleTicketFilter(userRole) {
+      const cardPareja = document.getElementById("tier-card-pareja");
+      const cardSingle = document.getElementById("tier-card-single");
+      const cardUnicornio = document.getElementById("tier-card-unicornio");
+      const banner = document.getElementById("role-filter-banner");
+      const label = document.getElementById("role-filter-label");
+      const select = document.getElementById("tipo_entrada");
+
+      if (!cardPareja || !cardSingle || !cardUnicornio) return;
+
+      if (userRole === "hombre_solo") {
+        cardPareja.classList.add("hidden");
+        cardUnicornio.classList.add("hidden");
+        cardSingle.classList.remove("hidden");
+        if (banner && label) {
+          label.textContent = "Hombre Solo (Single)";
+          banner.classList.remove("hidden");
+        }
+        if (select) {
+          Array.from(select.options).forEach((opt) => {
+            if (opt.value !== "single") opt.hidden = true;
+            else {
+              opt.hidden = false;
+              opt.selected = true;
+            }
+          });
+          select.value = "single";
+        }
+        selectTier("single");
+      } else if (userRole === "mujer_sola") {
+        cardPareja.classList.add("hidden");
+        cardSingle.classList.add("hidden");
+        cardUnicornio.classList.remove("hidden");
+        if (banner && label) {
+          label.textContent = "Mujer Sola (Unicornio)";
+          banner.classList.remove("hidden");
+        }
+        if (select) {
+          Array.from(select.options).forEach((opt) => {
+            if (opt.value !== "unicornio") opt.hidden = true;
+            else {
+              opt.hidden = false;
+              opt.selected = true;
+            }
+          });
+          select.value = "unicornio";
+        }
+        selectTier("unicornio");
+      } else if (userRole === "pareja") {
+        cardSingle.classList.add("hidden");
+        cardUnicornio.classList.add("hidden");
+        cardPareja.classList.remove("hidden");
+        if (banner && label) {
+          label.textContent = "Pareja";
+          banner.classList.remove("hidden");
+        }
+        if (select) {
+          Array.from(select.options).forEach((opt) => {
+            if (opt.value !== "pareja") opt.hidden = true;
+            else {
+              opt.hidden = false;
+              opt.selected = true;
+            }
+          });
+          select.value = "pareja";
+        }
+        selectTier("pareja");
+      }
+    }
+
+    async function checkUserRoleAndFilter() {
+      let userRole = localStorage.getItem("user_role");
+      const sessionPhone = localStorage.getItem("ambassador_session_phone");
+
+      if (!userRole && sessionPhone) {
+        try {
+          const res = await fetch("/api/leads/check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ whatsapp: sessionPhone }),
+          });
+          const data = await res.json();
+          if (data.exists && data.lead && data.lead.rol) {
+            userRole = data.lead.rol;
+            localStorage.setItem("user_role", userRole);
+          }
+        } catch (_) {}
+      }
+
+      if (userRole) {
+        applyRoleTicketFilter(userRole);
+      }
+    }
+
     // Initialize display immediately or on load
-    function initPricing() {
+    async function initPricing() {
       applyDynamicDiscountUI();
+      await checkUserRoleAndFilter();
       updateSummary();
     }
 
