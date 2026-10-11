@@ -286,11 +286,11 @@ export async function upsertLead(
 
       const updatedLeadRes = await client.query(
         `UPDATE leads SET
-          alias_nombre = COALESCE($1, alias_nombre),
-          email = COALESCE($2, email),
-          whatsapp = COALESCE($3, whatsapp),
-          rol = CASE WHEN $4 != 'otro' THEN $4 ELSE rol END,
-          ciudad = COALESCE($5, ciudad),
+          alias_nombre = COALESCE(alias_nombre, $1),
+          email = COALESCE(email, $2),
+          whatsapp = COALESCE(whatsapp, $3),
+          rol = CASE WHEN rol IS NOT NULL AND rol != 'otro' THEN rol WHEN $4 != 'otro' THEN $4 ELSE rol END,
+          ciudad = COALESCE(ciudad, $5),
           corset_vip = CASE WHEN ($6 = true OR corset_vip = true) THEN true ELSE false END,
           metadata = $7,
           updated_at = NOW()

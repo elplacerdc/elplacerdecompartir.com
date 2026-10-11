@@ -7,12 +7,14 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
   let userName = "Invitado VIP";
   const isJson = (request.headers.get("content-type") || "").includes("application/json");
 
+  let bodyRef: string | null = null;
   if (isJson) {
     try {
       const json = await request.json();
       if (json.userId) userId = json.userId;
       if (json.userEmail) userEmail = json.userEmail;
       if (json.userName) userName = json.userName;
+      if (json.ref) bodyRef = json.ref.toString();
     } catch {}
   } else {
     try {
@@ -20,13 +22,15 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
       const uId = formData.get("userId")?.toString();
       const uEmail = formData.get("userEmail")?.toString();
       const uName = formData.get("userName")?.toString();
+      const r = formData.get("ref")?.toString() || formData.get("affiliate_ref")?.toString();
       if (uId) userId = uId;
       if (uEmail) userEmail = uEmail;
       if (uName) userName = uName;
+      if (r) bodyRef = r;
     } catch {}
   }
 
-  const affiliateRef = cookies.get("affiliate_ref")?.value || null;
+  const affiliateRef = (bodyRef || cookies.get("affiliate_ref")?.value || "").toString().trim().toLowerCase() || null;
   const discountRate = affiliateRef ? 0.10 : 0;
   const finalAmount = Math.round(199000.00 * (1 - discountRate));
 

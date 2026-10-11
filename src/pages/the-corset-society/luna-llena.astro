@@ -1,6 +1,8 @@
 ---
 // the-corset-society/luna-llena.astro - Landing Oficial Evento Noche de Luna Llena
 import Layout from "../../layouts/Layout.astro";
+
+const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchParams.get("ref") || Astro.url.searchParams.get("r") || null;
 ---
 
 <Layout 
@@ -144,17 +146,47 @@ import Layout from "../../layouts/Layout.astro";
           </p>
         </div>
 
+        <!-- Affiliate Discount Banner (Dynamic) -->
+        <div id="affiliateDiscountBanner" class={`${cookieRef ? '' : 'hidden'} p-4 rounded-2xl bg-gradient-to-r from-[#c5a059]/25 via-[#250F22] to-[#140816] border border-[#c5a059]/50 flex items-center justify-between text-xs text-[#ead397] mb-6 shadow-[0_0_25px_rgba(197,160,89,0.2)]`}>
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">🎉</span>
+            <div>
+              <strong class="text-white block text-sm font-serif">Beneficio de Embajador Activo</strong>
+              <span class="text-xs text-[#f7f4ee]/90">10% de descuento de cortesía aplicado por invitación exclusiva de <strong id="affiliateAliasDisplay" class="text-[#c5a059]">@{cookieRef || 'embajador'}</strong></span>
+            </div>
+          </div>
+          <span class="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-bold text-xs uppercase tracking-wider shadow-md shrink-0">
+            -10% OFF
+          </span>
+        </div>
+
         <!-- Cover Tier Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Pareja -->
           <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
             <div class="space-y-2">
-              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center gap-1.5">
-                <span>👫</span>
-                <span>Pase Pareja</span>
+              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
+                <span class="flex items-center gap-1.5"><span>👫</span> <span>Pase Pareja</span></span>
+                <span id="badge-disc-pareja" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>-10%</span>
               </div>
-              <div class="text-3xl font-bold text-[#f7f4ee]">$100.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></div>
-              <p class="text-xs font-sans text-[#ead397]">O separa con solo <strong>$40.000 COP</strong></p>
+              <div id="tier-price-pareja" class="text-3xl font-bold text-[#f7f4ee]">
+                {cookieRef ? (
+                  <>
+                    <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$100.000</span>
+                    <span class="text-[#81c784]">$90.000</span>
+                    <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>
+                  </>
+                ) : (
+                  <>$100.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></>
+                )}
+              </div>
+              <p id="tier-separa-pareja" class="text-xs font-sans text-[#ead397]">
+                {cookieRef ? (
+                  <>O separa con solo <strong class="text-[#81c784]">$36.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($40.000)</span></>
+                ) : (
+                  <>O separa con solo <strong>$40.000 COP</strong></>
+                )}
+              </p>
               <ul class="text-xs font-sans text-[#f7f4ee]/70 space-y-1.5 pt-2">
                 <li>✓ Acceso para 2 personas</li>
                 <li>✓ Coctelería de bienvenida</li>
@@ -174,12 +206,28 @@ import Layout from "../../layouts/Layout.astro";
           <!-- Single (Hombre Solo) -->
           <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
             <div class="space-y-2">
-              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center gap-1.5">
-                <span>🙋‍♂️</span>
-                <span>Pase Single (Hombre Solo)</span>
+              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
+                <span class="flex items-center gap-1.5"><span>🙋‍♂️</span> <span>Pase Single (Hombre Solo)</span></span>
+                <span id="badge-disc-single" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>-10%</span>
               </div>
-              <div class="text-3xl font-bold text-[#f7f4ee]">$120.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></div>
-              <p class="text-xs font-sans text-[#ead397]">O separa con solo <strong>$50.000 COP</strong></p>
+              <div id="tier-price-single" class="text-3xl font-bold text-[#f7f4ee]">
+                {cookieRef ? (
+                  <>
+                    <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$120.000</span>
+                    <span class="text-[#81c784]">$108.000</span>
+                    <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>
+                  </>
+                ) : (
+                  <>$120.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></>
+                )}
+              </div>
+              <p id="tier-separa-single" class="text-xs font-sans text-[#ead397]">
+                {cookieRef ? (
+                  <>O separa con solo <strong class="text-[#81c784]">$45.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($50.000)</span></>
+                ) : (
+                  <>O separa con solo <strong>$50.000 COP</strong></>
+                )}
+              </p>
               <div class="p-2 rounded-lg bg-[#050505]/70 border border-[#c5a059]/40 text-[11px] text-[#ead397] font-sans leading-tight">
                 ⚖️ <strong>Filtro 1:3:</strong> Admisión de 1 hombre solo por cada 3 parejas confirmadas. Sujeto a lista de espera.
               </div>
@@ -202,12 +250,28 @@ import Layout from "../../layouts/Layout.astro";
           <!-- Unicornio (Mujer Sola) -->
           <div class="p-6 rounded-2xl bg-gradient-to-b from-[#140a18] to-[#0a0608] border border-[#c5a059] shadow-[0_0_20px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-4">
             <div class="space-y-2">
-              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center gap-1.5">
-                <span>🦄</span>
-                <span>Pase Unicornio (Mujer Sola)</span>
+              <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
+                <span class="flex items-center gap-1.5"><span>🦄</span> <span>Pase Unicornio (Mujer Sola)</span></span>
+                <span id="badge-disc-unicornio" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>-10%</span>
               </div>
-              <div class="text-3xl font-bold text-[#f7f4ee]">$30.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></div>
-              <p class="text-xs font-sans text-[#ead397]">O separa con solo <strong>$10.000 COP</strong></p>
+              <div id="tier-price-unicornio" class="text-3xl font-bold text-[#f7f4ee]">
+                {cookieRef ? (
+                  <>
+                    <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$30.000</span>
+                    <span class="text-[#81c784]">$27.000</span>
+                    <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>
+                  </>
+                ) : (
+                  <>$30.000 <span class="text-xs font-normal text-[#f7f4ee]/50">COP</span></>
+                )}
+              </div>
+              <p id="tier-separa-unicornio" class="text-xs font-sans text-[#ead397]">
+                {cookieRef ? (
+                  <>O separa con solo <strong class="text-[#81c784]">$9.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($10.000)</span></>
+                ) : (
+                  <>O separa con solo <strong>$10.000 COP</strong></>
+                )}
+              </p>
               <ul class="text-xs font-sans text-[#f7f4ee]/70 space-y-1.5 pt-2">
                 <li>✓ Exclusivo mujer sola</li>
                 <li>✓ Tarifa simbólica preferencial</li>
@@ -257,9 +321,9 @@ import Layout from "../../layouts/Layout.astro";
                 onchange="updateSummary()" 
                 class="w-full bg-[#140a18] border border-[#c5a059]/40 rounded-xl px-4 py-3 text-sm text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
               >
-                <option value="pareja">👫 Pareja — $100.000 (o separa con $40.000)</option>
-                <option value="single">🙋‍♂️ Single (Hombre Solo) — $120.000 (o separa con $50.000)</option>
-                <option value="unicornio">🦄 Unicornio (Mujer Sola) — $30.000 (o separa con $10.000)</option>
+                <option value="pareja">👫 Pareja — {cookieRef ? "$90.000 (-10% OFF, separa con $36.000)" : "$100.000 (o separa con $40.000)"}</option>
+                <option value="single">🙋‍♂️ Single (Hombre Solo) — {cookieRef ? "$108.000 (-10% OFF, separa con $45.000)" : "$120.000 (o separa con $50.000)"}</option>
+                <option value="unicornio">🦄 Unicornio (Mujer Sola) — {cookieRef ? "$27.000 (-10% OFF, separa con $9.000)" : "$30.000 (o separa con $10.000)"}</option>
               </select>
             </div>
 
@@ -347,11 +411,99 @@ import Layout from "../../layouts/Layout.astro";
   </div>
 
   <script is:inline>
+    let activeDiscount = false;
+    let activeRef = null;
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qRef = urlParams.get("ref") || urlParams.get("r");
+      let storedRef = qRef || localStorage.getItem("affiliate_ref");
+      if (!storedRef) {
+        const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
+        if (match) storedRef = decodeURIComponent(match[1]).trim().toLowerCase();
+      }
+      if (storedRef) {
+        activeRef = storedRef.trim().toLowerCase();
+        localStorage.setItem("affiliate_ref", activeRef);
+        document.cookie = 'affiliate_ref=' + encodeURIComponent(activeRef) + '; path=/; max-age=2592000; SameSite=Lax';
+        activeDiscount = true;
+      }
+    } catch (e) {}
+
     const PRICING = {
-      pareja: { total: 100000, reserva_40: 40000 },
-      single: { total: 120000, reserva_40: 50000 },
-      unicornio: { total: 30000, reserva_40: 10000 }
+      pareja: { 
+        total: activeDiscount ? 90000 : 100000, 
+        reserva_40: activeDiscount ? 36000 : 40000 
+      },
+      single: { 
+        total: activeDiscount ? 108000 : 120000, 
+        reserva_40: activeDiscount ? 45000 : 50000 
+      },
+      unicornio: { 
+        total: activeDiscount ? 27000 : 30000, 
+        reserva_40: activeDiscount ? 9000 : 10000 
+      }
     };
+
+    function applyDynamicDiscountUI() {
+      if (!activeDiscount) return;
+
+      PRICING.pareja.total = 90000;
+      PRICING.pareja.reserva_40 = 36000;
+      PRICING.single.total = 108000;
+      PRICING.single.reserva_40 = 45000;
+      PRICING.unicornio.total = 27000;
+      PRICING.unicornio.reserva_40 = 9000;
+
+      const banner = document.getElementById("affiliateDiscountBanner");
+      const aliasDisplay = document.getElementById("affiliateAliasDisplay");
+      if (banner) banner.classList.remove("hidden");
+      if (aliasDisplay && activeRef) aliasDisplay.textContent = `@${activeRef}`;
+
+      // Show discount badges on cards
+      document.getElementById("badge-disc-pareja")?.classList.remove("hidden");
+      document.getElementById("badge-disc-single")?.classList.remove("hidden");
+      document.getElementById("badge-disc-unicornio")?.classList.remove("hidden");
+
+      // Update tier price labels
+      const pPareja = document.getElementById("tier-price-pareja");
+      if (pPareja) {
+        pPareja.innerHTML = '<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$100.000</span><span class="text-[#81c784]">$90.000</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>';
+      }
+      const sPareja = document.getElementById("tier-separa-pareja");
+      if (sPareja) {
+        sPareja.innerHTML = 'O separa con solo <strong class="text-[#81c784]">$36.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($40.000)</span>';
+      }
+
+      const pSingle = document.getElementById("tier-price-single");
+      if (pSingle) {
+        pSingle.innerHTML = '<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$120.000</span><span class="text-[#81c784]">$108.000</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>';
+      }
+      const sSingle = document.getElementById("tier-separa-single");
+      if (sSingle) {
+        sSingle.innerHTML = 'O separa con solo <strong class="text-[#81c784]">$45.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($50.000)</span>';
+      }
+
+      const pUni = document.getElementById("tier-price-unicornio");
+      if (pUni) {
+        pUni.innerHTML = '<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$30.000</span><span class="text-[#81c784]">$27.000</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>';
+      }
+      const sUni = document.getElementById("tier-separa-unicornio");
+      if (sUni) {
+        sUni.innerHTML = 'O separa con solo <strong class="text-[#81c784]">$9.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($10.000)</span>';
+      }
+
+      // Update dropdown options
+      const select = document.getElementById("tipo_entrada");
+      if (select) {
+        const cur = select.value;
+        select.innerHTML = `
+          <option value="pareja" ${cur === 'pareja' ? 'selected' : ''}>👫 Pareja — $90.000 (-10% OFF, separa con $36.000)</option>
+          <option value="single" ${cur === 'single' ? 'selected' : ''}>🙋‍♂️ Single (Hombre Solo) — $108.000 (-10% OFF, separa con $45.000)</option>
+          <option value="unicornio" ${cur === 'unicornio' ? 'selected' : ''}>🦄 Unicornio (Mujer Sola) — $27.000 (-10% OFF, separa con $9.000)</option>
+        `;
+      }
+    }
 
     function selectTier(tier) {
       const select = document.getElementById('tipo_entrada');
@@ -372,7 +524,9 @@ import Layout from "../../layouts/Layout.astro";
       const saldoPuerta = modalidad === 'reserva_40' ? (prices.total - prices.reserva_40) : 0;
 
       const montoDisplay = document.getElementById('montoTotalDisplay');
-      if (montoDisplay) montoDisplay.textContent = `$${montoHoy.toLocaleString('es-CO')} COP`;
+      if (montoDisplay) {
+        montoDisplay.textContent = `$${montoHoy.toLocaleString('es-CO')} COP`;
+      }
 
       const saldoDisplay = document.getElementById('saldoPendienteLabel');
       if (saldoDisplay) {
@@ -415,7 +569,8 @@ import Layout from "../../layouts/Layout.astro";
             email: email,
             tipo_entrada: tipo_entrada,
             modalidad_pago: modalidad,
-            metodo_pago: metodo
+            metodo_pago: metodo,
+            ref: activeRef || undefined
           })
         });
 
@@ -437,7 +592,16 @@ import Layout from "../../layouts/Layout.astro";
       }
     }
 
-    // Initialize display on load
-    document.addEventListener('DOMContentLoaded', updateSummary);
+    // Initialize display immediately or on load
+    function initPricing() {
+      applyDynamicDiscountUI();
+      updateSummary();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initPricing);
+    } else {
+      initPricing();
+    }
   </script>
 </Layout>

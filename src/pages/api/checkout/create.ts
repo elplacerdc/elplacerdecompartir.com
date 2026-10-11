@@ -19,8 +19,39 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const baseMonto = modalidad_pago === "reserva_40" ? priceInfo.reserva_40 : priceInfo.total;
-    const affiliateRef = cookies.get("affiliate_ref")?.value || null;
-    const discountRate = affiliateRef ? 0.10 : 0;
+    const affiliateRef = (body.ref || body.afiliado_id || cookies.get("affiliate_ref")?.value || "")
+      .toString()
+      .trim()
+      .toLowerCase() || null;
+
+    // Check if user has active VIP credential for permanent 10% discount
+    let isVipActive = false;
+    if (whatsapp || email) {
+      try {
+        const checkClient = await pool.connect();
+        try {
+          const vipCheck = await checkClient.query(
+            `SELECT vip_until, metadata FROM leads 
+             WHERE (whatsapp IS NOT NULL AND whatsapp = $1) OR (email IS NOT NULL AND LOWER(email) = LOWER($2)) 
+             LIMIT 1`,
+            [whatsapp || '', email || '']
+          );
+          if (vipCheck.rows.length > 0) {
+            const vRow = vipCheck.rows[0];
+            isVipActive = Boolean(
+              (vRow.vip_until && new Date(vRow.vip_until) > new Date()) ||
+              (vRow.metadata?.vip_until && new Date(vRow.metadata.vip_until) > new Date()) ||
+              (vRow.metadata?.tags && vRow.metadata.tags.includes("vip_activo"))
+            );
+          }
+        } finally {
+          checkClient.release();
+        }
+      } catch (e) {}
+    }
+
+    const hasDiscount = Boolean(affiliateRef || isVipActive);
+    const discountRate = hasDiscount ? 0.10 : 0;
     const monto = Math.round(baseMonto * (1 - discountRate));
 
     // 1. Upsert lead first

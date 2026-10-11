@@ -120,8 +120,15 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
       try {
         const params = new URLSearchParams(window.location.search);
         const ref = params.get('ref') || params.get('r');
-        if (ref) {
-          const cleanRef = ref.trim().toLowerCase();
+        let cleanRef = ref ? ref.trim().toLowerCase() : null;
+        if (!cleanRef) {
+          const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
+          if (match) cleanRef = decodeURIComponent(match[1]).trim().toLowerCase();
+        }
+        if (!cleanRef) {
+          cleanRef = localStorage.getItem('affiliate_ref');
+        }
+        if (cleanRef) {
           localStorage.setItem('affiliate_ref', cleanRef);
           document.cookie = 'affiliate_ref=' + encodeURIComponent(cleanRef) + '; path=/; max-age=2592000; SameSite=Lax';
         }

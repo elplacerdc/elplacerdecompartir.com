@@ -771,7 +771,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
 
       if (kpiLeads) kpiLeads.textContent = (data.counts.totalLeads ?? 0).toString();
       if (kpiAffiliates) kpiAffiliates.textContent = (data.counts.totalAliados ?? 0).toString();
-      if (kpiTickets) kpiTickets.textContent = (data.counts.totalVip ?? 0).toString();
+      if (kpiTickets) {
+        const possible = data.counts.possibleVip ?? 0;
+        const paid = data.counts.activePaidVip ?? 0;
+        kpiTickets.innerHTML = `
+          <span>${possible}</span>
+          <span class="text-xs font-sans font-semibold text-[#81c784] block mt-0.5">👑 ${paid} Anualidad Pagada</span>
+        `;
+      }
       if (kpiPendingCash) kpiPendingCash.textContent = (data.counts.totalTickets ?? 0).toString();
       if (kpiCheckins) kpiCheckins.textContent = `$${Number(data.counts.netRevenue ?? 0).toLocaleString("es-CO")}`;
       if (kpiRevenue) kpiRevenue.textContent = `$${Number(data.counts.netMargin ?? 0).toLocaleString("es-CO")}`;
@@ -1376,30 +1383,40 @@ const isAuthenticated = verifyAdminSessionToken(token);
         (l.email || "").toLowerCase().includes(filter)
       );
 
-      if (drawerTitle) drawerTitle.textContent = `Credenciales VIP (${filteredLeads.length})`;
+      const paidCount = filteredLeads.filter((l: any) => Boolean((l.vip_until && new Date(l.vip_until) > new Date()) || (l.metadata?.tags && l.metadata.tags.includes("vip_activo")))).length;
+      const possibleCount = filteredLeads.length - paidCount;
+
+      if (drawerTitle) drawerTitle.textContent = `The Corset Society (${filteredLeads.length} Total: ${paidCount} Pagados, ${possibleCount} Postulados)`;
 
       drawerContent.innerHTML = `
         <div class="space-y-3">
-          ${filteredLeads.length === 0 ? '<p class="text-xs text-[#f7f4ee]/40 text-center py-4">No hay miembros VIP registrados aún.</p>' : filteredLeads.map((l: any) => `
-            <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          ${filteredLeads.length === 0 ? '<p class="text-xs text-[#f7f4ee]/40 text-center py-4">No hay miembros VIP registrados aún.</p>' : filteredLeads.map((l: any) => {
+            const isPaid = Boolean((l.vip_until && new Date(l.vip_until) > new Date()) || (l.metadata?.tags && l.metadata.tags.includes("vip_activo")));
+            const leadIdent = l.alias_nombre || l.whatsapp || l.email || `Miembro #${l.id.substring(0, 8)}`;
+            return `
+            <div class="p-4 rounded-2xl bg-[#250e29] border ${isPaid ? 'border-[#81c784]/40' : 'border-[#c5a059]/30'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="space-y-1">
                 <div class="flex items-center gap-2">
-                  <span class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Miembro VIP"}</span>
-                  <span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 VIP</span>
+                  <span class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Miembro"}</span>
+                  ${isPaid 
+                    ? '<span class="px-2.5 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">👑 VIP Pagado (Activo)</span>' 
+                    : '<span class="px-2.5 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">⏳ Posible VIP (Postulado)</span>'
+                  }
                 </div>
                 <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
-                <div class="text-[11px] text-[#f7f4ee]/60">Modalidad: <strong class="text-[#ead397] capitalize">${l.rol || "pareja"}</strong> • Pases: <strong>${l.tickets_count || 0}</strong></div>
+                <div class="text-[11px] text-[#f7f4ee]/60">Modalidad: <strong class="text-[#ead397] capitalize">${l.rol ? l.rol.replace('_', ' ') : "pareja"}</strong> • Pases: <strong>${l.tickets_count || 0}</strong> ${l.vip_until ? `• Vigencia: ${new Date(l.vip_until).toLocaleDateString()}` : ''}</div>
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
                 <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}">
                   + Asignar Pase
                 </button>
-                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="user" data-id="${l.id}" data-name="${l.alias_nombre || 'Miembro VIP'}">
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="user" data-id="${l.id}" data-name="${leadIdent}">
                   🗑️ Borrar
                 </button>
               </div>
             </div>
-          `).join("")}
+            `;
+          }).join("")}
         </div>
       `;
 

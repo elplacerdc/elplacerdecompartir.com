@@ -70,9 +70,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <div class="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-[#c5a059]/25 pb-6 gap-4">
             <div>
               <div class="flex items-center gap-2 mb-1.5">
-                <span class="py-1 px-3 rounded-full bg-[#c5a059]/15 border border-[#c5a059]/30 text-[#ead397] text-[10px] uppercase tracking-[0.2em] font-semibold">
-                  Dirección & Control General
-                </span>
                 <span class="text-xs text-[#81c784] font-medium flex items-center gap-1">
                   <span class="w-2 h-2 rounded-full bg-[#81c784] animate-pulse"></span> Sesión Activa
                 </span>
@@ -739,7 +736,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
         <td class="py-2.5 px-2 text-center font-mono">${a.clicks || 0}</td>
         <td class="py-2.5 px-2 text-center font-mono text-[#81c784]">${a.referidos_pagados || 0}</td>
         <td class="py-2.5 px-2 text-right">
-          <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="affiliate" data-id="${a.id}">Eliminar</button>
+          <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="affiliate" data-id="${a.id}" data-name="@${a.alias} (${a.nombre || 'Embajador'})">Eliminar</button>
         </td>
       </tr>
     `).join("");
@@ -756,6 +753,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
 
     leadsTableBody.innerHTML = leads.slice(0, 10).map((l) => {
       const isVip = l.is_possible_vip || l.corset_vip;
+      const leadName = l.alias_nombre || l.whatsapp || l.email || `Lead #${l.id.substring(0, 8)}`;
       return `
         <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-lead-id="${l.id}">
           <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
@@ -765,7 +763,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
             ${isVip ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">👑 VIP</span>' : '—'}
           </td>
           <td class="py-2.5 px-2 text-right">
-            <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}">Eliminar</button>
+            <button type="button" class="btn-delete-record text-[11px] text-[#ef5350] hover:underline" data-entity="lead" data-id="${l.id}" data-name="${leadName}">Eliminar</button>
           </td>
         </tr>
       `;
@@ -778,9 +776,16 @@ const isAuthenticated = verifyAdminSessionToken(token);
     document.querySelectorAll(".btn-delete-record").forEach((btn) => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
-        const entity = btn.getAttribute("data-entity");
+        const entity = btn.getAttribute("data-entity") || "registro";
         const id = btn.getAttribute("data-id");
-        if (!confirm(`¿Estás seguro de eliminar este registro de ${entity}?`)) return;
+        const name = btn.getAttribute("data-name") || "el registro seleccionado";
+        let confirmMsg = `¿Estás seguro de eliminar a "${name}"?`;
+        if (entity === "ticket") {
+          confirmMsg = `¿Estás seguro de eliminar el ${name}?`;
+        } else if (entity === "lead" || entity === "user" || entity === "affiliate") {
+          confirmMsg = `¿Estás seguro de eliminar a "${name}" (y su perfil de embajador en cascada indivisible)?`;
+        }
+        if (!confirm(confirmMsg)) return;
 
         try {
           const res = await fetch(`/api/admin/records?entity=${entity}&id=${id}`, { method: "DELETE" });
@@ -914,7 +919,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}" data-lead-name="${l.alias_nombre || ''}">
                     + Asignar Pase
                   </button>
-                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}">
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="lead" data-id="${l.id}" data-name="${l.alias_nombre || l.whatsapp || l.email || `Lead #${l.id.substring(0, 8)}`}">
                     🗑️ Borrar
                   </button>
                 </div>
@@ -953,7 +958,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 <div class="text-[11px] text-[#c5a059]">Clics: ${a.clicks || 0} • Ventas Pagadas: ${a.referidos_pagados || 0} • Pases Ganados: ${a.entradas_ganadas || 0}</div>
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
-                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}">
+                <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}" data-name="@${a.alias} (${a.nombre || 'Embajador'})">
                   🗑️ Borrar
                 </button>
               </div>
@@ -1009,7 +1014,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                       ✓ Confirmar Pago
                     </button>
                   ` : ''}
-                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="ticket" data-id="${t.id}">
+                  <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="ticket" data-id="${t.id}" data-name="Pase de ${t.alias_nombre || 'Invitado'} (${t.evento})">
                     🗑️ Borrar
                   </button>
                 </div>

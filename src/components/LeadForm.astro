@@ -427,24 +427,103 @@ const {
               }
 
               // Lead registrado en la comunidad general que se postula a The Corset Society:
-              // NO BLOQUEAR. Mostrar banner y desplegar formulario para radicar la postulación
+              // Datos inmutables: ocultar casillas de edición y ofrecer radicación en 1 solo clic
               leadExistingBox.innerHTML = `
-                <div class="p-3 bg-[#140816] rounded border border-[#c5a059]/40 text-xs space-y-1">
-                  <div class="text-[#ead397] font-serif font-bold flex items-center gap-1.5">
-                    <span>✓</span> Registro previo encontrado en la comunidad general
+                <div class="p-4 bg-[#140816] rounded-2xl border border-[#c5a059]/50 text-xs space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div class="text-[#ead397] font-serif font-bold text-sm flex items-center gap-1.5">
+                      <span>✓</span> Registro Previo en Comunidad General
+                    </div>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30">Perfil Vinculado</span>
                   </div>
-                  <p class="text-[#f7f4ee]/80 text-[11px] leading-relaxed">
-                    Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>. Hemos precargado tus datos. Confírmalos a continuación para radicar tu postulación oficial a <strong>The Corset Society (Posible VIP)</strong>.
+                  <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
+                    Hola <strong class="text-[#ead397] font-bold">${existing.alias_nombre || "Miembro"}</strong>. Tu número ya está validado en modalidad <strong class="text-[#ead397] capitalize">${existing.rol ? existing.rol.replace('_', ' ') : 'General'}</strong> (${existing.ciudad || 'Bogotá'}).
                   </p>
+                  <div class="p-3 bg-[#0a050c] rounded-xl border border-[#c5a059]/30 text-[11px] text-[#f7f4ee]/80 leading-relaxed">
+                    Tus datos oficiales se encuentran protegidos. Para solicitar tu admisión al círculo exclusivo de <strong>The Corset Society</strong>, radica tu postulación a continuación:
+                  </div>
+                  <button 
+                    type="button" 
+                    id="btn-apply-corset-seamless" 
+                    class="w-full py-3.5 px-4 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] hover:brightness-110 transition-all shadow-md cursor-pointer"
+                  >
+                    Radicar Postulación a The Corset Society (Posible VIP) →
+                  </button>
+                  <div id="corset-apply-status" class="hidden text-xs text-center"></div>
                 </div>
               `;
               leadExistingBox.classList.remove("hidden");
-              leadRemainingFields.classList.remove("hidden");
-              inputAlias?.focus();
+              leadRemainingFields.classList.add("hidden");
+
+              const btnApplySeamless = document.getElementById("btn-apply-corset-seamless");
+              const applyStatus = document.getElementById("corset-apply-status");
+
+              btnApplySeamless?.addEventListener("click", async () => {
+                if (btnApplySeamless) {
+                  btnApplySeamless.setAttribute("disabled", "true");
+                  btnApplySeamless.textContent = "Radicando Postulación...";
+                }
+                try {
+                  const applyRes = await fetch("/api/leads/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      alias_nombre: existing.alias_nombre,
+                      whatsapp: whatsapp,
+                      email: existing.email || undefined,
+                      rol: existing.rol || "pareja",
+                      ciudad: existing.ciudad || "Bogotá",
+                      origen: "web_corset",
+                      corset_vip: true,
+                      verified: true,
+                      ref: localStorage.getItem("affiliate_ref") || undefined,
+                    }),
+                  });
+                  const applyData = await applyRes.json();
+                  if (applyData.success) {
+                    leadExistingBox.innerHTML = `
+                      <div class="p-4 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
+                        <div class="text-[#81c784] font-serif font-bold text-sm flex items-center gap-1.5">
+                          <span>✓</span> ¡Postulación Radicada con Éxito!
+                        </div>
+                        <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
+                          Hola <strong class="text-[#ead397]">${existing.alias_nombre}</strong>, tu postulación como <strong>Posible VIP</strong> ha sido registrada exitosamente. Puedes activar tu credencial oficial o ir a tu panel:
+                        </p>
+                        <div class="pt-2 flex flex-col sm:flex-row gap-2">
+                          <a href="/corset/checkout" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                            Adquirir Membresía Anual VIP →
+                          </a>
+                          <a href="/dashboard" class="py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
+                            Ir al Panel de Embajador →
+                          </a>
+                        </div>
+                      </div>
+                    `;
+                  } else {
+                    if (applyStatus) {
+                      applyStatus.className = "text-xs text-[#ef5350] mt-2 block";
+                      applyStatus.textContent = applyData.error || "Error al radicar postulación.";
+                    }
+                    if (btnApplySeamless) {
+                      btnApplySeamless.removeAttribute("disabled");
+                      btnApplySeamless.textContent = "Reintentar Radicación →";
+                    }
+                  }
+                } catch (e: any) {
+                  if (applyStatus) {
+                    applyStatus.className = "text-xs text-[#ef5350] mt-2 block";
+                    applyStatus.textContent = "Error de conexión. Intenta de nuevo.";
+                  }
+                  if (btnApplySeamless) {
+                    btnApplySeamless.removeAttribute("disabled");
+                    btnApplySeamless.textContent = "Reintentar Radicación →";
+                  }
+                }
+              });
               return;
             }
 
-            // Formulario general con lead existente
+            // Formulario general con lead existente (Datos inmutables protegidos)
             leadExistingBox.innerHTML = `
               <div class="flex items-center gap-2 text-sm font-serif font-bold text-[#ead397]">
                 <span>✓</span> Registro Previo Confirmado
@@ -472,20 +551,9 @@ const {
                   Compartir en X (x.com)
                 </a>
               </div>
-              <div class="mt-2 pt-2 border-t border-[#c5a059]/10">
-                <button type="button" id="btn-edit-existing-lead" class="text-[11px] text-[#c5a059] hover:text-[#ead397] underline cursor-pointer">
-                  ¿Deseas actualizar tus datos personales (alias, correo, ciudad)? Pulsa aquí.
-                </button>
-              </div>
             `;
             leadExistingBox.classList.remove("hidden");
             leadRemainingFields.classList.add("hidden");
-
-            const btnEditExisting = document.getElementById("btn-edit-existing-lead");
-            btnEditExisting?.addEventListener("click", () => {
-              leadRemainingFields.classList.remove("hidden");
-              inputAlias?.focus();
-            });
             return;
           }
         } catch (checkErr) {
@@ -673,12 +741,11 @@ const {
           `;
         }
 
+        leadRemainingFields.classList.add("hidden");
         formFeedback.className = "text-sm p-4 rounded-lg bg-[#2e7d32]/20 border border-[#4caf50]/40 text-[#81c784]";
         formFeedback.innerHTML = `✨ ¡Registro confirmado exitosamente! Te hemos enviado los detalles a tus canales de contacto.${affiliateMsg}${vipNextAction}`;
         formFeedback.classList.remove("hidden");
-        form.reset();
-        submitBtn.disabled = false;
-        submitBtn.textContent = isVip ? "Solicitud Enviada" : "Registrado con Éxito";
+        submitBtn.classList.add("hidden");
       } else {
         throw new Error(data.error || "Ocurrió un error al procesar.");
       }

@@ -36,7 +36,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       path: "/",
       maxAge: 30 * 24 * 60 * 60, // 30 días
       httpOnly: false,
-      secure: true,
+      secure: url.protocol === "https:",
       sameSite: "lax",
     });
 

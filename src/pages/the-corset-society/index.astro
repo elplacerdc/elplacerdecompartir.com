@@ -85,7 +85,7 @@ import VipCheckout from "../../components/VipCheckout.astro";
         />
         <div class="p-6 bg-[#0a0608] border-t border-[#c5a059]/20 space-y-3 text-left">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-serif font-bold text-[#ead397]">Membresía Anual VIP ($199.000 COP)</h2>
+            <h2 id="corset-vip-card-title" class="text-lg font-serif font-bold text-[#ead397]">Membresía Anual VIP ($199.000 COP)</h2>
             <span class="text-xs text-[#c5a059] font-mono font-semibold">365 Días</span>
           </div>
           <p class="text-xs font-sans text-[#f7f4ee]/75 leading-relaxed font-light">
@@ -153,4 +153,30 @@ import VipCheckout from "../../components/VipCheckout.astro";
       </footer>
     </main>
   </div>
+
+  <script is:inline>
+    function checkCorsetAffiliateDiscount() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refParam = urlParams.get("ref") || urlParams.get("r");
+        let activeRef = refParam || localStorage.getItem("affiliate_ref");
+        if (!activeRef) {
+          const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
+          if (match) activeRef = decodeURIComponent(match[1]).trim().toLowerCase();
+        }
+        if (activeRef) {
+          const title = document.getElementById("corset-vip-card-title");
+          if (title) {
+            title.innerHTML = 'Membresía Anual VIP <span class="line-through text-[#f7f4ee]/40 text-sm font-normal mr-1">$199.000</span> <span class="text-[#81c784] font-bold">$179.100 COP</span> <span class="text-xs text-[#81c784] font-mono">(-10% Embajador)</span>';
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", checkCorsetAffiliateDiscount);
+    } else {
+      checkCorsetAffiliateDiscount();
+    }
+  </script>
 </Layout>

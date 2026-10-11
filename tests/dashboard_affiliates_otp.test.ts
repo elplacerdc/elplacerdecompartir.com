@@ -2,24 +2,26 @@ import { describe, it, expect, beforeAll } from "bun:test";
 import { getAffiliateStats, upsertLead, ensureAffiliateCode } from "../src/db";
 
 describe("Dashboard Affiliate OTP & Community Invariants", () => {
+  const testPhone = "+573159990001";
+  const testAlias = "juanito_test";
+
   beforeAll(async () => {
     await upsertLead({
-      alias_nombre: "juan",
-      whatsapp: "+573158443002",
+      alias_nombre: testAlias,
+      whatsapp: testPhone,
       rol: "hombre_solo",
       ciudad: "Bogotá",
       origen: "web_test",
     });
-    await ensureAffiliateCode("juan", "+573158443002", null);
+    await ensureAffiliateCode(testAlias, testPhone, null);
   });
 
   it("retrieves stats for an existing affiliate by phone without column vip_until crash", async () => {
-    // Test with existing affiliate phone '3158443002'
-    const stats = await getAffiliateStats("3158443002");
+    const stats = await getAffiliateStats(testPhone);
     expect(stats).not.toBeNull();
     if (stats) {
-      expect(stats.alias).toBe("juan");
-      expect(stats.whatsapp).toBe("+573158443002");
+      expect(stats.alias).toBe(testAlias);
+      expect(stats.whatsapp).toBe(testPhone);
       expect(typeof stats.leadsCount).toBe("number");
       expect(typeof stats.purchasesCount).toBe("number");
       expect(typeof stats.freeTicketsEarned).toBe("number");
@@ -28,10 +30,10 @@ describe("Dashboard Affiliate OTP & Community Invariants", () => {
   });
 
   it("retrieves stats for an existing affiliate by alias", async () => {
-    const stats = await getAffiliateStats("juan");
+    const stats = await getAffiliateStats(testAlias);
     expect(stats).not.toBeNull();
     if (stats) {
-      expect(stats.alias).toBe("juan");
+      expect(stats.alias).toBe(testAlias);
     }
   });
 
