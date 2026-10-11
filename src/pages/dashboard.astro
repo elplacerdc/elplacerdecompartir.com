@@ -450,9 +450,14 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           if (vipDesc) vipDesc.textContent = "Membresía anual activa. Cuentas con 10% de descuento permanente en todas las entradas y acceso al círculo cerrado.";
           if (vipActionContainer) {
             vipActionContainer.innerHTML = `
-              <a href="/centro-cultural#proximos-eventos" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all inline-block text-center shadow-md">
-                Ver Próximos Eventos VIP →
-              </a>
+              <div class="flex flex-wrap gap-2 justify-center sm:justify-start">
+                <a href="/the-corset-society/luna-llena" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/10 text-xs font-bold uppercase tracking-wider transition-all inline-block text-center">
+                  Información Luna Llena 🌕
+                </a>
+                <a href="/the-corset-society/luna-llena#reservas" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all inline-block text-center shadow-md">
+                  Pagar / Reservar Entrada →
+                </a>
+              </div>
             `;
           }
         } else if (vipStatus === "posible_vip") {

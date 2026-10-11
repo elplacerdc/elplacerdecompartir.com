@@ -39,7 +39,8 @@ const STATIC_EVENTS: EventItem[] = [
     venue: "Locación secreta exclusiva en Bogotá (revelada 24h antes por privado a reservas confirmadas)",
     description: "Círculo privado de gala noir y misterio. Dress code: Máscara obligatoria / Noir Fantasy.",
     pricing: "Pase Pareja: $100.000 COP (separa con $40.000) | Pase Single: $120.000 COP (separa con $50.000) | Pase Unicornio: $30.000 COP (separa con $10.000). NO existen mesas VIP.",
-    url: "https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas",
+    url: "https://elplacerdecompartir.com/the-corset-society/luna-llena",
+    reserve_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas",
   },
 ];
 
@@ -177,7 +178,8 @@ SOLO tienes permitido brindar los siguientes enlaces oficiales exactos. NUNCA in
 • Velada Íntima 'Sitio': https://elplacerdecompartir.com/eventos/sitio-9-oct
 • Evento Aliado Impacto Producciones: https://elplacerdecompartir.com/eventos/impacto-10-oct
 • The Corset Society (círculo VIP y membresías): https://elplacerdecompartir.com/the-corset-society
-• Noche de Luna Llena (31 Octubre - Mascarada en el Bosque): https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas
+• Noche de Luna Llena (31 Octubre - Información y Experiencia): https://elplacerdecompartir.com/the-corset-society/luna-llena
+• Noche de Luna Llena (Reserva de Entradas y Pago Directo): https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas
 • Programa de Embajadores y Comunidad: https://elplacerdecompartir.com/dashboard
 • Memorias de Eventos Realizados: https://elplacerdecompartir.com/eventos-realizados
 
@@ -241,8 +243,9 @@ const ROUTE_ALIASES: Record<string, string> = {
   "/embajadores": "/dashboard",
   "/afiliado": "/dashboard",
   "/afiliados": "/dashboard",
-  "/luna-llena": "/the-corset-society/luna-llena#reservas",
-  "/corset/luna-llena": "/the-corset-society/luna-llena#reservas",
+  "/luna-llena": "/the-corset-society/luna-llena",
+  "/corset/luna-llena": "/the-corset-society/luna-llena",
+  "/reservar-luna-llena": "/the-corset-society/luna-llena#reservas",
   "/corset": "/the-corset-society",
   "/eventos": "/galeria-centro-cultural",
   "/eventos/": "/galeria-centro-cultural",
