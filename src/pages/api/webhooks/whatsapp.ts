@@ -9,7 +9,12 @@ import {
   isAffiliatePitched,
   setAffiliatePitched,
 } from "../../../services/session";
-import { buildDynamicSystemPrompt } from "../../../services/bot-knowledge";
+import {
+  buildDynamicSystemPrompt,
+  sanitizeAndValidateUrls,
+  sanitizeTone,
+  isBriefAcknowledgement,
+} from "../../../services/bot-knowledge";
 
 const BIFROST_URL = process.env.BIFROST_URL || "http://bifrost:8080/v1";
 const BIFROST_VIRTUAL_KEY =
@@ -313,6 +318,18 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
+    // 6. Regla de silencio transaccional ante acuses de recibo breves ('Ok', 'gracias', 'listo', etc.)
+    if (isBriefAcknowledgement(messageText)) {
+      console.log(
+        `[WhatsApp Bot] Regla de silencio transaccional aplicada ante acuse breve de ${primaryCustomerPhone}: "${messageText}"`
+      );
+      await appendSessionMessage(primaryCustomerPhone, "user", messageText);
+      return new Response(JSON.stringify({ status: "silence_brief_ack" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // 6. Formatear mensaje del usuario con contexto de cita
     let finalPromptUserMessage = messageText;
     if (quotedText) {
@@ -379,16 +396,9 @@ export const POST: APIRoute = async ({ request }) => {
           completion.choices?.[0]?.message?.reasoning_content;
 
         if (replyText && replyText.trim()) {
-          let finalReply = replyText.trim();
-
-          // 1. Sanitización estricta anti-alucinaciones y blindaje cultural
-          finalReply = finalReply
-            .replace(/\banfitrionas\b/gi, "facilitadoras y anfitriones éticos")
-            .replace(/\banfitriona\b/gi, "facilitadora ética")
-            .replace(/\b(mi amor|amor|cariño|corazón|bebé|cielo|hermosa|linda)\b/gi, "")
-            .replace(/https?:\/\/elplacerdecompartir\.com\/sitio\b/g, "https://elplacerdecompartir.com/eventos/sitio-9-oct")
-            .replace(/https?:\/\/elplacerdecompartir\.com\/the-corset-society\/impacto-10-oct\b/g, "https://elplacerdecompartir.com/eventos/impacto-10-oct")
-            .trim();
+          // 1. Sanitización estricta anti-alucinaciones, URLs (cero 404s) y blindaje cultural
+          let finalReply = sanitizeTone(replyText.trim());
+          finalReply = sanitizeAndValidateUrls(finalReply);
 
           // Simulación de presencia y ritmo de conversación humano
           const typingDelayMs = Math.min(

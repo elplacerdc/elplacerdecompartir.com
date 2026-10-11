@@ -207,3 +207,122 @@ SOLO tienes permitido brindar los siguientes enlaces oficiales exactos. NUNCA in
 3. VERDAD WEB IRREFUTABLE (ZERO 404): NUNCA inventes enlaces ni páginas web. SOLO puedes usar los enlaces oficiales provistos arriba. Si te consultan por algo sin enlace propio, remite a la página principal: https://elplacerdecompartir.com.
 4. CONTINUIDAD: Si ya hay mensajes previos en la conversación, entra directo a resolver la inquietud sin repetir saludos ni bienvenidas.`;
 }
+
+/**
+ * Validador de URLs pre-envío (cero 404s).
+ * Normaliza y valida contra el mapa canónico de rutas de Astro.
+ */
+const CANONICAL_VALID_PATHS = new Set([
+  "",
+  "/",
+  "/centro-cultural",
+  "/galeria-centro-cultural",
+  "/the-corset-society",
+  "/the-corset-society/luna-llena",
+  "/the-corset-society/ticket",
+  "/corset/checkout",
+  "/corset-vip",
+  "/dashboard",
+  "/eventos/sitio-9-oct",
+  "/eventos/impacto-10-oct",
+  "/eventos-realizados",
+  "/privacidad",
+  "/terminos",
+  "/login",
+  "/adminn",
+]);
+
+const ROUTE_ALIASES: Record<string, string> = {
+  "/sitio": "/eventos/sitio-9-oct",
+  "/impacto": "/eventos/impacto-10-oct",
+  "/the-corset-society/impacto-10-oct": "/eventos/impacto-10-oct",
+  "/the-corset-society/sitio-9-oct": "/eventos/sitio-9-oct",
+  "/embajador": "/dashboard",
+  "/embajadores": "/dashboard",
+  "/afiliado": "/dashboard",
+  "/afiliados": "/dashboard",
+  "/luna-llena": "/the-corset-society/luna-llena#reservas",
+  "/corset/luna-llena": "/the-corset-society/luna-llena#reservas",
+  "/corset": "/the-corset-society",
+  "/eventos": "/galeria-centro-cultural",
+  "/eventos/": "/galeria-centro-cultural",
+  "/galeria": "/galeria-centro-cultural",
+  "/alianza": "/centro-cultural",
+  "/alianzas": "/centro-cultural",
+};
+
+export function sanitizeAndValidateUrls(text: string): string {
+  if (!text) return "";
+  return text.replace(
+    /https?:\/\/(?:www\.)?elplacerdecompartir\.com([^\s)\]>"']*)?/gi,
+    (match, rawPath) => {
+      let pathWithHash = (rawPath || "").trim();
+      const hashIndex = pathWithHash.indexOf("#");
+      let pathname = hashIndex >= 0 ? pathWithHash.substring(0, hashIndex) : pathWithHash;
+      const hash = hashIndex >= 0 ? pathWithHash.substring(hashIndex) : "";
+
+      if (pathname.length > 1 && pathname.endsWith("/")) {
+        pathname = pathname.slice(0, -1);
+      }
+      pathname = pathname.toLowerCase();
+
+      // 1. Verificar si tiene alias conocido
+      if (ROUTE_ALIASES[pathname]) {
+        return `https://elplacerdecompartir.com${ROUTE_ALIASES[pathname]}`;
+      }
+
+      // 2. Verificar si es ruta canónica válida
+      if (CANONICAL_VALID_PATHS.has(pathname)) {
+        return `https://elplacerdecompartir.com${pathname}${hash}`;
+      }
+
+      // 3. Heurística segura ante rutas inventadas para garantizar CERO 404s
+      if (pathname.includes("embajador") || pathname.includes("afiliad") || pathname.includes("dashboard")) {
+        return "https://elplacerdecompartir.com/dashboard";
+      }
+      if (pathname.includes("corset") || pathname.includes("vip")) {
+        return "https://elplacerdecompartir.com/the-corset-society";
+      }
+      if (pathname.includes("evento") || pathname.includes("cultur") || pathname.includes("espacio")) {
+        return "https://elplacerdecompartir.com/galeria-centro-cultural";
+      }
+
+      // Fallback universal a la home para evitar cualquier 404
+      return "https://elplacerdecompartir.com";
+    }
+  );
+}
+
+/**
+ * Sanitizador de tono: erradicación estricta de términos de acompañamiento comercial
+ * o excesiva familiaridad no deseada ('amor', 'anfitrionas').
+ */
+export function sanitizeTone(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\banfitrionas\b/gi, "facilitadoras y anfitriones éticos")
+    .replace(/\banfitriona\b/gi, "facilitadora ética")
+    .replace(/\b(mi amor|amor|cariño|corazón|bebé|cielo|hermosa|linda)\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+/**
+ * Regla de silencio transaccional: detecta acuses de recibo breves
+ * ('Ok', 'gracias', 'listo', etc.) para evitar spam del bot tras confirmaciones.
+ */
+const BRIEF_ACK_REGEX = /^(ok|oka|vale|dale|listo|perfecto|entendido|gracias|muchas gracias|mil gracias|grax|thx|ty|de una|bueno|excelente|todo claro|super|súper|bien|todo bien|copiado)[\s!.]*$/i;
+
+export function isBriefAcknowledgement(text: string): boolean {
+  if (!text) return false;
+  const clean = text.trim().toLowerCase().replace(/[^\w\sáéíóúüñ]/g, "").trim();
+  if (BRIEF_ACK_REGEX.test(clean)) return true;
+
+  const words = clean.split(/\s+/);
+  if (words.length <= 3 && words.every((w) => BRIEF_ACK_REGEX.test(w))) {
+    return true;
+  }
+
+  return false;
+}
+

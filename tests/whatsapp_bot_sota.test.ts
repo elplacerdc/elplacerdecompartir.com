@@ -3,6 +3,9 @@ import {
   buildDynamicSystemPrompt,
   getBogotaDateInfo,
   getActiveEvents,
+  sanitizeAndValidateUrls,
+  sanitizeTone,
+  isBriefAcknowledgement,
 } from "../src/services/bot-knowledge";
 import {
   isHumanTakeover,
@@ -73,5 +76,59 @@ describe("3. Resolución de Identificadores Múltiples (Phone + LID) en Interven
     await clearHumanTakeover([testPhone, testLid]);
     expect(await isHumanTakeover(testPhone)).toBe(false);
     expect(await isHumanTakeover(testLid)).toBe(false);
+  });
+});
+
+describe("4. Validador de URLs Pre-Envío (Cero 404s)", () => {
+  test("reescribe rutas inventadas o alias a rutas canónicas existentes", () => {
+    const rawText = "Puedes revisar el evento en https://elplacerdecompartir.com/sitio y https://elplacerdecompartir.com/the-corset-society/impacto-10-oct";
+    const validated = sanitizeAndValidateUrls(rawText);
+    expect(validated).toContain("https://elplacerdecompartir.com/eventos/sitio-9-oct");
+    expect(validated).toContain("https://elplacerdecompartir.com/eventos/impacto-10-oct");
+  });
+
+  test("mapea enlaces de embajador o afiliados a /dashboard", () => {
+    const rawText = "Gana entradas en https://elplacerdecompartir.com/embajadores o https://elplacerdecompartir.com/afiliados";
+    const validated = sanitizeAndValidateUrls(rawText);
+    expect(validated).toBe("Gana entradas en https://elplacerdecompartir.com/dashboard o https://elplacerdecompartir.com/dashboard");
+  });
+
+  test("rutas completamente inexistentes hacen fallback seguro a la home sin 404", () => {
+    const rawText = "Mira los detalles en https://elplacerdecompartir.com/ruta-ficticia-alucinada-123";
+    const validated = sanitizeAndValidateUrls(rawText);
+    expect(validated).toBe("Mira los detalles en https://elplacerdecompartir.com");
+  });
+});
+
+describe("5. Sanitizador de Tono y Blindaje Cultural", () => {
+  test("reemplaza anfitrionas por facilitadoras y anfitriones éticos", () => {
+    const rawText = "En el evento habrá anfitrionas que te recibirán.";
+    const cleaned = sanitizeTone(rawText);
+    expect(cleaned).toBe("En el evento habrá facilitadoras y anfitriones éticos que te recibirán.");
+  });
+
+  test("erradica términos de excesiva familiaridad", () => {
+    const rawText = "Hola mi amor, te cuento que el evento es increíble.";
+    const cleaned = sanitizeTone(rawText);
+    expect(cleaned).toBe("Hola , te cuento que el evento es increíble.");
+  });
+});
+
+describe("6. Regla de Silencio Transaccional ante Acuses de Recibo", () => {
+  test("reconoce acuses de recibo breves para silenciar el bot", () => {
+    expect(isBriefAcknowledgement("Ok")).toBe(true);
+    expect(isBriefAcknowledgement("gracias")).toBe(true);
+    expect(isBriefAcknowledgement("muchas gracias")).toBe(true);
+    expect(isBriefAcknowledgement("Listo")).toBe(true);
+    expect(isBriefAcknowledgement("dale")).toBe(true);
+    expect(isBriefAcknowledgement("perfecto!")).toBe(true);
+    expect(isBriefAcknowledgement("ok gracias")).toBe(true);
+    expect(isBriefAcknowledgement("entendido")).toBe(true);
+  });
+
+  test("mensajes con preguntas o solicitudes reales no activan silencio", () => {
+    expect(isBriefAcknowledgement("¿A qué hora empieza el evento?")).toBe(false);
+    expect(isBriefAcknowledgement("gracias, pero cómo compro la boleta?")).toBe(false);
+    expect(isBriefAcknowledgement("quiero ser embajador")).toBe(false);
   });
 });
