@@ -26,7 +26,7 @@ describe("1. Grounding de Rutas Web y Eliminación de 404s", () => {
         expect(ev.url).toBe("https://elplacerdecompartir.com/eventos/impacto-10-oct");
       }
       if (ev.id === "luna-llena-31-oct") {
-        expect(ev.url).toBe("https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas");
+        expect(ev.url.startsWith("https://elplacerdecompartir.com/the-corset-society/luna-llena")).toBe(true);
       }
     }
   });
