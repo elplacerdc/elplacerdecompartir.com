@@ -39,6 +39,29 @@ export function wrapSpanishEmail(content: string, title: string = "El Placer de 
 </html>`;
 }
 
+export function formatBogotaDateTime(date: Date = new Date()): string {
+  return date.toLocaleString("es-CO", {
+    timeZone: "America/Bogota",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }) + " (UTC-5 Bogotá)";
+}
+
+export function formatBogotaTime(date: Date = new Date()): string {
+  return date.toLocaleTimeString("es-CO", {
+    timeZone: "America/Bogota",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }) + " (UTC-5 Bogotá)";
+}
+
 export async function sendEvolutionWhatsApp(
   number: string,
   text: string
@@ -253,7 +276,7 @@ export async function notifyNewLead(
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Modalidad / Rol:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.rol || "No especificado"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ciudad:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.ciudad || "Bogotá"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Origen:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.origen || "web"}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${new Date().toISOString()}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${formatBogotaDateTime()}</td></tr>
       </table>
     </div>
   `;
@@ -275,7 +298,7 @@ export async function notifyNewLead(
     `✉️ *Email:* ${lead.email || "No suministrado"}\n` +
     `🎭 *Modalidad:* ${lead.rol || "General"}\n` +
     `📍 *Ciudad:* ${lead.ciudad || "Bogotá"}\n` +
-    `⏱️ *Hora:* ${new Date().toLocaleTimeString("es-CO")}`;
+    `⏱️ *Hora:* ${formatBogotaTime()}`;
 
   sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, adminWaText).catch((e) =>
     console.error("[NotifyLead Admin WhatsApp Err]:", e)
@@ -418,7 +441,7 @@ export async function notifyNewTicket(
     `📱 *WhatsApp:* ${formattedPhone}\n` +
     `💳 *Método:* ${ticket.metodo_pago}\n` +
     `🔐 *Hash:* ${ticket.ticket_hash.substring(0, 16)}\n` +
-    `⏱️ *Hora:* ${new Date().toLocaleTimeString("es-CO")}`;
+    `⏱️ *Hora:* ${formatBogotaTime()}`;
 
   sendEvolutionWhatsApp(EVOLUTION_INITIAL_NUMBER, adminWaText).catch((e) =>
     console.error("[NotifyTicket Admin WhatsApp Err]:", e)
@@ -567,7 +590,7 @@ export async function notifyEventReservation(
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Email:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.email || "No suministrado"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Pase ID:</td><td style="padding: 8px; border: 1px solid #ddd; font-family: monospace;">${ticket.ticket_hash}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Es Usuario Nuevo:</td><td style="padding: 8px; border: 1px solid #ddd;">${isNew ? "Sí (Nuevo registro)" : "No (Usuario recurrente)"}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${new Date().toLocaleString("es-CO")}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${formatBogotaDateTime()}</td></tr>
       </table>
     </div>
   `;
@@ -677,7 +700,7 @@ export async function notifyNewAlliance(
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Tipo de Alianza:</td><td style="padding: 8px; border: 1px solid #ddd;">${allianceLabel}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Ciudad / Sede:</td><td style="padding: 8px; border: 1px solid #ddd;">${lead.ciudad || "Bogotá"}</td></tr>
         <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Detalle de la Propuesta:</td><td style="padding: 8px; border: 1px solid #ddd; white-space: pre-wrap;">${details.propuesta_detalle}</td></tr>
-        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${new Date().toISOString()}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">Fecha:</td><td style="padding: 8px; border: 1px solid #ddd;">${formatBogotaDateTime()}</td></tr>
       </table>
     </div>
   `;
@@ -810,7 +833,7 @@ export async function notifyAmbassadorSaleAcredited(
         </div>
 
         <div style="text-align: center; margin: 25px 0;">
-          <a href="${dashUrl}" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #0a050c; padding: 12px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Mi Progreso en el Dashboard →</a>
+          <a href="${dashUrl}" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #0a050c; padding: 12px 28px; text-decoration: none; font-weight: bold; border-radius: 30px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Mi Progreso en el Panel →</a>
         </div>
 
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 25px 0;" />

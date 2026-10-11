@@ -35,24 +35,15 @@ describe("BAI-250: Quick UX & Narrative Fixes", () => {
     expect(content).toContain("text-[#81c784]");
   });
 
-  it("debe tener botón visible de Dashboard en los headers de the-corset-society", () => {
-    const corsetFiles = [
-      "src/pages/the-corset-society/index.astro",
-      "src/pages/the-corset-society/luna-llena.astro",
-      "src/pages/corset/checkout.astro",
-      "src/pages/corset-vip.astro",
-    ];
-
-    for (const f of corsetFiles) {
-      const content = fs.readFileSync(path.join(rootDir, f), "utf-8");
-      expect(content).toContain('href="/dashboard"');
-      expect(content).toContain("Dashboard");
-    }
+  it("debe tener botón visible de Dashboard / Panel en los headers de the-corset-society", () => {
+    const headerContent = fs.readFileSync(path.join(rootDir, "src/components/CorsetHeader.astro"), "utf-8");
+    expect(headerContent).toContain('href="/dashboard"');
+    expect(headerContent).toContain("Panel");
   });
 
-  it("debe mostrar badge de Posible VIP (🤴) en el Directorio Unificado de adminn", () => {
+  it("debe mostrar emoji de Posible VIP (🤴) en el Directorio Unificado de adminn", () => {
     const content = fs.readFileSync(path.join(rootDir, "src/pages/adminn/index.astro"), "utf-8");
-    expect(content).toContain("🤴 Posible VIP");
+    expect(content).toContain("🤴");
   });
 
   it("no debe contener la opción alucinada de taller de parejas en el modal de tickets de adminn", () => {

@@ -23,9 +23,9 @@ describe("BAI-248: Luna Llena — Link Segmentation, Payment Anchor & Mobile Res
     expect(reservasIndex).toBeLessThan(roleBannerIndex);
   });
 
-  it("should add responsive mobile line break to 'Cambiar en Dashboard →'", () => {
+  it("should add responsive mobile line break to 'Cambiar en Panel →'", () => {
     const content = readFileSync(lunaLlenaPath, "utf-8");
-    expect(content).toMatch(/<span class="sm:hidden"><br\s*\/><\/span>\s*Cambiar en Dashboard →/);
+    expect(content).toMatch(/<span class="sm:hidden"><br\s*\/><\/span>\s*Cambiar en (Panel|Dashboard) →/);
   });
 
   it("should provide clean luna-llena URL without anchor in bot knowledge", () => {
@@ -44,8 +44,8 @@ describe("BAI-248: Luna Llena — Link Segmentation, Payment Anchor & Mobile Res
   });
 
   it("should include dashboard button in corset headers", () => {
-    const corsetContent = readFileSync(corsetIndexPath, "utf-8");
-    expect(corsetContent).toContain('href="/dashboard"');
+    const headerContent = readFileSync(resolve(process.cwd(), "src/components/CorsetHeader.astro"), "utf-8");
+    expect(headerContent).toContain('href="/dashboard"');
     const lunaContent = readFileSync(lunaLlenaPath, "utf-8");
     expect(lunaContent).toContain('href="/dashboard"');
   });

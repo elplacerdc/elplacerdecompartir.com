@@ -527,7 +527,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
                     : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] text-[#f7f4ee]/40 border border-[#f7f4ee]/10">Pendiente de compra</span>'
                   }
                 </td>
-                <td class="py-2.5 px-3 text-right text-[#f7f4ee]/50 text-[11px] font-mono">${new Date(l.created_at).toLocaleDateString('es-CO')}</td>
+                <td class="py-2.5 px-3 text-right text-[#f7f4ee]/50 text-[11px] font-mono">${new Date(l.created_at).toLocaleDateString('es-CO', { timeZone: 'America/Bogota' })}</td>
               </tr>
             `).join('');
           }

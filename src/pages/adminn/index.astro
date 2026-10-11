@@ -75,7 +75,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 </span>
               </div>
               <h1 class="text-2xl sm:text-3xl font-serif font-bold text-[#ead397]">
-                Dashboard de Administración
+                Panel de Administración
               </h1>
               <p class="text-xs text-[#f7f4ee]/70 mt-1">
                 Haz clic en cualquier tarjeta o fila para abrir el panel de gestión interactivo sin recargar la página.
@@ -102,7 +102,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 class="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#250e29] border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/20 transition-all flex items-center gap-1.5"
                 title="Actualizar datos en tiempo real"
               >
-                <span>↻</span> Actualizar
+                <span id="refresh-icon" class="inline-block transition-transform duration-500">↻</span> Actualizar
               </button>
               <button 
                 id="btn-logout" 
@@ -190,7 +190,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <div class="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#280f2d] via-[#1e0a22] to-[#250d28] border border-[#c5a059]/40 shadow-2xl space-y-6">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#c5a059]/20 pb-4">
               <div>
-                <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold block mb-1">Control de Acceso Físico en Puerta</span>
                 <h2 class="text-xl sm:text-2xl font-serif font-bold text-[#ead397]">Validador de Asistencia y Escáner QR</h2>
               </div>
 
@@ -274,7 +273,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
             <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#c5a059]/20 pb-3 gap-3">
               <div>
                 <h3 class="text-lg font-serif font-bold text-[#ead397]">Directorio Unificado de Usuarios & Embajadores</h3>
-                <span class="text-xs text-[#f7f4ee]/60">Registro = Lead = Embajador • Clic en una fila para ver ficha completa y gestión</span>
               </div>
               <div class="flex items-center gap-2">
                 <button 
@@ -286,73 +284,82 @@ const isAuthenticated = verifyAdminSessionToken(token);
               </div>
             </div>
 
-            <!-- Filtros Integrados y Minimalistas en Directorio Unificado -->
-            <div class="p-3 rounded-2xl bg-[#140816] border border-[#c5a059]/20 space-y-2.5 text-xs">
-              <!-- Fila 1: Pestañas de Segmentos -->
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold mr-1">Canal:</span>
-                <button 
-                  type="button" 
-                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm text-xs"
-                  data-tag="todos"
-                >
-                  Todos
-                </button>
-                <button 
-                  type="button" 
-                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
-                  data-tag="elplacerdc"
-                >
-                  🍷 General (El Placer DC)
-                </button>
-                <button 
-                  type="button" 
-                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
-                  data-tag="corset"
-                >
-                  🔒 The Corset Society
-                </button>
-                <button 
-                  type="button" 
-                  class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
-                  data-tag="aliados"
-                >
-                  🤝 Aliados & Centro Cultural
-                </button>
-              </div>
+            <!-- Filtros Acoplados y Desplegables en Directorio Unificado -->
+            <details id="details-filtros" class="group rounded-2xl bg-[#140816] border border-[#c5a059]/30 transition-all overflow-hidden">
+              <summary class="p-3 cursor-pointer select-none flex items-center justify-between text-xs font-semibold text-[#ead397] hover:text-white hover:bg-[#c5a059]/10 transition-colors">
+                <span class="flex items-center gap-2">
+                  <span>🔍</span>
+                  <span>Filtros y Segmentación</span>
+                </span>
+                <span class="text-[10px] text-[#c5a059] group-open:rotate-180 transition-transform">▼ Desplegar</span>
+              </summary>
+              <div class="p-3 pt-2 border-t border-[#c5a059]/15 space-y-2.5 text-xs">
+                <!-- Fila 1: Pestañas de Segmentos -->
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold mr-1">Canal:</span>
+                  <button 
+                    type="button" 
+                    class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059] bg-[#c5a059] text-[#0a050c] font-bold transition-all shadow-sm text-xs"
+                    data-tag="todos"
+                  >
+                    Todos
+                  </button>
+                  <button 
+                    type="button" 
+                    class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
+                    data-tag="elplacerdc"
+                  >
+                    🍷 General (El Placer DC)
+                  </button>
+                  <button 
+                    type="button" 
+                    class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
+                    data-tag="corset"
+                  >
+                    🔒 The Corset Society
+                  </button>
+                  <button 
+                    type="button" 
+                    class="tag-filter-btn px-3 py-1 rounded-full border border-[#c5a059]/40 bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-semibold text-xs"
+                    data-tag="aliados"
+                  >
+                    🤝 Aliados & Centro Cultural
+                  </button>
+                </div>
 
-              <!-- Fila 2: Selectores de Rol, Ciudad, VIP y Búsqueda Rápida -->
-              <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-2 border-t border-[#c5a059]/10">
-                <div>
-                  <select id="filter-rol" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
-                    <option value="">Todos los Roles</option>
-                    <option value="pareja">Pareja</option>
-                    <option value="mujer_sola">Mujer Sola (Unicornio)</option>
-                    <option value="hombre_solo">Hombre Solo (Single)</option>
-                    <option value="otro">Otro</option>
-                  </select>
-                </div>
-                <div>
-                  <select id="filter-ciudad" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
-                    <option value="">Todas las Ciudades</option>
-                    <option value="bogota">Bogotá</option>
-                    <option value="medellin">Medellín</option>
-                    <option value="otra">Otra</option>
-                  </select>
-                </div>
-                <div>
-                  <select id="filter-vip" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
-                    <option value="">Todos los Estados VIP</option>
-                    <option value="vip_activo">👑 VIP Activo (Credencial Activa)</option>
-                    <option value="posible_vip">🤴 Posible VIP (Postulado)</option>
-                    <option value="no_vip">Comunidad General (No VIP)</option>
-                  </select>
-                </div>
-                <div>
-                  <input type="text" id="filter-search" placeholder="🔍 Buscar alias, teléfono o email..." class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none" />
+                <!-- Fila 2: Selectores de Rol, Ciudad, VIP y Búsqueda Rápida -->
+                <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-2 border-t border-[#c5a059]/10">
+                  <div>
+                    <select id="filter-rol" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
+                      <option value="">Todos los Roles</option>
+                      <option value="pareja">Pareja</option>
+                      <option value="mujer_sola">Mujer Sola (Unicornio)</option>
+                      <option value="hombre_solo">Hombre Solo (Single)</option>
+                      <option value="otro">Otro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="filter-ciudad" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
+                      <option value="">Todas las Ciudades</option>
+                      <option value="bogota">Bogotá</option>
+                      <option value="medellin">Medellín</option>
+                      <option value="otra">Otra</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="filter-vip" class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none">
+                      <option value="">Todos los Estados VIP</option>
+                      <option value="vip_activo">👑 VIP Activo (Credencial Activa)</option>
+                      <option value="posible_vip">🤴 Posible VIP (Postulado)</option>
+                      <option value="no_vip">Comunidad General (No VIP)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <input type="text" id="filter-search" placeholder="🔍 Buscar alias, teléfono o email..." class="w-full px-2.5 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none" />
+                  </div>
                 </div>
               </div>
-            </div>
+            </details>
 
             <div class="overflow-x-auto max-h-[520px]">
               <table class="w-full text-left text-xs">
@@ -756,6 +763,8 @@ const isAuthenticated = verifyAdminSessionToken(token);
 
   // 3. LOAD METRICS IN-PLACE
   async function loadMetrics() {
+    const icon = document.getElementById("refresh-icon");
+    if (icon) icon.classList.add("animate-spin");
     try {
       const res = await fetch("/api/admin/metrics");
       if (res.status === 401) {
@@ -798,6 +807,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
       }
     } catch (e) {
       console.error("[Admin Metrics Err]:", e);
+    } finally {
+      if (icon) {
+        setTimeout(() => icon.classList.remove("animate-spin"), 600);
+      }
     }
   }
 
@@ -818,19 +831,21 @@ const isAuthenticated = verifyAdminSessionToken(token);
       const salesCount = l.affiliate_sales_count || 0;
       const roleDisplay = l.rol ? l.rol.replace('_', ' ') : 'general';
 
-      let vipBadge = '<span class="text-[#f7f4ee]/30">—</span>';
+      let vipBadge = '<span class="text-[#f7f4ee]/20">—</span>';
       if (isPaidVip) {
-        vipBadge = '<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40" title="VIP Activo con credencial"><span class="sm:hidden text-xs">👑</span><span class="hidden sm:inline">👑 VIP</span></span>';
-      } else if (isPossibleVip) {
-        vipBadge = '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40" title="Posible VIP"><span class="sm:hidden text-xs">🤴</span><span class="hidden sm:inline">🤴 Posible VIP</span></span>';
+        vipBadge = '<span class="text-sm select-none" title="VIP Activo con credencial">👑</span>';
       }
+
+      const nameVipEmoji = isPaidVip 
+        ? '<span class="text-xs select-none" title="VIP Activo con credencial">👑</span>' 
+        : (isPossibleVip ? '<span class="text-xs select-none" title="Posible VIP">🤴</span>' : '');
 
       return `
         <tr class="hover:bg-[#250e29]/70 cursor-pointer transition-colors group" data-lead-id="${l.id}">
           <td class="py-3 px-3 font-medium text-[#f7f4ee]">
             <div class="font-serif font-bold text-sm text-[#ead397] group-hover:text-white transition-colors flex items-center gap-1.5 flex-wrap">
               <span>${l.alias_nombre || "Invitado"}</span>
-              ${isPaidVip ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 font-sans font-bold" title="VIP Activo">👑 VIP</span>' : (isPossibleVip ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 font-sans font-bold" title="Posible VIP">🤴 Posible VIP</span>' : '')}
+              ${nameVipEmoji}
             </div>
             <div class="text-[10px] text-[#f7f4ee]/40 font-mono">ID: ${l.id.substring(0, 8)}...</div>
           </td>
@@ -889,14 +904,18 @@ const isAuthenticated = verifyAdminSessionToken(token);
     leadsTableBody.innerHTML = leads.slice(0, 10).map((l) => {
       const isPaidVip = Boolean(l.is_active_vip || (l.vip_until && new Date(l.vip_until) > new Date()));
       const isPossibleVip = Boolean((l.is_possible_vip || l.corset_vip) && !isPaidVip);
+      const nameVipEmoji = isPaidVip 
+        ? '<span class="text-xs select-none" title="VIP Activo con credencial">👑</span>' 
+        : (isPossibleVip ? '<span class="text-xs select-none" title="Posible VIP">🤴</span>' : '');
       const vipBadge = isPaidVip
-        ? '<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">👑 VIP</span>'
-        : isPossibleVip
-        ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">🤴 Posible VIP</span>'
+        ? '<span class="text-sm select-none" title="VIP Activo con credencial">👑</span>'
         : '—';
       return `
         <tr class="hover:bg-[#250e29]/60 cursor-pointer transition-colors" data-lead-id="${l.id}">
-          <td class="py-2.5 px-2 font-medium text-[#f7f4ee]">${l.alias_nombre || "Invitado"}</td>
+          <td class="py-2.5 px-2 font-medium text-[#f7f4ee] flex items-center gap-1.5">
+            <span>${l.alias_nombre || "Invitado"}</span>
+            ${nameVipEmoji}
+          </td>
           <td class="py-2.5 px-2 text-[11px] capitalize text-[#ead397]">${l.rol ? l.rol.replace('_', ' ') : "general"}</td>
           <td class="py-2.5 px-2 text-[10px] text-[#f7f4ee]/70">${l.origen || "web"}</td>
           <td class="py-2.5 px-2 text-center">
@@ -937,7 +956,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
             <div><strong>WhatsApp:</strong> ${lead.whatsapp || "—"}</div>
             <div><strong>Email:</strong> ${lead.email || "—"}</div>
             <div><strong>Modalidad:</strong> ${lead.rol ? lead.rol.replace('_', ' ') : "general"} • <strong>Ciudad:</strong> ${lead.ciudad || "Bogotá"}</div>
-            <div><strong>Origen:</strong> ${lead.origen || "web"} • <strong>Registrado:</strong> ${new Date(lead.created_at).toLocaleString("es-CO")}</div>
+            <div><strong>Origen:</strong> ${lead.origen || "web"} • <strong>Registrado:</strong> ${lead.created_at ? new Date(lead.created_at).toLocaleString("es-CO", { timeZone: "America/Bogota" }) + " (Bogotá)" : "—"}</div>
           </div>
         </div>
 
@@ -1430,7 +1449,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   }
                 </div>
                 <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
-                <div class="text-[11px] text-[#f7f4ee]/60">Modalidad: <strong class="text-[#ead397] capitalize">${l.rol ? l.rol.replace('_', ' ') : "pareja"}</strong> • Pases: <strong>${l.tickets_count || 0}</strong> ${l.vip_until ? `• Vigencia: ${new Date(l.vip_until).toLocaleDateString()}` : ''}</div>
+                <div class="text-[11px] text-[#f7f4ee]/60">Modalidad: <strong class="text-[#ead397] capitalize">${l.rol ? l.rol.replace('_', ' ') : "pareja"}</strong> • Pases: <strong>${l.tickets_count || 0}</strong> ${l.vip_until ? `• Vigencia: ${new Date(l.vip_until).toLocaleDateString("es-CO", { timeZone: "America/Bogota" })}` : ''}</div>
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
                 <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}">
@@ -1472,10 +1491,64 @@ const isAuthenticated = verifyAdminSessionToken(token);
       }
 
       let tabsHtml = "";
+      let eventsBreakdownHtml = "";
       if (type === "tickets") {
         const countAll = list.length;
         const countPagos = list.filter((t: any) => t.categoria_pago === "pago").length;
         const countGratis = list.filter((t: any) => t.categoria_pago === "gratuito").length;
+
+        // Visual individual events breakdown
+        const perEvent = cachedMetrics.financial?.perEvent || [];
+        const officialEvents = [
+          { key: "luna_llena", matchKeys: ["luna_llena", "luna-llena", "the-corset-society/luna-llena"], title: "🌕 Noche de Luna Llena", subtitle: "Halloween 31 Oct • Reserva 40% & Pago 100%" },
+          { key: "corset_vip", matchKeys: ["corset_vip", "corset-vip", "vip"], title: "💎 Membresía Anual VIP", subtitle: "The Corset Society • Credencial Anual" },
+          { key: "impacto_10_oct", matchKeys: ["impacto_10_oct", "impacto-10-oct"], title: "🎭 Impacto Producciones", subtitle: "10 Oct • Reserva Gratis (7:00-9:30 PM sin cover)" },
+          { key: "sitio_9_oct", matchKeys: ["sitio_9_oct", "sitio-9-oct"], title: "🍷 Sitio Licorera", subtitle: "9 Oct • Reserva General Gratuita" },
+        ];
+
+        const cards = officialEvents.map(ev => {
+          const evData = perEvent.find((p: any) => ev.matchKeys.includes((p.evento || "").toLowerCase()));
+          const count = evData?.count || 0;
+          const totalMoney = evData?.total || 0;
+          const reservas = evData?.reservas || 0;
+          const pagos = evData?.pagos || 0;
+          const gratuitas = evData?.gratuitas || 0;
+          const asistidos = evData?.asistidos || 0;
+
+          return `
+            <div class="p-3 rounded-xl bg-[#140816] border border-[#c5a059]/30 flex flex-col justify-between">
+              <div>
+                <div class="text-xs font-serif font-bold text-[#ead397] flex items-center justify-between">
+                  <span>${ev.title}</span>
+                  <span class="text-[11px] font-mono font-bold text-white bg-[#c5a059]/20 border border-[#c5a059]/40 px-2 py-0.5 rounded-full">${count} emitidos</span>
+                </div>
+                <div class="text-[10px] text-[#f7f4ee]/60 mt-0.5">${ev.subtitle}</div>
+              </div>
+              <div class="mt-2 pt-2 border-t border-[#c5a059]/15 text-[11px] space-y-1">
+                ${totalMoney > 0 ? `<div class="text-[#81c784] font-bold text-xs">Recaudo: $${Number(totalMoney).toLocaleString("es-CO")} COP</div>` : ''}
+                <div class="text-[10px] text-[#f7f4ee]/70 flex flex-wrap gap-x-2 gap-y-1">
+                  ${reservas > 0 ? `<span class="text-[#ffb74d]">🔖 ${reservas} Reservas (40%)</span>` : ''}
+                  ${pagos > 0 ? `<span class="text-[#81c784]">💵 ${pagos} Pagos (100%)</span>` : ''}
+                  ${gratuitas > 0 ? `<span class="text-[#ead397]">🎁 ${gratuitas} Gratuitos</span>` : ''}
+                  ${asistidos > 0 ? `<span class="text-[#64b5f6]">✓ ${asistidos} Asistidos</span>` : ''}
+                  ${count === 0 ? `<span class="text-[#f7f4ee]/30 italic">Sin pases emitidos aún</span>` : ''}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        eventsBreakdownHtml = `
+          <div class="mb-3 p-3 rounded-2xl bg-[#1b0a1d] border border-[#c5a059]/40 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold">📊 Desglose Individual por Evento</span>
+              <span class="text-[10px] text-[#f7f4ee]/50 font-sans">Reservas vs Pases</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              ${cards}
+            </div>
+          </div>
+        `;
 
         if (ticketsCategoryFilter === "pagos") {
           list = list.filter((t: any) => t.categoria_pago === "pago");
@@ -1507,13 +1580,23 @@ const isAuthenticated = verifyAdminSessionToken(token);
       );
 
       drawerContent.innerHTML = `
+        ${eventsBreakdownHtml}
         ${tabsHtml}
         <div class="space-y-3">
           ${filtered.length === 0 ? '<p class="text-xs text-[#f7f4ee]/40 text-center py-4">No hay pases en esta categoría.</p>' : filtered.map((t: any) => {
             const isPending = t.tipo_pago === "reserva_40" || t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion";
             const isPago = t.categoria_pago === 'pago';
-            const formattedDate = t.created_at ? new Date(t.created_at).toLocaleString("es-CO", { dateStyle: "medium", timeStyle: "short" }) : "—";
+            const formattedDate = t.created_at ? new Date(t.created_at).toLocaleString("es-CO", { timeZone: "America/Bogota", dateStyle: "medium", timeStyle: "short" }) + " (Bogotá)" : "—";
             const roleName = (t.lead_rol || "general").replace('_', ' ');
+
+            const modeBadge = t.tipo_pago === "reserva_40"
+              ? '<span class="px-2 py-0.5 rounded-full bg-[#ffb74d]/20 text-[#ffb74d] text-[10px] font-bold border border-[#ffb74d]/40">🔖 Separación 40%</span>'
+              : (t.tipo_pago === "total_100" || (isPago && t.monto_pagado > 0))
+              ? '<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">💰 Pago Total 100%</span>'
+              : t.tipo_pago === "gratuito_horario"
+              ? '<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">🎟️ Reserva (7:00-9:30 PM)</span>'
+              : '<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">🎁 Gratuito / Cortesía</span>';
+
             return `
               <div class="p-4 rounded-2xl bg-[#250e29] border ${isPago ? 'border-[#c5a059]/40' : 'border-[#81c784]/30'} flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="space-y-1.5">
@@ -1522,10 +1605,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${t.estado === 'asistido' ? 'bg-[#2e7d32]/30 text-[#81c784]' : isPending ? 'bg-[#f57c00]/30 text-[#ffb74d]' : 'bg-[#c5a059]/20 text-[#ead397]'}">
                       ${t.estado}
                     </span>
-                    ${isPago 
-                      ? `<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40">💰 Evento Pago</span>` 
-                      : `<span class="px-2 py-0.5 rounded-full bg-[#81c784]/20 text-[#81c784] text-[10px] font-bold border border-[#81c784]/40">🎁 Gratuito / Cortesía</span>`
-                    }
+                    ${modeBadge}
                     ${t.is_bre_b ? '<span class="px-2 py-0.5 rounded-full bg-[#8E4A8C]/30 text-[#f3e5f5] text-[10px] font-bold border border-[#8E4A8C]/50">⚡ Bre-B</span>' : ''}
                   </div>
                   <div class="text-xs text-[#f7f4ee]/90 font-medium">
@@ -1674,39 +1754,53 @@ const isAuthenticated = verifyAdminSessionToken(token);
         ? "Asignar Pase o Cortesía a Usuario Seleccionado" 
         : "Crear Pase o Cortesía (Asignado Obligatoriamente)";
 
-      const EVENT_CATALOG: Record<string, { name: string; isFree: boolean; options: { id: string; label: string; price: number }[] }> = {
+      const EVENT_CATALOG: Record<string, {
+        name: string;
+        isFree: boolean;
+        options: { id: string; label: string; price: number; tipoPago: string; categoria: string }[];
+      }> = {
         luna_llena: {
-          name: "Noche de Luna Llena (Halloween)",
+          name: "The Corset Society — Noche de Luna Llena (Halloween - 31 Oct)",
           isFree: false,
           options: [
-            { id: "pareja", label: "Pareja ($100.000 COP)", price: 100000 },
-            { id: "single", label: "Single / Hombre Solo ($120.000 COP)", price: 120000 },
-            { id: "unicornio", label: "Unicornio / Mujer Sola ($30.000 COP)", price: 30000 },
+            { id: "pareja_total", label: "👫 Pareja — Pago Total 100% ($100.000 COP)", price: 100000, tipoPago: "total_100", categoria: "pago" },
+            { id: "pareja_reserva", label: "👫 Pareja — Separación 40% ($40.000 COP, saldo $60k en puerta)", price: 40000, tipoPago: "reserva_40", categoria: "pago" },
+            { id: "pareja_total_embajador", label: "👫 Pareja — Pago Total con Descuento Embajador ($90.000 COP)", price: 90000, tipoPago: "total_100", categoria: "pago" },
+            { id: "pareja_reserva_embajador", label: "👫 Pareja — Separación 40% con Descuento Embajador ($36.000 COP)", price: 36000, tipoPago: "reserva_40", categoria: "pago" },
+            { id: "single_total", label: "🙋‍♂️ Single (Hombre Solo) — Pago Total 100% ($120.000 COP)", price: 120000, tipoPago: "total_100", categoria: "pago" },
+            { id: "single_reserva", label: "🙋‍♂️ Single — Separación 40% ($50.000 COP, saldo $70k en puerta)", price: 50000, tipoPago: "reserva_40", categoria: "pago" },
+            { id: "single_total_embajador", label: "🙋‍♂️ Single — Pago Total con Descuento Embajador ($108.000 COP)", price: 108000, tipoPago: "total_100", categoria: "pago" },
+            { id: "single_reserva_embajador", label: "🙋‍♂️ Single — Separación 40% con Descuento Embajador ($45.000 COP)", price: 45000, tipoPago: "reserva_40", categoria: "pago" },
+            { id: "unicornio_total", label: "🦄 Unicornio (Mujer Sola) — Pago Total 100% ($30.000 COP)", price: 30000, tipoPago: "total_100", categoria: "pago" },
+            { id: "unicornio_reserva", label: "🦄 Unicornio — Separación 40% ($10.000 COP, saldo $20k en puerta)", price: 10000, tipoPago: "reserva_40", categoria: "pago" },
+            { id: "unicornio_total_embajador", label: "🦄 Unicornio — Pago Total con Descuento Embajador ($27.000 COP)", price: 27000, tipoPago: "total_100", categoria: "pago" },
+            { id: "unicornio_reserva_embajador", label: "🦄 Unicornio — Separación 40% con Descuento Embajador ($9.000 COP)", price: 9000, tipoPago: "reserva_40", categoria: "pago" },
+            { id: "cortesia_embajador", label: "🎟️ Cortesía de Honor / Pase Libre Embajador ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" }
           ]
         },
-        sitio_9_oct: {
-          name: "Inauguración Sitio Licorera (9 Oct - Gratuito)",
-          isFree: true,
+        corset_vip: {
+          name: "The Corset Society — Membresía Anual VIP",
+          isFree: false,
           options: [
-            { id: "entrada_libre", label: "Entrada General ($0 COP)", price: 0 },
-            { id: "pase_especial", label: "Pase Especial Aliado ($0 COP)", price: 0 }
+            { id: "vip_anual", label: "💎 Membresía Anual VIP ($199.000 COP / año)", price: 199000, tipoPago: "total_100", categoria: "pago" },
+            { id: "vip_anual_embajador", label: "💎 Membresía Anual VIP con Descuento Embajador ($179.000 COP / año)", price: 179000, tipoPago: "total_100", categoria: "pago" },
+            { id: "vip_cortesia", label: "👑 Credencial VIP Cortesía de Honor ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" }
           ]
         },
         impacto_10_oct: {
-          name: "Impacto Producciones (10 Oct - Gratuito)",
+          name: "Impacto Producciones (10 Oct - Entrada Libre con Reserva 7:00 a 9:30 PM)",
           isFree: true,
           options: [
-            { id: "entrada_libre", label: "Entrada General Gratuita ($0 COP)", price: 0 },
-            { id: "consumo_sitio", label: "Consumo en Sitio ($0 COP)", price: 0 }
+            { id: "reserva_gratuita_impacto", label: "🎟️ Reserva Entrada Gratuita (Llegada 7:00 - 9:30 PM sin cover) ($0 COP)", price: 0, tipoPago: "gratuito_horario", categoria: "gratuito" },
+            { id: "pase_especial_impacto", label: "🤝 Pase Especial Aliado ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "gratuito" }
           ]
         },
-        corset_gala: {
-          name: "The Corset Society — Gala Noir Privada",
-          isFree: false,
+        sitio_9_oct: {
+          name: "Inauguración Sitio Licorera (9 Oct - Gratuito con Reserva)",
+          isFree: true,
           options: [
-            { id: "vip_membresia", label: "Membresía Anual VIP ($199.000 COP)", price: 199000 },
-            { id: "pareja_gala", label: "Pase Pareja Gala Noir ($150.000 COP)", price: 150000 },
-            { id: "single_gala", label: "Pase Individual Gala Noir ($180.000 COP)", price: 180000 }
+            { id: "reserva_gratuita_sitio", label: "🎟️ Reserva Entrada General Gratuita ($0 COP)", price: 0, tipoPago: "gratuito", categoria: "gratuito" },
+            { id: "pase_especial_sitio", label: "🤝 Pase Especial Aliado ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "gratuito" }
           ]
         }
       };
@@ -1750,14 +1844,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
       `).join("");
 
       crudFieldsContainer.innerHTML = `
-        <div>
-          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Categoría del Pase *</label>
-          <select id="crud-tipo-pago" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/40 text-xs text-[#ead397] font-semibold">
-            <option value="pago_real">💵 Pago Real Efectivo en Sitio (Acredita venta al embajador)</option>
-            <option value="cortesia">🎟️ Cortesía Manual ($0 COP - No suma a ventas)</option>
-          </select>
-        </div>
-
         ${userBlockHtml}
 
         <div>
@@ -1768,23 +1854,26 @@ const isAuthenticated = verifyAdminSessionToken(token);
         </div>
 
         <div>
-          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Tipo de Pase</label>
-          <select id="crud-tipo-entrada" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Modalidad de Pase / Tarifa Oficial *</label>
+          <select id="crud-tipo-entrada" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] font-medium">
           </select>
         </div>
 
+        <input type="hidden" id="crud-tipo-pago" value="total_100" />
+        <input type="hidden" id="crud-categoria" value="pago" />
+
         <div id="wrapper-monto">
-          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Monto Pagado (COP)</label>
-          <input type="number" id="crud-monto" value="100000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Monto Cobrado (COP)</label>
+          <input type="number" id="crud-monto" value="100000" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] font-mono" />
         </div>
 
         <div id="wrapper-metodo">
           <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Método de Pago</label>
           <select id="crud-metodo" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
-            <option value="efectivo_sitio">Efectivo en Sitio</option>
-            <option value="bre_b">Bre-B (Transferencia Directa)</option>
-            <option value="transferencia">Transferencia Bancolombia / Nequi</option>
-            <option value="pasarela_digital">Pasarela Digital</option>
+            <option value="efectivo_sitio">💵 Efectivo en Sitio</option>
+            <option value="bre_b">⚡ Bre-B (Transferencia Directa)</option>
+            <option value="transferencia">🏦 Transferencia Bancolombia / Nequi</option>
+            <option value="pasarela_digital">💳 Pasarela Digital</option>
           </select>
         </div>
 
@@ -1798,7 +1887,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
         </div>
       `;
 
-      const catSelect = document.getElementById("crud-tipo-pago") as HTMLSelectElement;
       const eventoSelect = document.getElementById("crud-evento") as HTMLSelectElement;
       const tipoEntradaSelect = document.getElementById("crud-tipo-entrada") as HTMLSelectElement;
       const montoInput = document.getElementById("crud-monto") as HTMLInputElement;
@@ -1833,44 +1921,44 @@ const isAuthenticated = verifyAdminSessionToken(token);
           `).join("");
         }
 
-        const isCortesia = catSelect?.value === "cortesia";
-        if (currentEvent.isFree || isCortesia) {
+        const selectedOpt = currentEvent.options.find(o => o.id === tipoEntradaSelect?.value) || currentEvent.options[0];
+        const catInput = document.getElementById("crud-categoria") as HTMLInputElement;
+        const tipoPagoInput = document.getElementById("crud-tipo-pago") as HTMLInputElement;
+
+        if (catInput) catInput.value = selectedOpt.categoria;
+        if (tipoPagoInput) tipoPagoInput.value = selectedOpt.tipoPago;
+
+        if (selectedOpt.price === 0) {
           if (montoInput) {
             montoInput.value = "0";
             montoInput.disabled = true;
           }
           if (metodoSelect) {
-            metodoSelect.innerHTML = currentEvent.isFree 
-              ? '<option value="gratuito_alianza">Evento Gratuito / Alianza ($0 COP)</option>'
-              : '<option value="cortesia_manual">Cortesía Manual ($0 COP)</option>';
+            metodoSelect.innerHTML = currentEvent.isFree
+              ? '<option value="reserva_gratuita">🎟️ Reserva Gratuita ($0 COP)</option>'
+              : '<option value="cortesia_manual">🎁 Cortesía de Honor ($0 COP)</option>';
           }
         } else {
           if (montoInput) {
             montoInput.disabled = false;
-            const selectedOpt = currentEvent.options.find(o => o.id === tipoEntradaSelect?.value) || currentEvent.options[0];
             montoInput.value = selectedOpt.price.toString();
           }
           if (metodoSelect) {
             metodoSelect.innerHTML = `
-              <option value="efectivo_sitio">Efectivo en Sitio</option>
-              <option value="bre_b">Bre-B (Transferencia Directa)</option>
-              <option value="transferencia">Transferencia Bancolombia / Nequi</option>
-              <option value="pasarela_digital">Pasarela Digital</option>
+              <option value="efectivo_sitio">💵 Efectivo en Sitio</option>
+              <option value="bre_b">⚡ Bre-B (Transferencia Directa)</option>
+              <option value="transferencia">🏦 Transferencia Bancolombia / Nequi</option>
+              <option value="pasarela_digital">💳 Pasarela Digital</option>
             `;
           }
         }
       }
 
       eventoSelect?.addEventListener("change", () => {
-        const curEv = EVENT_CATALOG[eventoSelect.value];
-        if (curEv && curEv.isFree && catSelect) {
-          catSelect.value = "cortesia";
-        }
         updatePricingState();
       });
 
       tipoEntradaSelect?.addEventListener("change", updatePricingState);
-      catSelect?.addEventListener("change", updatePricingState);
 
       // Initial populate
       updatePricingState();
@@ -1924,7 +2012,8 @@ const isAuthenticated = verifyAdminSessionToken(token);
     } else if (currentCrudEntity === "ticket") {
       const evInput = document.getElementById("crud-evento") as HTMLSelectElement;
       const tipoInput = document.getElementById("crud-tipo-entrada") as HTMLSelectElement;
-      const tipoPagoInput = document.getElementById("crud-tipo-pago") as HTMLSelectElement;
+      const tipoPagoInput = document.getElementById("crud-tipo-pago") as HTMLInputElement | null;
+      const categoriaInput = document.getElementById("crud-categoria") as HTMLInputElement | null;
       const montoInput = document.getElementById("crud-monto") as HTMLInputElement;
       const metodoInput = document.getElementById("crud-metodo") as HTMLSelectElement;
       const estadoInput = document.getElementById("crud-estado") as HTMLSelectElement;
@@ -1932,8 +2021,8 @@ const isAuthenticated = verifyAdminSessionToken(token);
       payloadData = {
         evento: evInput.value,
         tipo_entrada: tipoInput.value,
-        tipo_pago: tipoPagoInput.value,
-        categoria: tipoPagoInput.value,
+        tipo_pago: tipoPagoInput?.value || "total_100",
+        categoria: categoriaInput?.value || "pago",
         monto_pagado: montoInput.value,
         metodo_pago: metodoInput.value,
         estado: estadoInput.value,
@@ -2173,6 +2262,13 @@ const isAuthenticated = verifyAdminSessionToken(token);
   // Initialize only if authenticated dashboard is active
   if (btnLogout) {
     loadMetrics();
+
+    // Actualización periódica en caliente (cada 30s si la pestaña está visible)
+    setInterval(() => {
+      if (document.visibilityState === "visible") {
+        loadMetrics();
+      }
+    }, 30000);
 
     // If mobile or permission ready, start camera on load
     if (tabCameraScan && window.innerWidth < 768) {

@@ -237,8 +237,8 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
         // B) Cortesía manual ($0)
         const isCortesia = data.categoria === "cortesia" || Number(data.monto_pagado || 0) === 0;
         const montoPagado = isCortesia ? 0 : Number(data.monto_pagado || 0);
-        const metodoPago = isCortesia ? "cortesia_manual" : (data.metodo_pago || "efectivo_sitio");
-        const tipoPago = isCortesia ? "cortesia_manual" : "pago_real_efectivo";
+        const metodoPago = isCortesia ? (data.metodo_pago || "cortesia_manual") : (data.metodo_pago || "efectivo_sitio");
+        const tipoPago = data.tipo_pago || (isCortesia ? "cortesia_100" : "total_100");
 
         const ticketHash = `MANUAL-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
         const res = await client.query(`
@@ -251,11 +251,29 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
           tipoPago,
           montoPagado,
           metodoPago,
-          "confirmado",
+          data.estado || "confirmado",
           ticketHash,
           assignedLead.id,
           assignedLead.afiliado_id || null,
         ]);
+
+        // Si es membresía VIP anual o el evento es corset_vip, activar credencial en el lead
+        if (data.evento === "corset_vip" || (data.tipo_entrada && data.tipo_entrada.includes("vip"))) {
+          try {
+            await client.query(`
+              UPDATE leads
+              SET corset_vip = true,
+                  metadata = jsonb_set(
+                    COALESCE(metadata, '{}'::jsonb),
+                    '{vip_until}',
+                    to_jsonb((NOW() + INTERVAL '1 year')::text)
+                  )
+              WHERE id = $1
+            `, [assignedLead.id]);
+          } catch (vipErr: any) {
+            console.warn("[Admin VIP Lead Update Err]:", vipErr.message);
+          }
+        }
 
         // Acreditación al embajador si es PAGO REAL y tiene afiliado_id asignado
         let acreditado = false;

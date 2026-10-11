@@ -80,7 +80,14 @@ export const GET: APIRoute = async ({ cookies }) => {
     const netMargin = netRevenue - totalExpenses;
 
     const perEventRes = await client.query(`
-      SELECT evento, COALESCE(SUM(monto_pagado), 0)::numeric AS total, COUNT(*)::int AS tickets_count
+      SELECT 
+        evento, 
+        COALESCE(SUM(monto_pagado), 0)::numeric AS total, 
+        COUNT(*)::int AS tickets_count,
+        COUNT(*) FILTER (WHERE tipo_pago = 'reserva_40' OR tipo_pago ILIKE '%reserva%')::int AS reservas_count,
+        COUNT(*) FILTER (WHERE (tipo_pago = 'total_100' OR tipo_pago = 'pago_real_efectivo') AND monto_pagado > 0)::int AS pagos_count,
+        COUNT(*) FILTER (WHERE monto_pagado = 0 OR tipo_pago ILIKE '%cortesia%' OR tipo_entrada ILIKE '%cortesia%' OR tipo_entrada ILIKE '%gratuita%')::int AS gratuitas_count,
+        COUNT(*) FILTER (WHERE estado = 'asistido')::int AS asistidos_count
       FROM event_tickets
       WHERE estado != 'cancelado'
       GROUP BY evento
@@ -190,7 +197,15 @@ export const GET: APIRoute = async ({ cookies }) => {
           totalExpenses,
           netMargin,
           expenses: expensesRes.rows,
-          perEvent: perEventRes.rows.map(r => ({ evento: r.evento, total: Number(r.total), count: r.tickets_count })),
+          perEvent: perEventRes.rows.map(r => ({
+            evento: r.evento,
+            total: Number(r.total),
+            count: r.tickets_count,
+            reservas: r.reservas_count,
+            pagos: r.pagos_count,
+            gratuitas: r.gratuitas_count,
+            asistidos: r.asistidos_count,
+          })),
           perMonth: perMonthRes.rows.map(r => ({ month: r.month, total: Number(r.total), count: r.tickets_count })),
           currentWeek: Number(currentWeekRes.rows[0]?.sum || 0),
           currentWeekend: Number(currentWeekendRes.rows[0]?.sum || 0),
