@@ -28,19 +28,25 @@ describe("BAI-248: Luna Llena — Link Segmentation, Payment Anchor & Mobile Res
     expect(content).toMatch(/<span class="sm:hidden"><br\s*\/><\/span>\s*Cambiar en Dashboard →/);
   });
 
-  it("should differentiate info URL vs direct payment anchor in bot knowledge", () => {
+  it("should provide clean luna-llena URL without anchor in bot knowledge", () => {
     const content = readFileSync(botKnowledgePath, "utf-8");
-    expect(content).toContain('https://elplacerdecompartir.com/the-corset-society/luna-llena"');
-    expect(content).toContain('https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas"');
+    expect(content).toContain('reserve_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena"');
   });
 
-  it("should provide differentiated links in the-corset-society landing and dashboard", () => {
+  it("should provide clean links to luna-llena in landing and dashboard without forcing anchor jump", () => {
     const corsetContent = readFileSync(corsetIndexPath, "utf-8");
     expect(corsetContent).toContain('href="/the-corset-society/luna-llena"');
-    expect(corsetContent).toContain('href="/the-corset-society/luna-llena#reservas"');
+    expect(corsetContent).not.toContain('href="/the-corset-society/luna-llena#reservas"');
 
     const dashboardContent = readFileSync(dashboardPath, "utf-8");
     expect(dashboardContent).toContain('href="/the-corset-society/luna-llena"');
-    expect(dashboardContent).toContain('href="/the-corset-society/luna-llena#reservas"');
+    expect(dashboardContent).not.toContain('href="/the-corset-society/luna-llena#reservas"');
+  });
+
+  it("should include dashboard button in corset headers", () => {
+    const corsetContent = readFileSync(corsetIndexPath, "utf-8");
+    expect(corsetContent).toContain('href="/dashboard"');
+    const lunaContent = readFileSync(lunaLlenaPath, "utf-8");
+    expect(lunaContent).toContain('href="/dashboard"');
   });
 });

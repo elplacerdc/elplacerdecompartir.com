@@ -828,7 +828,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
       return `
         <tr class="hover:bg-[#250e29]/70 cursor-pointer transition-colors group" data-lead-id="${l.id}">
           <td class="py-3 px-3 font-medium text-[#f7f4ee]">
-            <div class="font-serif font-bold text-sm text-[#ead397] group-hover:text-white transition-colors">${l.alias_nombre || "Invitado"}</div>
+            <div class="font-serif font-bold text-sm text-[#ead397] group-hover:text-white transition-colors flex items-center gap-1.5 flex-wrap">
+              <span>${l.alias_nombre || "Invitado"}</span>
+              ${isPaidVip ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 font-sans font-bold" title="VIP Activo">👑 VIP</span>' : (isPossibleVip ? '<span class="px-1.5 py-0.5 rounded text-[10px] bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 font-sans font-bold" title="Posible VIP">🤴 Posible VIP</span>' : '')}
+            </div>
             <div class="text-[10px] text-[#f7f4ee]/40 font-mono">ID: ${l.id.substring(0, 8)}...</div>
           </td>
           <td class="py-3 px-3 font-mono text-[11px]">
@@ -1704,14 +1707,6 @@ const isAuthenticated = verifyAdminSessionToken(token);
             { id: "vip_membresia", label: "Membresía Anual VIP ($199.000 COP)", price: 199000 },
             { id: "pareja_gala", label: "Pase Pareja Gala Noir ($150.000 COP)", price: 150000 },
             { id: "single_gala", label: "Pase Individual Gala Noir ($180.000 COP)", price: 180000 }
-          ]
-        },
-        centro_cultural_taller: {
-          name: "Centro Cultural — Taller de Parejas",
-          isFree: false,
-          options: [
-            { id: "taller_pareja", label: "Pareja Taller ($80.000 COP)", price: 80000 },
-            { id: "taller_individual", label: "Individual Taller ($50.000 COP)", price: 50000 }
           ]
         }
       };

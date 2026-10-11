@@ -25,7 +25,7 @@ export const GET: APIRoute = async ({ cookies }) => {
     const possibleVipCountRes = await client.query(`
       SELECT COUNT(*)::int AS count 
       FROM leads 
-      WHERE (corset_vip = true OR metadata->'tags' ? 'posible vip' OR metadata->'tags' ? 'corset')
+      WHERE (corset_vip = true OR metadata->'tags' ? 'posible vip' OR metadata->'tags' ? 'corset' OR metadata->'tags' ? 'corset_vip')
         AND (metadata->>'vip_until' IS NULL OR (metadata->>'vip_until')::timestamptz <= NOW())
     `);
     const activePaidVipCountRes = await client.query(`
@@ -122,7 +122,7 @@ export const GET: APIRoute = async ({ cookies }) => {
         COALESCE(a.referidos_pagados, 0) AS affiliate_sales_count,
         COALESCE(a.entradas_ganadas, 0) AS affiliate_tickets_won,
         (CASE WHEN ((l.metadata->>'vip_until') IS NOT NULL AND (l.metadata->>'vip_until')::timestamptz > NOW()) OR (l.metadata->'tags' ? 'vip_activo') THEN true ELSE false END) AS is_active_vip,
-        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset') AND ((l.metadata->>'vip_until') IS NULL OR (l.metadata->>'vip_until')::timestamptz <= NOW()) THEN true ELSE false END) AS is_possible_vip,
+        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset' OR l.metadata->'tags' ? 'corset_vip') AND ((l.metadata->>'vip_until') IS NULL OR (l.metadata->>'vip_until')::timestamptz <= NOW()) THEN true ELSE false END) AS is_possible_vip,
         (SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id) AS tickets_count
       FROM leads l
       LEFT JOIN afiliados a ON (

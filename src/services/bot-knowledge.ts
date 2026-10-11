@@ -40,7 +40,7 @@ const STATIC_EVENTS: EventItem[] = [
     description: "Círculo privado de gala noir y misterio. Dress code: Máscara obligatoria / Noir Fantasy.",
     pricing: "Pase Pareja: $100.000 COP (separa con $40.000) | Pase Single: $120.000 COP (separa con $50.000) | Pase Unicornio: $30.000 COP (separa con $10.000). NO existen mesas VIP.",
     url: "https://elplacerdecompartir.com/the-corset-society/luna-llena",
-    reserve_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas",
+    reserve_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena",
   },
 ];
 
@@ -179,7 +179,7 @@ SOLO tienes permitido brindar los siguientes enlaces oficiales exactos. NUNCA in
 • Evento Aliado Impacto Producciones: https://elplacerdecompartir.com/eventos/impacto-10-oct
 • The Corset Society (círculo VIP y membresías): https://elplacerdecompartir.com/the-corset-society
 • Noche de Luna Llena (31 Octubre - Información y Experiencia): https://elplacerdecompartir.com/the-corset-society/luna-llena
-• Noche de Luna Llena (Reserva de Entradas y Pago Directo): https://elplacerdecompartir.com/the-corset-society/luna-llena#reservas
+• Noche de Luna Llena (Reserva de Entradas y Pago Directo): https://elplacerdecompartir.com/the-corset-society/luna-llena
 • Programa de Embajadores y Comunidad: https://elplacerdecompartir.com/dashboard
 • Memorias de Eventos Realizados: https://elplacerdecompartir.com/eventos-realizados
 
@@ -245,7 +245,7 @@ const ROUTE_ALIASES: Record<string, string> = {
   "/afiliados": "/dashboard",
   "/luna-llena": "/the-corset-society/luna-llena",
   "/corset/luna-llena": "/the-corset-society/luna-llena",
-  "/reservar-luna-llena": "/the-corset-society/luna-llena#reservas",
+  "/reservar-luna-llena": "/the-corset-society/luna-llena",
   "/corset": "/the-corset-society",
   "/eventos": "/galeria-centro-cultural",
   "/eventos/": "/galeria-centro-cultural",

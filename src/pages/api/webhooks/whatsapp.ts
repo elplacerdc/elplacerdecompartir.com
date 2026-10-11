@@ -152,6 +152,17 @@ export const POST: APIRoute = async ({ request }) => {
           `[WhatsApp Bot] Takeover cancelado manualmente vía #bot para:`,
           targetDigitsList
         );
+      } else if (
+        messageText.includes("#stop") ||
+        messageText.includes("#off") ||
+        messageText.includes("#silencio") ||
+        messageText.includes("#desactivar")
+      ) {
+        await setHumanTakeover(targetDigitsList, 315360000); // Silencio permanente (10 años)
+        console.log(
+          `[WhatsApp Bot] Bot desactivado permanentemente vía comando para:`,
+          targetDigitsList
+        );
       } else if (messageText.includes("#mute")) {
         await setHumanTakeover(targetDigitsList, 86400); // Silencio de 24 horas
         console.log(

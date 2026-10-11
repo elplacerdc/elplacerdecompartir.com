@@ -30,12 +30,15 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         <div class="flex flex-col sm:flex-row items-center justify-between p-6 rounded-2xl bg-[#140816] border border-[#c5a059]/30 shadow-lg gap-4">
           <div>
             <span class="text-xs text-[#c5a059] uppercase tracking-widest font-semibold block">Embajador Activo</span>
-            <div class="flex flex-wrap items-baseline gap-2">
+            <div class="flex flex-wrap items-baseline gap-2.5">
               <a href="#section-profile-settings" class="hover:text-[#ead397] transition-colors group flex items-center gap-1.5" title="Ir a ajustes de perfil">
                 <h2 id="ambassador-name" class="text-xl font-serif font-bold text-[#f7f4ee] group-hover:text-[#ead397]">Cargando...</h2>
                 <span class="text-xs text-[#c5a059]/70 group-hover:text-[#ead397]">⚙️</span>
               </a>
-              <a href="#section-profile-settings" class="text-xs text-[#c5a059] hover:text-[#ead397] underline underline-offset-2 transition-colors">
+              <a href="#section-custom-code" class="text-xs text-[#c5a059] hover:text-[#ead397] underline underline-offset-2 transition-colors font-medium">
+                Editar alias de enlace / referido →
+              </a>
+              <a href="#section-profile-settings" class="text-xs text-[#c5a059]/70 hover:text-[#ead397] underline underline-offset-2 transition-colors">
                 Ajustes de perfil →
               </a>
             </div>
@@ -454,7 +457,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
                 <a href="/the-corset-society/luna-llena" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/10 text-xs font-bold uppercase tracking-wider transition-all inline-block text-center">
                   Información Luna Llena 🌕
                 </a>
-                <a href="/the-corset-society/luna-llena#reservas" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all inline-block text-center shadow-md">
+                <a href="/the-corset-society/luna-llena" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all inline-block text-center shadow-md">
                   Pagar / Reservar Entrada →
                 </a>
               </div>
@@ -474,7 +477,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               new URLSearchParams(window.location.search).get("ref")
             );
             const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
-            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] text-[#81c784] font-normal font-sans ml-1">(-10% Embajador)</span>' : '';
+            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Descuento Embajador)</span>' : '';
             vipActionContainer.innerHTML = `
               <a href="/corset/checkout" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-block text-center shadow-md">
                 Hazte VIP (${vipPriceDisplay})${vipDiscountTag} →
@@ -495,7 +498,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               new URLSearchParams(window.location.search).get("ref")
             );
             const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
-            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] text-[#81c784] font-normal font-sans ml-1">(-10% Embajador)</span>' : '';
+            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Descuento Embajador)</span>' : '';
             vipActionContainer.innerHTML = `
               <a href="/the-corset-society" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#c5a059]/60 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all inline-block text-center">
                 Solicita VIP (${vipPriceDisplay})${vipDiscountTag} →
