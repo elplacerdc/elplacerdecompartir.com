@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { pool, upsertLead } from "../../../db";
+import { resolveDiscount } from "../../../services/discountStrategy";
 import crypto from "crypto";
 
 const PRICES: Record<string, { total: number; reserva_40: number; label: string }> = {
@@ -50,8 +51,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       } catch (e) {}
     }
 
-    const hasDiscount = Boolean(affiliateRef || isVipActive);
-    const discountRate = hasDiscount ? 0.10 : 0;
+    const discountResult = await resolveDiscount({
+      domain: "event_ticket",
+      whatsapp,
+      email,
+      affiliateRef,
+      isVipActive,
+    });
+    const hasDiscount = discountResult.hasDiscount;
+    const discountRate = discountResult.discountRate;
     const monto = Math.round(baseMonto * (1 - discountRate));
 
     // 1. Upsert lead first

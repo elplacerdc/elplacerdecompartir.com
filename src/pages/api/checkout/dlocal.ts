@@ -1,10 +1,12 @@
 import type { APIRoute } from "astro";
 import { createPaymentLink } from "../../../services/dlocal";
+import { resolveDiscount } from "../../../services/discountStrategy";
 
 export const POST: APIRoute = async ({ request, url, cookies }) => {
   let userId = "guest_" + Date.now();
   let userEmail = "contacto@elplacerdecompartir.com";
   let userName = "Invitado VIP";
+  let userPhone: string | null = null;
   const isJson = (request.headers.get("content-type") || "").includes("application/json");
 
   let bodyRef: string | null = null;
@@ -14,6 +16,8 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
       if (json.userId) userId = json.userId;
       if (json.userEmail) userEmail = json.userEmail;
       if (json.userName) userName = json.userName;
+      if (json.userPhone) userPhone = json.userPhone;
+      if (json.whatsapp) userPhone = json.whatsapp;
       if (json.ref) bodyRef = json.ref.toString();
     } catch {}
   } else {
@@ -22,16 +26,24 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
       const uId = formData.get("userId")?.toString();
       const uEmail = formData.get("userEmail")?.toString();
       const uName = formData.get("userName")?.toString();
+      const uPhone = formData.get("userPhone")?.toString() || formData.get("whatsapp")?.toString();
       const r = formData.get("ref")?.toString() || formData.get("affiliate_ref")?.toString();
       if (uId) userId = uId;
       if (uEmail) userEmail = uEmail;
       if (uName) userName = uName;
+      if (uPhone) userPhone = uPhone;
       if (r) bodyRef = r;
     } catch {}
   }
 
   const affiliateRef = (bodyRef || cookies.get("affiliate_ref")?.value || "").toString().trim().toLowerCase() || null;
-  const discountRate = affiliateRef ? 0.10 : 0;
+  const discountResult = await resolveDiscount({
+    domain: "vip_membership",
+    whatsapp: userPhone,
+    email: userEmail,
+    affiliateRef,
+  });
+  const discountRate = discountResult.discountRate;
   const finalAmount = discountRate > 0 ? 179000.00 : 199000.00;
 
   const orderId = `CORSET_VIP_${userId}_${Date.now()}`;

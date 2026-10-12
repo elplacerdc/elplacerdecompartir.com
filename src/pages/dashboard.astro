@@ -412,6 +412,18 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         if (profileEmail) profileEmail.value = stats.email || "";
         if (profileRol && stats.rol) profileRol.value = stats.rol;
         if (profileCiudad && stats.ciudad) profileCiudad.value = stats.ciudad;
+        const profile = {
+          alias: stats.alias,
+          alias_nombre: stats.alias_nombre || stats.nombre || stats.alias,
+          whatsapp: stats.whatsapp || sessionIdentifier,
+          email: stats.email || "",
+          rol: stats.rol || "",
+          ciudad: stats.ciudad || "",
+        };
+        localStorage.setItem("user_profile", JSON.stringify(profile));
+        localStorage.setItem("user_phone", profile.whatsapp);
+        localStorage.setItem("user_alias", profile.alias_nombre);
+        if (profile.email) localStorage.setItem("user_email", profile.email);
         if (stats.rol) {
           localStorage.setItem("user_role", stats.rol);
         }

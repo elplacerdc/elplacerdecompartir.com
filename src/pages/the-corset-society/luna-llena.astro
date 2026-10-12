@@ -643,6 +643,57 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
       }
     }
 
+    async function hydrateSessionFormFields() {
+      let userProfile = null;
+      try {
+        const raw = localStorage.getItem("user_profile");
+        if (raw) userProfile = JSON.parse(raw);
+      } catch (_) {}
+
+      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
+      const aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
+      const emailVal = userProfile?.email || localStorage.getItem("user_email");
+      const phoneVal = userProfile?.whatsapp || sessionPhone;
+
+      const inputAlias = document.getElementById("alias_nombre");
+      const inputPhone = document.getElementById("whatsapp");
+      const inputEmail = document.getElementById("email");
+
+      if (inputAlias && aliasVal && !inputAlias.value) inputAlias.value = aliasVal;
+      if (inputPhone && phoneVal && !inputPhone.value) inputPhone.value = phoneVal;
+      if (inputEmail && emailVal && !inputEmail.value) inputEmail.value = emailVal;
+
+      if ((!aliasVal || !emailVal) && sessionPhone) {
+        try {
+          const res = await fetch("/api/leads/check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ whatsapp: sessionPhone }),
+          });
+          const data = await res.json();
+          if (data.exists && data.lead) {
+            const lead = data.lead;
+            if (lead.alias_nombre) {
+              localStorage.setItem("user_alias", lead.alias_nombre);
+              if (inputAlias && !inputAlias.value) inputAlias.value = lead.alias_nombre;
+            }
+            if (lead.email) {
+              localStorage.setItem("user_email", lead.email);
+              if (inputEmail && !inputEmail.value) inputEmail.value = lead.email;
+            }
+            if (lead.whatsapp) {
+              localStorage.setItem("user_phone", lead.whatsapp);
+              if (inputPhone && !inputPhone.value) inputPhone.value = lead.whatsapp;
+            }
+            if (lead.rol) {
+              localStorage.setItem("user_role", lead.rol);
+              applyRoleTicketFilter(lead.rol);
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
     async function checkUserRoleAndFilter() {
       let userRole = localStorage.getItem("user_role");
       const sessionPhone = localStorage.getItem("ambassador_session_phone");
@@ -671,6 +722,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
     async function initPricing() {
       applyDynamicDiscountUI();
       await checkUserRoleAndFilter();
+      await hydrateSessionFormFields();
       updateSummary();
     }
 
