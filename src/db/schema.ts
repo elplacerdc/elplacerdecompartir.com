@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, serial } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, serial, jsonb } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -59,4 +59,29 @@ export const ambassadors = pgTable("ambassadors", {
 	code: text("code").unique().notNull(),
 	status: text("status").default("active"),
 	createdAt: timestamp("createdAt").defaultNow().notNull()
+});
+
+export const events = pgTable("events", {
+	id: text("id").primaryKey(),
+	slug: text("slug").notNull().unique(),
+	title: text("title").notNull(),
+	subBrand: text("sub_brand").default("elplacerdc"),
+	badge: text("badge"),
+	badgeClass: text("badge_class"),
+	date: timestamp("date", { withTimezone: true }).notNull(),
+	displayDate: text("display_date"),
+	timeRange: text("time_range"),
+	venue: text("venue"),
+	city: text("city").default("Bogotá"),
+	description: text("description").notNull(),
+	dressCode: text("dress_code"),
+	imageUrl: text("image_url"),
+	urlPath: text("url_path"),
+	buttonText: text("button_text").default("Ver Detalles y Reservar"),
+	pricingTiers: jsonb("pricing_tiers").default([]),
+	freeEntryWindow: text("free_entry_window"),
+	isActive: boolean("is_active").default(true),
+	isPartner: boolean("is_partner").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+	updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow()
 });

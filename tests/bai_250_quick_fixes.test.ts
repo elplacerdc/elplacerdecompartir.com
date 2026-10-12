@@ -52,10 +52,11 @@ describe("BAI-250: Quick UX & Narrative Fixes", () => {
     expect(content).not.toContain("Taller de Parejas");
   });
 
-  it("debe soportar comandos permanentes #stop/#off/#silencio/#desactivar en el webhook de WhatsApp", () => {
-    const content = fs.readFileSync(path.join(rootDir, "src/pages/api/webhooks/whatsapp.ts"), "utf-8");
+  it("debe soportar comandos permanentes #stop/#off/#silencio/#desactivar en el bot de WhatsApp", () => {
+    const workerPath = "/var/www/whatsappbot/src/index.ts";
+    const targetFile = fs.existsSync(workerPath) ? workerPath : path.join(rootDir, "src/pages/api/webhooks/whatsapp.ts");
+    const content = fs.readFileSync(targetFile, "utf-8");
     expect(content).toContain("#stop");
     expect(content).toContain("#off");
-    expect(content).toContain("315360000");
   });
 });

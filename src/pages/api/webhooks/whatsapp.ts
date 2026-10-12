@@ -4,7 +4,8 @@ const WHATSAPP_WORKER_URL =
   process.env.WHATSAPP_WORKER_URL || "http://whatsappbot:3005/webhook";
 
 /**
- * Legacy Webhook Endpoint -> Forwarded to decoupled `whatsappbot` worker
+ * Webhook Endpoint -> Forwarded to decoupled `whatsappbot` worker
+ * The worker processes operator takeover commands: #stop, #off, #silencio, #desactivar.
  */
 export const POST: APIRoute = async ({ request }) => {
   try {

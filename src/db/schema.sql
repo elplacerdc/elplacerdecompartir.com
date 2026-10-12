@@ -60,3 +60,33 @@ CREATE TABLE IF NOT EXISTS event_expenses (
 );
 
 CREATE INDEX IF NOT EXISTS idx_event_expenses_evento ON event_expenses(evento);
+
+CREATE TABLE IF NOT EXISTS events (
+  id VARCHAR(100) PRIMARY KEY,
+  slug VARCHAR(100) UNIQUE NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  sub_brand VARCHAR(100) DEFAULT 'elplacerdc',
+  badge VARCHAR(100),
+  badge_class VARCHAR(255),
+  date TIMESTAMPTZ NOT NULL,
+  display_date VARCHAR(100),
+  time_range VARCHAR(100),
+  venue VARCHAR(255) DEFAULT 'Centro Cultural ElPlacerDC (Calle 67 # 23-46 Piso 2, Bogotá)',
+  city VARCHAR(100) DEFAULT 'Bogotá',
+  description TEXT NOT NULL,
+  dress_code VARCHAR(255),
+  image_url VARCHAR(255),
+  url_path VARCHAR(255),
+  button_text VARCHAR(100) DEFAULT 'Ver Detalles y Reservar',
+  pricing_tiers JSONB DEFAULT '[]'::jsonb,
+  free_entry_window VARCHAR(255),
+  is_active BOOLEAN DEFAULT true,
+  is_partner BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_date ON events(date);
+CREATE INDEX IF NOT EXISTS idx_events_is_active ON events(is_active);
+CREATE INDEX IF NOT EXISTS idx_events_slug ON events(slug);
+
