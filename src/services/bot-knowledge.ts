@@ -49,7 +49,9 @@ const STATIC_EVENTS: EventItem[] = [
  */
 function loadBrandbookContext(): string {
   const brandbookPaths = [
+    "/var/www/localstorage/ELPLACERDC/dev/brandbook_superfull_elplacerdc.json",
     "/var/www/localstorage/ELPLACERDC/dev/brandbook-elplacerdc-potenciado.json",
+    "/var/www/localstorage/ELPLACERDC/dev/brandbook.json",
     "/var/www/localstorage/ELPLACERDC/brandbook.json",
   ];
 
@@ -58,8 +60,14 @@ function loadBrandbookContext(): string {
       try {
         const raw = fs.readFileSync(bpath, "utf-8");
         const json = JSON.parse(raw);
-        const name = json.brand?.name || "El Placer de Compartir";
-        const voice = json.brand?.archetype || "Sofisticado, seductor, cómplice y empático";
+        const name =
+          json.brand_architecture?.umbrella_brand?.name ||
+          json.brand?.name ||
+          "El Placer de Compartir";
+        const voice =
+          json.brand_architecture?.leadership_and_ambassador?.brand_archetype ||
+          json.brand?.archetype ||
+          "Sofisticado, seductor, cómplice y empático";
         return `Marca: ${name}. Arquetipo y voz: ${voice}.`;
       } catch {
         // Fallback si el json está en parse

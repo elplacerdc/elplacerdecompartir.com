@@ -426,7 +426,7 @@ const {
             }
 
             const hasAffiliateRef = Boolean(localStorage.getItem("affiliate_ref") || document.cookie.includes("affiliate_ref"));
-            const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($179.000 COP) (-10% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
+            const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($159.000 COP) (-20% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
 
             leadExistingBox.innerHTML = `
               <div class="p-5 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
@@ -436,11 +436,11 @@ const {
                 <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
                   Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> está radicada con éxito. Tus credenciales oficiales (WhatsApp <span class="font-mono text-[#ead397]">${whatsapp}</span> y correo <span class="font-mono text-[#ead397]">${existing.email || ""}</span>) se encuentran verificadas.
                 </p>
-                <div class="pt-2 flex flex-col sm:flex-row gap-2">
-                  <a href="/corset/checkout" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                <div class="pt-2 flex flex-col gap-2">
+                  <a href="/corset/checkout" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
                     ${vipPriceLabel}
                   </a>
-                  <a href="/dashboard" class="py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
+                  <a href="/dashboard" class="w-full py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
                     Ir al Panel de Embajador →
                   </a>
                 </div>
@@ -592,7 +592,7 @@ const {
                 const applyData = await applyRes.json();
                 if (applyData.success) {
                   const hasAffiliateRef = Boolean(localStorage.getItem("affiliate_ref") || document.cookie.includes("affiliate_ref"));
-                  const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($179.000 COP) (-10% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
+                  const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($159.000 COP) (-20% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
                   leadExistingBox.innerHTML = `
                     <div class="p-5 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
                       <div class="text-[#81c784] font-serif font-bold text-sm flex items-center gap-1.5">
@@ -601,11 +601,11 @@ const {
                       <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
                         Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> ha sido radicada exitosamente y tus credenciales oficiales han quedado verificadas.
                       </p>
-                      <div class="pt-2 flex flex-col sm:flex-row gap-2">
-                        <a href="/corset/checkout" class="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                      <div class="pt-2 flex flex-col gap-2">
+                        <a href="/corset/checkout" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
                           ${vipPriceLabel}
                         </a>
-                        <a href="/dashboard" class="py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
+                        <a href="/dashboard" class="w-full py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
                           Ir al Panel de Embajador →
                         </a>
                       </div>

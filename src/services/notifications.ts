@@ -1,6 +1,6 @@
 // notifications.ts - Multi-Channel Notification Orchestrator
 import { sendTransactionalEmail } from "./email";
-import { normalizePhone } from "../db";
+import { pool, normalizePhone } from "../db";
 
 const BRAND_NOTIFICATION_EMAIL = "web@elplacerdecompartir.com";
 const EVOLUTION_INITIAL_NUMBER = "573021004070";
@@ -465,8 +465,22 @@ export async function notifyEventReservation(
     affiliateCode?: string;
   }
 ): Promise<void> {
+  const isLuna = ticket.evento.includes("luna_llena") || ticket.evento.includes("luna-llena");
   const isSitio = ticket.evento.includes("sitio") || ticket.evento.includes("9-oct");
-  const eventTitle = isSitio ? "Evento Oficial ElPlacerDC (Viernes 9 de Octubre)" : "Evento Aliado: Impacto Producciones (Sábado 10 de Octubre)";
+  const isImpacto = ticket.evento.includes("impacto") || ticket.evento.includes("10-oct");
+  const isCorsetVip = ticket.evento.includes("corset_vip") || ticket.evento.includes("vip");
+
+  let eventTitle = "Evento Oficial El Placer de Compartir";
+  if (isLuna) {
+    eventTitle = "The Corset Society — Noche de Luna Llena (Gala Mascarada Noir de Halloween)";
+  } else if (isSitio) {
+    eventTitle = "Evento Oficial ElPlacerDC (Viernes 9 de Octubre)";
+  } else if (isImpacto) {
+    eventTitle = "Evento Aliado: Impacto Producciones (Sábado 10 de Octubre)";
+  } else if (isCorsetVip) {
+    eventTitle = "The Corset Society — Credencial VIP Anual";
+  }
+
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ELPLACERDC-EVENT-${ticket.ticket_hash}`;
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
@@ -474,15 +488,40 @@ export async function notifyEventReservation(
   const affCode = options?.affiliateCode || "embajador";
 
   // URL del evento específico para el enlace de embajador
-  const eventPageUrl = isSitio
-    ? `https://elplacerdecompartir.com/eventos/sitio-9-oct`
-    : ticket.evento.includes("impacto") || ticket.evento.includes("10-oct")
-    ? `https://elplacerdecompartir.com/eventos/impacto-10-oct`
-    : ticket.evento.includes("luna-llena")
+  const eventPageUrl = isLuna
     ? `https://elplacerdecompartir.com/the-corset-society/luna-llena`
-    : `https://elplacerdecompartir.com/centro-cultural#proximos-eventos`;
+    : isSitio
+    ? `https://elplacerdecompartir.com/eventos/sitio-9-oct`
+    : isImpacto
+    ? `https://elplacerdecompartir.com/eventos/impacto-10-oct`
+    : `https://elplacerdecompartir.com/the-corset-society/luna-llena`;
 
   const affLink = `${eventPageUrl}?ref=${encodeURIComponent(affCode)}`;
+
+  // Programar recordatorios persistentes en PostgreSQL SSoT (BAI-284)
+  if (isLuna) {
+    pool.connect().then((client) => {
+      return client.query(`
+        INSERT INTO scheduled_dispatches (evento, trigger_type, scheduled_for, channel, destination_phone, destination_email, payload, status)
+        VALUES 
+          ($1, '3_days_before', $2, 'both', $3, $4, $5, 'pending'),
+          ($1, 'doors_opening', $6, 'both', $3, $4, $5, 'pending')
+      `, [
+        ticket.evento,
+        new Date("2026-10-28T15:00:00Z"), // 3 días antes (10:00 AM Bogotá)
+        lead.whatsapp,
+        lead.email || null,
+        JSON.stringify({
+          alias_nombre: lead.alias_nombre,
+          ticket_hash: ticket.ticket_hash,
+          eventTitle,
+          eventPageUrl,
+          affLink
+        }),
+        new Date("2026-10-31T23:00:00Z")  // Apertura de puertas (6:00 PM Bogotá)
+      ]).finally(() => client.release());
+    }).catch((e) => console.warn("[Schedule Dispatch Insert Err]:", e.message));
+  }
 
   // 1. WhatsApp al asistente
   let waText = "";

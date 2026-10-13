@@ -1,9 +1,33 @@
 ---
+// src/components/CorsetHeader.astro - Cabecera Oficial The Corset Society
+import { pool } from "../db/index";
+
 interface Props {
   current?: "inicio" | "luna-llena" | "vip" | "checkout";
 }
 
 const { current } = Astro.props;
+
+let nextEvent = {
+  title: "🌕 Luna Llena",
+  url_path: "/the-corset-society/luna-llena",
+};
+
+try {
+  const { rows } = await pool.query(
+    `SELECT title, url_path FROM events 
+     WHERE sub_brand IN ('the_corset_society', 'corset') 
+       AND is_active = true 
+       AND date >= NOW() 
+     ORDER BY date ASC LIMIT 1`
+  );
+  if (rows.length > 0) {
+    nextEvent = {
+      title: rows[0].title.includes("Luna Llena") ? "🌕 Luna Llena" : `✨ ${rows[0].title}`,
+      url_path: rows[0].url_path || "/the-corset-society/luna-llena",
+    };
+  }
+} catch (_) {}
 ---
 
 <header class="py-4 px-4 sm:px-8 max-w-7xl mx-auto flex justify-between items-center border-b border-[#c5a059]/20 relative z-30">
@@ -21,7 +45,19 @@ const { current } = Astro.props;
 
   <!-- Right Actions -->
   <div class="flex items-center gap-2 sm:gap-4">
-    <!-- Botón Pequeño de Panel (siempre visible por fuera) -->
+    <!-- Redes Sociales Corset & Segisw -->
+    <div class="hidden lg:flex items-center gap-2 text-[#c5a059]/80 pr-1">
+      <a href="https://x.com/corsetsociety" target="_blank" rel="noopener noreferrer" title="X @corsetsociety" class="p-1.5 hover:text-[#ead397] transition-colors flex items-center gap-1 text-[11px] font-sans">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <span class="hidden xl:inline text-[10px]">@corsetsociety</span>
+      </a>
+      <a href="https://x.com/SegiSw" target="_blank" rel="noopener noreferrer" title="X @SegiSw" class="p-1.5 hover:text-[#ead397] transition-colors flex items-center gap-1 text-[11px] font-sans">
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        <span class="hidden xl:inline text-[10px]">@SegiSw</span>
+      </a>
+    </div>
+
+    <!-- Botón Pequeño de Panel -->
     <a 
       href="/dashboard" 
       class="text-[11px] sm:text-xs font-sans tracking-wider uppercase text-[#ead397] hover:text-white border border-[#c5a059]/50 px-2.5 sm:px-3 py-1.5 rounded-full bg-[#c5a059]/20 hover:bg-[#c5a059]/35 transition-all flex items-center gap-1 shadow-sm whitespace-nowrap"
@@ -34,24 +70,24 @@ const { current } = Astro.props;
     <!-- Menú Desktop -->
     <nav class="hidden md:flex items-center gap-3">
       <a 
-        href="/the-corset-society/luna-llena" 
-        class={`text-xs uppercase tracking-wider px-3 py-1.5 rounded-full border transition-all ${
+        href={nextEvent.url_path} 
+        class={`text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all ${
           current === "luna-llena" 
             ? "border-[#c5a059] bg-[#c5a059]/25 text-[#ead397] font-bold" 
             : "text-[#c5a059] border-[#c5a059]/40 bg-[#c5a059]/10 hover:bg-[#c5a059]/20"
         }`}
       >
-        🌕 Luna Llena
+        {nextEvent.title}
       </a>
       <a 
-        href="/corset-vip" 
-        class={`text-xs font-sans tracking-wider uppercase px-3 py-1.5 rounded-full border transition-all ${
-          current === "vip" 
-            ? "border-[#c5a059] bg-[#c5a059]/25 text-white font-bold" 
-            : "text-[#ead397] hover:text-white border-[#c5a059]/40 bg-[#c5a059]/20 hover:bg-[#c5a059]/30"
+        href="/corset/checkout" 
+        class={`text-xs font-sans tracking-wider uppercase px-3.5 py-1.5 rounded-full border transition-all ${
+          current === "checkout" 
+            ? "border-[#c5a059] bg-[#c5a059]/30 text-white font-bold" 
+            : "text-[#ead397] hover:text-white border-[#c5a059]/50 bg-gradient-to-r from-[#c5a059]/20 to-[#ead397]/20 hover:brightness-110"
         }`}
       >
-        Credencial VIP
+        💎 Activar VIP
       </a>
       <a 
         href="/" 
@@ -83,26 +119,35 @@ const { current } = Astro.props;
     class="hidden md:hidden absolute top-full left-0 right-0 bg-[#120516]/98 backdrop-blur-2xl border-b border-[#c5a059]/40 p-5 space-y-3 shadow-2xl z-50 text-center"
   >
     <a 
-      href="/the-corset-society/luna-llena" 
+      href={nextEvent.url_path} 
       class="block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-serif font-bold text-[#050505] bg-gradient-to-r from-[#c5a059] to-[#ead397] shadow-md"
     >
-      🌕 Noche de Luna Llena (Halloween)
+      {nextEvent.title}
+    </a>
+    <a 
+      href="/corset/checkout" 
+      class="block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold text-[#ead397] border border-[#c5a059]/40 bg-[#250e29]/70 hover:bg-[#c5a059]/20 transition-all"
+    >
+      💎 Activar Membresía VIP ($199k)
     </a>
     <a 
       href="/corset-vip" 
-      class="block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold text-[#ead397] border border-[#c5a059]/40 bg-[#250e29]/70 hover:bg-[#c5a059]/20 transition-all"
+      class="block py-2 px-4 rounded-xl text-xs uppercase tracking-wider text-[#ead397]/80 hover:text-white transition-colors"
     >
-      💎 Credencial & Membresía Anual VIP
+      🗝️ Ver Beneficios VIP
     </a>
-    <a 
-      href="/the-corset-society" 
-      class="block py-2 px-4 rounded-xl text-xs uppercase tracking-wider text-[#c5a059] hover:text-white transition-colors"
-    >
-      🗝️ Inicio The Corset Society
-    </a>
+    <div class="flex items-center justify-center gap-4 py-2 border-t border-[#c5a059]/20 text-[#c5a059]">
+      <a href="https://x.com/corsetsociety" target="_blank" rel="noopener noreferrer" class="text-xs hover:text-[#ead397]">
+        @corsetsociety
+      </a>
+      <span>•</span>
+      <a href="https://x.com/SegiSw" target="_blank" rel="noopener noreferrer" class="text-xs hover:text-[#ead397]">
+        @SegiSw
+      </a>
+    </div>
     <a 
       href="/" 
-      class="block py-2 px-4 rounded-xl text-xs uppercase tracking-wider text-[#f7f4ee]/70 hover:text-white transition-colors"
+      class="block py-2 px-4 rounded-xl text-xs uppercase tracking-wider text-[#f7f4ee]/70 hover:text-white transition-colors border-t border-[#c5a059]/10"
     >
       ← Volver a El Placer DC
     </a>

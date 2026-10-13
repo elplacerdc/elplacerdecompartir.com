@@ -117,8 +117,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
           <!-- KPI Metrics Grid (100% Clickeables e interactivas) -->
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold">Métricas Globales (Toca una tarjeta para ver detalle y gestionar)</span>
-              <span class="text-[11px] text-[#f7f4ee]/50 italic">Single-Page Interactivo</span>
+              <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold">Métricas Globales</span>
             </div>
 
             <div class="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4">
@@ -1783,24 +1782,8 @@ const isAuthenticated = verifyAdminSessionToken(token);
           isFree: false,
           options: [
             { id: "vip_anual", label: "💎 Membresía Anual VIP ($199.000 COP / año)", price: 199000, tipoPago: "total_100", categoria: "pago" },
-            { id: "vip_anual_embajador", label: "💎 Membresía Anual VIP con Descuento Embajador ($179.000 COP / año)", price: 179000, tipoPago: "total_100", categoria: "pago" },
+            { id: "vip_anual_embajador", label: "💎 Membresía Anual VIP con Descuento Embajador ($159.000 COP / año)", price: 159000, tipoPago: "total_100", categoria: "pago" },
             { id: "vip_cortesia", label: "👑 Credencial VIP Cortesía de Honor ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" }
-          ]
-        },
-        impacto_10_oct: {
-          name: "Impacto Producciones (10 Oct - Entrada Libre con Reserva 7:00 a 9:30 PM)",
-          isFree: true,
-          options: [
-            { id: "reserva_gratuita_impacto", label: "🎟️ Reserva Entrada Gratuita (Llegada 7:00 - 9:30 PM sin cover) ($0 COP)", price: 0, tipoPago: "gratuito_horario", categoria: "gratuito" },
-            { id: "pase_especial_impacto", label: "🤝 Pase Especial Aliado ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "gratuito" }
-          ]
-        },
-        sitio_9_oct: {
-          name: "Inauguración Sitio Licorera (9 Oct - Gratuito con Reserva)",
-          isFree: true,
-          options: [
-            { id: "reserva_gratuita_sitio", label: "🎟️ Reserva Entrada General Gratuita ($0 COP)", price: 0, tipoPago: "gratuito", categoria: "gratuito" },
-            { id: "pase_especial_sitio", label: "🤝 Pase Especial Aliado ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "gratuito" }
           ]
         }
       };

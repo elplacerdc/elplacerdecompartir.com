@@ -12,7 +12,8 @@ export interface DiscountContext {
 
 export interface DiscountResult {
   hasDiscount: boolean;
-  discountRate: number; // e.g. 0.10 or 0
+  discountRate: number; // e.g. 0.20, 0.10 or 0
+  isVipAmbassador?: boolean;
   reason: string;
   strategy: string;
 }
@@ -24,11 +25,11 @@ export interface DiscountStrategy {
 
 /**
  * ElPlacerDC Single-Use Strategy:
- * 10% ambassador discount is single-use per independent domain:
+ * 20% ambassador discount for VIP ambassadors / 10% standard, single-use per independent domain:
  * - 1st event ticket purchase (event_tickets confirmed/paid)
  * - 1st VIP membership credential purchase (leads.primer_pago_acreditado / corset_vip)
  * Domains are completely decoupled: purchasing an event ticket does not consume the VIP discount, and vice-versa.
- * Active VIP members maintain their permanent 10% honor tariff on events.
+ * Active VIP members maintain their permanent 20% honor tariff on events.
  */
 export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
   name = "elplacerdc";
@@ -36,11 +37,12 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
   async calculate(ctx: DiscountContext): Promise<DiscountResult> {
     const { domain, whatsapp, email, affiliateRef, isVipActive } = ctx;
 
-    // Active VIP members always get the 10% honor tariff on event tickets
+    // Active VIP members always get the 20% honor tariff on event tickets
     if (domain === "event_ticket" && isVipActive) {
       return {
         hasDiscount: true,
-        discountRate: 0.10,
+        discountRate: 0.20,
+        isVipAmbassador: true,
         reason: "active_vip_privilege",
         strategy: this.name,
       };
@@ -62,6 +64,33 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
 
     const client = await pool.connect();
     try {
+      // Consultar si el embajador referente cuenta con credencial VIP activa
+      let isReferringAmbassadorVip = false;
+      if (affiliateRef) {
+        try {
+          const ambRes = await client.query(
+            `SELECT l.corset_vip, l.primer_pago_acreditado, l.vip_until 
+             FROM afiliados a 
+             LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
+             WHERE LOWER(a.alias) = LOWER($1)
+             LIMIT 1`,
+            [affiliateRef.trim()]
+          );
+          if (ambRes.rows.length > 0) {
+            const amb = ambRes.rows[0];
+            isReferringAmbassadorVip = Boolean(
+              amb.corset_vip ||
+              amb.primer_pago_acreditado ||
+              (amb.vip_until && new Date(amb.vip_until) > new Date())
+            );
+          }
+        } catch (e) {
+          console.warn("[DiscountStrategy Amb Check Err]:", e);
+        }
+      }
+
+      const activeRate = isReferringAmbassadorVip ? 0.20 : 0.10;
+
       if (domain === "event_ticket") {
         // Check prior confirmed event ticket purchases
         if (cleanEmail || phoneVariants.length > 0) {
@@ -93,17 +122,19 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
             return {
               hasDiscount: false,
               discountRate: 0,
+              isVipAmbassador: isReferringAmbassadorVip,
               reason: "ambassador_single_use_consumed_event_ticket",
               strategy: this.name,
             };
           }
         }
 
-        // First event ticket: grant 10% discount
+        // First event ticket: grant 20% (VIP ambassador) or 10% (standard ambassador)
         return {
           hasDiscount: true,
-          discountRate: 0.10,
-          reason: "ambassador_first_event_ticket",
+          discountRate: activeRate,
+          isVipAmbassador: isReferringAmbassadorVip,
+          reason: isReferringAmbassadorVip ? "vip_ambassador_first_event_ticket" : "ambassador_first_event_ticket",
           strategy: this.name,
         };
       }
@@ -146,6 +177,7 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
               return {
                 hasDiscount: false,
                 discountRate: 0,
+                isVipAmbassador: isReferringAmbassadorVip,
                 reason: "ambassador_single_use_consumed_vip_membership",
                 strategy: this.name,
               };
@@ -153,11 +185,12 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
           }
         }
 
-        // First VIP membership purchase: grant 10% discount
+        // First VIP membership purchase: grant 20% (VIP ambassador) or 10% (standard ambassador)
         return {
           hasDiscount: true,
-          discountRate: 0.10,
-          reason: "ambassador_first_vip_membership",
+          discountRate: activeRate,
+          isVipAmbassador: isReferringAmbassadorVip,
+          reason: isReferringAmbassadorVip ? "vip_ambassador_first_vip_membership" : "ambassador_first_vip_membership",
           strategy: this.name,
         };
       }

@@ -286,6 +286,25 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
           }
         }
 
+        // Notificación automática multi-canal (QR email + WhatsApp) para emisión manual / cortesía
+        import("../../../services/notifications").then(({ notifyEventReservation }) => {
+          notifyEventReservation(
+            {
+              evento: data.evento || "luna_llena",
+              ticket_hash: ticketHash,
+            },
+            {
+              alias_nombre: assignedLead.alias_nombre,
+              whatsapp: assignedLead.whatsapp,
+              email: assignedLead.email,
+            },
+            {
+              isNewLead: false,
+              affiliateCode: assignedLead.afiliado_id || undefined,
+            }
+          ).catch((nErr) => console.error("[Admin Manual Pass Notification Err]:", nErr));
+        });
+
         return new Response(JSON.stringify({
           success: true,
           record: res.rows[0],

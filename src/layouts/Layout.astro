@@ -15,12 +15,17 @@ interface Props {
 
 const {
   title,
-  description = "Comunidad pionera en Colombia de libertad, consentimiento consciente y erotismo libre de presiones. Nuevo Centro Cultural en Bogotá y The Corset Society.",
   isCorset = false,
   ogImage = isCorset ? "/assets_corsetsociety/og-default.jpg" : "/assets_elplacerdc/og-default.jpg",
   canonicalUrl = Astro.url.href,
   noindex = false,
 } = Astro.props;
+
+const defaultDescription = isCorset
+  ? "The Corset Society • Espacio exclusivo de alta elegancia, estética noir, experiencias inmersivas y libertad sexual consciente en Bogotá. Convocatorias y eventos selectos."
+  : "Comunidad pionera en Colombia para adultos de mente abierta y sexualidad responsable. Centro cultural organizador de talleres, encuentros y eventos para toda la comunidad de libertad sexual sin tabús ni prejuicios en Bogotá.";
+
+const description = Astro.props.description || defaultDescription;
 
 const siteUrl = "https://elplacerdecompartir.com";
 const resolvedOgImage = ogImage.startsWith("http")
@@ -51,6 +56,7 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
     <link rel="manifest" href={`${faviconFolder}/site.webmanifest`} />
 
     <!-- OpenGraph / WhatsApp (<300KB budget) -->
+    <meta property="og:site_name" content={isCorset ? "The Corset Society" : "El Placer de Compartir"} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={title} />
@@ -70,6 +76,14 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={resolvedOgImage} />
+    <meta name="twitter:image:alt" content={title} />
+
+    <!-- SEO-AEO-GEO Directives -->
+    <meta name="geo.region" content="CO-DC" />
+    <meta name="geo.placename" content="Bogotá, Colombia" />
+    <meta name="geo.position" content="4.60971;-74.08175" />
+    <meta name="ICBM" content="4.60971, -74.08175" />
+    <meta name="rating" content="mature" />
 
     <!-- Google Fonts Optimized (Cinzel Display, Inter Body, Plus Jakarta Sans) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />

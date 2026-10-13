@@ -1,5 +1,27 @@
 ---
-// Header.astro - Menú Superior con Anclas y Botón Luna Llena al Final
+// Header.astro - Menú Superior con Anclas y Evento Corset Dinámico
+import { pool } from "../db/index";
+
+let nextCorsetEvent = {
+  title: "🌕 Luna Llena",
+  url_path: "/the-corset-society/luna-llena",
+};
+
+try {
+  const { rows } = await pool.query(
+    `SELECT title, url_path FROM events 
+     WHERE sub_brand IN ('the_corset_society', 'corset') 
+       AND is_active = true 
+       AND date >= NOW() 
+     ORDER BY date ASC LIMIT 1`
+  );
+  if (rows.length > 0) {
+    nextCorsetEvent = {
+      title: rows[0].title.includes("Luna Llena") ? "🌕 Luna Llena" : `✨ ${rows[0].title}`,
+      url_path: rows[0].url_path || "/the-corset-society/luna-llena",
+    };
+  }
+} catch (_) {}
 ---
 
 <header class="sticky top-0 z-50 backdrop-blur-md bg-[#180A1A]/95 border-b border-[#c5a059]/25 transition-all duration-300">
@@ -19,9 +41,9 @@
 
     <!-- Desktop Navigation Links -->
     <nav class="hidden lg:flex items-center gap-4 xl:gap-5 text-xs xl:text-sm font-medium text-[#f7f4ee]/85">
-      <a href="/centro-cultural" class="hover:text-[#c5a059] transition-colors whitespace-nowrap inline-flex items-center gap-1.5">
-        <span>Centro Cultural</span>
-        <span class="text-[9px] bg-[#c5a059]/20 text-[#ead397] px-1.5 py-0.5 rounded-full font-semibold border border-[#c5a059]/30 uppercase">Nuevo</span>
+      <a href="/centro-cultural" class="px-3 py-1.5 rounded-lg bg-[#380b1e] border border-[#b84a39]/60 text-[#ead397] hover:bg-[#b84a39]/30 hover:text-white hover:border-[#b84a39] transition-all shadow-[0_0_12px_rgba(184,74,57,0.3)] whitespace-nowrap inline-flex items-center gap-1.5 font-serif font-semibold text-xs tracking-wide">
+        <span>🏛️ Centro Cultural</span>
+        <span class="text-[9px] bg-[#b84a39]/30 text-[#ead397] px-1.5 py-0.5 rounded-full font-semibold border border-[#b84a39]/50 uppercase">Nuevo</span>
       </a>
       <a href="/the-corset-society" class="px-3 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/20 hover:text-white hover:border-[#c5a059] transition-all shadow-[0_0_12px_rgba(0,0,0,0.6)] whitespace-nowrap inline-flex items-center gap-1.5 font-serif font-semibold text-xs tracking-wide">
         <span>🔒 The Corset Society</span>
@@ -55,12 +77,12 @@
         </div>
       </div>
 
-      <!-- Botón Luna Llena -->
+      <!-- Botón Evento Corset Dinámico -->
       <a 
-        href="/the-corset-society/luna-llena" 
+        href={nextCorsetEvent.url_path} 
         class="text-xs uppercase tracking-wider font-serif font-bold text-[#0a0608] bg-gradient-to-r from-[#c5a059] to-[#ead397] hover:brightness-110 px-3.5 py-1.5 rounded-full shadow-[0_0_15px_rgba(197,160,89,0.3)] transition-all whitespace-nowrap"
       >
-        🌕 Luna Llena
+        {nextCorsetEvent.title}
       </a>
 
       <!-- Botón Panel Embajadores dedicado -->
@@ -150,12 +172,12 @@
         <a href="https://www.tiktok.com/@elplacerdc" target="_blank" rel="noopener noreferrer" class="text-xs hover:text-[#ead397]">TikTok: @elplacerdc</a>
       </div>
 
-      <!-- Botón Luna Llena -->
+      <!-- Botón Evento Corset Dinámico Mobile -->
       <a 
-        href="/the-corset-society/luna-llena" 
+        href={nextCorsetEvent.url_path} 
         class="mobile-nav-link text-center text-[#0a0608] bg-gradient-to-r from-[#c5a059] to-[#ead397] py-2.5 px-3 rounded-xl text-xs uppercase tracking-wider font-bold shadow-md"
       >
-        🌕 Noche de Luna Llena (Halloween)
+        {nextCorsetEvent.title}
       </a>
 
       <!-- Botón Panel Embajadores Mobile -->

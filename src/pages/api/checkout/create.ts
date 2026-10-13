@@ -12,7 +12,9 @@ const PRICES: Record<string, { total: number; reserva_40: number; label: string 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json();
-    const { tipo_entrada, modalidad_pago, metodo_pago, alias_nombre, email, whatsapp } = body;
+    const { tipo_entrada, metodo_pago, alias_nombre, email, whatsapp } = body;
+    const rawModalidad = body.modalidad_pago || body.tipo_pago || "pago_total";
+    const modalidad_pago = rawModalidad === "reserva_40" ? "reserva_40" : "pago_total";
 
     const priceInfo = PRICES[tipo_entrada];
     if (!priceInfo) {
@@ -69,7 +71,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         email,
         whatsapp,
         rol: tipo_entrada === "pareja" ? "pareja" : tipo_entrada === "unicornio" ? "mujer_sola" : "hombre_solo",
-        corset_vip: true,
+        corset_vip: isVipActive,
         origen: "evento_luna_llena",
         afiliado_id: affiliateRef || undefined,
       },
@@ -85,29 +87,64 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "No se pudo vincular el perfil de invitado." }), { status: 500 });
     }
 
-    // 1.1 Validar filtro de proporción 1:3 para hombres solos (Single)
+    // 1.1 Validar filtro dinámico para hombres solos (Single)
     if (tipo_entrada === "single") {
       const clientRatio = await pool.connect();
       try {
         const countsRes = await clientRatio.query(
           `SELECT 
-             COUNT(*) FILTER (WHERE tipo_entrada = 'pareja' AND estado != 'cancelado') as parejas,
-             COUNT(*) FILTER (WHERE tipo_entrada = 'single' AND estado != 'cancelado') as singles
+             COUNT(*) FILTER (WHERE tipo_entrada = 'pareja' AND estado NOT IN ('cancelado', 'rechazado')) as parejas,
+             COUNT(*) FILTER (WHERE tipo_entrada = 'single' AND estado NOT IN ('cancelado', 'rechazado')) as singles
            FROM event_tickets
            WHERE evento = 'luna_llena'`
         );
         const parejas = parseInt(countsRes.rows[0]?.parejas || "0", 10);
         const singles = parseInt(countsRes.rows[0]?.singles || "0", 10);
-        const maxSinglesAllowed = Math.floor(parejas / 3);
 
-        if (singles >= maxSinglesAllowed) {
+        const isUserVip = Boolean(
+          isVipActive || 
+          lead.primer_pago_acreditado ||
+          (lead.vip_until && new Date(lead.vip_until) > new Date()) ||
+          (lead.metadata?.tags && lead.metadata.tags.includes("vip_activo"))
+        );
+
+        // Subfiltro VIP: De las 3 primeras plazas para hombre, 1 plaza se reserva para socio VIP
+        if (singles >= 2 && !isUserVip && singles < 3) {
+          const waText = encodeURIComponent(
+            `Hola Segisw, soy ${lead.alias_nombre || 'invitado'} (ID: ${lead.id.substring(0, 8)}) y deseo consultar cupos Single para Luna Llena.`
+          );
+          const whatsappUrl = `https://wa.me/573194194785?text=${waText}`;
           return new Response(
             JSON.stringify({
-              error: `Cupos de pase Single temporalmente agotados por política de aforo y proporción (máximo 1 hombre solo por cada 3 parejas confirmadas). Actualmente hay ${parejas} parejas y ${singles} singles registrados. Has quedado registrado en nuestra lista de espera prioritaria.`,
+              error: `El último cupo disponible en esta fase está reservado exclusivamente para miembros con Credencial VIP activa. Para desbloquear tu reserva inmediata, activa tu credencial VIP.`,
+              vipRequired: true,
+              checkoutUrl: `/corset/checkout`,
+              whatsappUrl,
               waitlist: true,
-              parejas,
-              singles,
-              maxAllowed: maxSinglesAllowed,
+            }),
+            { status: 422, headers: { "Content-Type": "application/json" } }
+          );
+        }
+
+        // A partir de 3 hombres confirmados rige proporción 1:3 respecto a parejas confirmadas:
+        const maxSinglesAllowed = Math.max(3, Math.floor(parejas / 3));
+
+        if (singles >= maxSinglesAllowed) {
+          const waText = encodeURIComponent(
+            `Hola Segisw, soy ${lead.alias_nombre || 'invitado'} (ID: ${lead.id.substring(0, 8)}) y deseo validar cupo en lista de espera para pase Single en Luna Llena.`
+          );
+          const whatsappUrl = `https://wa.me/573194194785?text=${waText}`;
+
+          const parejasInfo = parejas > 6 ? ` Actualmente contamos con ${parejas} parejas confirmadas.` : "";
+          const errorMsg = `Cupos de pase Single temporalmente en espera por política de aforo y equilibrio del evento.${parejasInfo} Te invitamos a comunicarte directamente con Segisw para coordinar tu ingreso o consultar nuevas liberaciones de aforo.`;
+
+          return new Response(
+            JSON.stringify({
+              error: errorMsg,
+              waitlist: true,
+              parejas: parejas > 6 ? parejas : undefined,
+              whatsappUrl,
+              whatsappButtonText: "Hablar con Segisw por WhatsApp",
             }),
             { status: 422, headers: { "Content-Type": "application/json" } }
           );
@@ -233,6 +270,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       `Deseo coordinar el pago directo vía Nequi / Bre-B con la atención oficial.`
     );
     const waUrl = `https://wa.me/573194194785?text=${waText}`;
+    // Despacho de notificación multi-canal (QR email + WhatsApp) para la reserva directa
+    import("../../../services/notifications").then(({ notifyEventReservation }) => {
+      notifyEventReservation(
+        {
+          evento: "luna_llena",
+          ticket_hash: ticketHash,
+        },
+        {
+          alias_nombre,
+          whatsapp,
+          email,
+        },
+        {
+          isNewLead: leadResult.status === "created",
+          affiliateCode: affiliateRef || undefined,
+        }
+      ).catch((nErr) => console.error("[Checkout Direct Reservation Notify Err]:", nErr));
+    });
 
     return new Response(JSON.stringify({ success: true, redirect_url: waUrl, ticketHash }), {
       status: 200,
