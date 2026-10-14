@@ -7,7 +7,7 @@ const token = Astro.cookies.get("admin_token")?.value;
 const isAuthenticated = verifyAdminSessionToken(token);
 ---
 
-<Layout title="Panel de Administración — El Placer de Compartir" isCorset={false} noindex={true}>
+<Layout title="Panel de Administración — El Placer de Compartir" isCorset={false} noindex={true} hideFooter={true}>
   <main class="min-h-screen bg-[#140816] text-[#f7f4ee] py-10 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto space-y-8">
 
@@ -547,9 +547,9 @@ const isAuthenticated = verifyAdminSessionToken(token);
             <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Rol / Modalidad</label>
             <select id="edit-lead-rol" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
               <option value="pareja">Pareja</option>
-              <option value="single">Single (Hombre Solo)</option>
-              <option value="unicornio">Unicornio (Mujer Sola)</option>
-              <option value="general">General</option>
+              <option value="hombre_solo">Single (Hombre Solo)</option>
+              <option value="mujer_sola">Unicornio (Mujer Sola)</option>
+              <option value="otro">Otro / General</option>
             </select>
           </div>
           <div>
@@ -601,9 +601,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
   <!-- MODAL: DETALLES DE EVENTOS ASISTIDOS -->
   <div id="modal-user-events" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
     <div class="w-full max-w-md p-6 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
-      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
-        <h3 id="modal-user-events-title" class="text-base font-serif font-bold text-[#ead397]">Eventos del Usuario</h3>
-        <button id="modal-user-events-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3 gap-2">
+        <h3 id="modal-user-events-title" class="text-base font-serif font-bold text-[#ead397] truncate">Eventos del Usuario</h3>
+        <div class="flex items-center gap-2">
+          <button id="btn-edit-user-from-events" type="button" class="px-2.5 py-1 rounded-lg bg-[#c5a059] text-[#0a050c] text-[11px] font-bold hover:brightness-110 shadow-sm flex items-center gap-1">
+            ✏️ Editar Perfil
+          </button>
+          <button id="modal-user-events-close" class="text-sm text-[#f7f4ee]/70 hover:text-white p-1">✕</button>
+        </div>
       </div>
       <div id="modal-user-events-list" class="space-y-2 text-xs">
         <!-- Rendered by JS -->
@@ -858,7 +863,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
     const icon = document.getElementById("refresh-icon");
     if (icon) icon.classList.add("animate-spin");
     try {
-      const res = await fetch("/api/admin/metrics");
+      const res = await fetch(`/api/admin/metrics?_t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" }
+      });
       if (res.status === 401) {
         if (btnLogout) {
           window.location.reload();
@@ -885,7 +893,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
         const checkins = data.counts.totalCheckins ?? 0;
         kpiPendingCash.innerHTML = `
           <span>${total}</span>
-          <span class="text-xs font-sans font-semibold text-[#81c784] block mt-0.5">✓ ${checkins} Asistidos</span>
+          <span class="text-xs font-sans font-semibold text-[#81c784] block mt-0.5">${checkins} Asistidos</span>
         `;
       }
       if (kpiCheckins) kpiCheckins.textContent = `$${Number(data.counts.netRevenue ?? 0).toLocaleString("es-CO")}`;
@@ -958,7 +966,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               data-lead-id="${l.id}"
               title="Ver historial de eventos asistidos"
             >
-              ✓ ${l.attended_events_count || 0}
+              ${l.attended_events_count || 0}
             </button>
           </td>
           <td class="py-3 px-2 text-center font-mono text-xs">${clicks}</td>
@@ -1210,8 +1218,11 @@ const isAuthenticated = verifyAdminSessionToken(token);
     if (editLeadId) editLeadId.value = lead.id;
     if (editLeadAlias) editLeadAlias.value = lead.alias_nombre || "";
     if (editLeadWa) editLeadWa.value = lead.whatsapp || "";
-    if (editLeadEmail) editLeadEmail.value = lead.email || "";
-    if (editLeadRol) editLeadRol.value = lead.rol || "pareja";
+    let normRol = (lead.rol || "pareja").toLowerCase();
+    if (normRol === "single") normRol = "hombre_solo";
+    else if (normRol === "unicornio") normRol = "mujer_sola";
+    else if (normRol === "general") normRol = "otro";
+    if (editLeadRol) editLeadRol.value = normRol;
     if (editLeadCiudad) editLeadCiudad.value = lead.ciudad || "bogota";
     if (editLeadOrigen) editLeadOrigen.value = lead.origen || "web";
     if (editLeadAfiliado) editLeadAfiliado.value = lead.afiliado_id || "";
@@ -1228,9 +1239,24 @@ const isAuthenticated = verifyAdminSessionToken(token);
     modalEditLead?.classList.remove("hidden");
   }
 
+  editLeadIsVip?.addEventListener("change", () => {
+    if (!editLeadIsVip.checked && editLeadVipUntil) {
+      editLeadVipUntil.value = "";
+    } else if (editLeadIsVip.checked && editLeadVipUntil && !editLeadVipUntil.value) {
+      editLeadVipUntil.value = new Date(Date.now() + 365*24*3600*1000).toISOString().split("T")[0];
+    }
+  });
+
   formEditLead?.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!editLeadId?.value) return;
+
+    const isVipChecked = Boolean(editLeadIsVip?.checked);
+    const isCorsetVipChecked = Boolean(editLeadCorsetVip?.checked);
+    const vipStatus = isVipChecked ? "vip_activo" : (isCorsetVipChecked ? "posible_vip" : "no_vip");
+    const vipUntil = isVipChecked 
+      ? (editLeadVipUntil?.value ? new Date(editLeadVipUntil.value).toISOString() : new Date(Date.now() + 365*24*3600*1000).toISOString())
+      : null;
 
     const updates = {
       alias_nombre: editLeadAlias.value.trim(),
@@ -1240,10 +1266,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
       ciudad: editLeadCiudad.value.trim() || null,
       origen: editLeadOrigen.value.trim() || null,
       afiliado_id: editLeadAfiliado.value.trim().toLowerCase() || null,
-      corset_vip: editLeadCorsetVip.checked,
-      vip_status: editLeadIsVip.checked ? "vip_activo" : (editLeadCorsetVip.checked ? "posible_vip" : "no_vip"),
-      vip_until: editLeadVipUntil.value ? new Date(editLeadVipUntil.value).toISOString() : (editLeadIsVip.checked ? new Date(Date.now() + 365*24*3600*1000).toISOString() : null),
-      primer_pago_acreditado: editLeadPrimerPago.checked,
+      corset_vip: isVipChecked || isCorsetVipChecked,
+      vip_status: vipStatus,
+      vip_until: vipUntil,
+      primer_pago_acreditado: Boolean(editLeadPrimerPago?.checked),
     };
 
     try {
@@ -1293,6 +1319,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
       modalUserEventsTitle.textContent = `Eventos de ${lead.alias_nombre || "Usuario"}`;
     }
 
+    const btnEditUserFromEvents = document.getElementById("btn-edit-user-from-events");
+    if (btnEditUserFromEvents) {
+      btnEditUserFromEvents.onclick = () => {
+        modalUserEvents?.classList.add("hidden");
+        openEditLeadModal(lead.id);
+      };
+    }
+
     const events = Array.isArray(lead.events_list) ? lead.events_list : [];
     if (!modalUserEventsList) return;
 
@@ -1313,7 +1347,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               ? "bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40"
               : "bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30"
           }">
-            ${ev.estado === "asistido" ? "✓ Asistido" : (ev.estado || "Confirmado")}
+            ${ev.estado === "asistido" ? "Asistido" : (ev.estado || "Confirmado")}
           </span>
         </div>
       `).join("");
@@ -1588,6 +1622,9 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   ` : ''}
                 </div>
                 <div class="flex items-center gap-2 self-end sm:self-center">
+                  <button type="button" class="btn-edit-lead-from-drawer px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold hover:brightness-110 shadow-sm" data-lead-id="${l.id}">
+                    ✏️ Editar
+                  </button>
                   <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}" data-lead-name="${l.alias_nombre || ''}">
                     + Asignar Pase
                   </button>
@@ -1622,7 +1659,9 @@ const isAuthenticated = verifyAdminSessionToken(token);
 
       drawerContent.innerHTML = `
         <div class="space-y-3">
-          ${filtered.map((a: any) => `
+          ${filtered.map((a: any) => {
+            const matchedLead = (cachedMetrics.leads || []).find((l: any) => (a.email && l.email === a.email) || (a.alias && l.alias_nombre === a.alias) || (a.whatsapp && l.whatsapp === a.whatsapp));
+            return `
             <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="space-y-1">
                 <div class="font-bold text-[#ead397] text-sm">@${a.alias} <span class="text-xs font-normal text-[#f7f4ee]/60">(${a.nombre || ""})</span></div>
@@ -1630,12 +1669,18 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 <div class="text-[11px] text-[#c5a059]">Clics: ${a.clicks || 0} • Ventas Pagadas: ${a.referidos_pagados || 0} • Pases Ganados: ${a.entradas_ganadas || 0}</div>
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
+                ${matchedLead ? `
+                  <button type="button" class="btn-edit-lead-from-drawer px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold hover:brightness-110 shadow-sm" data-lead-id="${matchedLead.id}">
+                    ✏️ Editar
+                  </button>
+                ` : ''}
                 <button type="button" class="btn-delete-record px-3 py-1.5 rounded-lg bg-[#3a111b] text-[#ef5350] border border-[#ef5350]/30 text-xs hover:bg-[#ef5350]/20" data-entity="affiliate" data-id="${a.id}" data-name="@${a.alias} (${a.nombre || 'Embajador'})">
                   🗑️ Borrar
                 </button>
               </div>
             </div>
-          `).join("")}
+            `;
+          }).join("")}
         </div>
       `;
     }
@@ -1663,6 +1708,9 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 <div class="text-[11px] text-[#f7f4ee]/60">Origen: <strong class="text-[#ead397]">${l.origen || "aliado"}</strong> • Ciudad: ${l.ciudad || "Bogotá"}</div>
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
+                <button type="button" class="btn-edit-lead-from-drawer px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold hover:brightness-110 shadow-sm" data-lead-id="${l.id}">
+                  ✏️ Editar
+                </button>
                 <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}">
                   + Asignar Pase
                 </button>
@@ -1715,6 +1763,9 @@ const isAuthenticated = verifyAdminSessionToken(token);
                 <div class="text-[11px] text-[#f7f4ee]/60">Modalidad: <strong class="text-[#ead397] capitalize">${l.rol ? l.rol.replace('_', ' ') : "pareja"}</strong> • Pases: <strong>${l.tickets_count || 0}</strong> ${l.vip_until ? `• Vigencia: ${new Date(l.vip_until).toLocaleDateString("es-CO", { timeZone: "America/Bogota" })}` : ''}</div>
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
+                <button type="button" class="btn-edit-lead-from-drawer px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold hover:brightness-110 shadow-sm" data-lead-id="${l.id}">
+                  ✏️ Editar
+                </button>
                 <button type="button" class="btn-create-ticket-for-lead px-3 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 text-xs hover:bg-[#c5a059]/30" data-lead-id="${l.id}">
                   + Asignar Pase
                 </button>
@@ -1760,13 +1811,25 @@ const isAuthenticated = verifyAdminSessionToken(token);
         const countPagos = list.filter((t: any) => t.categoria_pago === "pago").length;
         const countGratis = list.filter((t: any) => t.categoria_pago === "gratuito").length;
 
-        // Visual individual events breakdown
+        // Temporal breakdowns
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
+
+        const countWeek = list.filter((t: any) => t.created_at && new Date(t.created_at) >= sevenDaysAgo).length;
+        const countMonth = list.filter((t: any) => t.created_at && new Date(t.created_at) >= thirtyDaysAgo).length;
+        const countWeekend = list.filter((t: any) => {
+          if (!t.created_at) return false;
+          const d = new Date(t.created_at);
+          const day = d.getDay(); // 0: Sun, 5: Fri, 6: Sat
+          return day === 0 || day === 5 || day === 6;
+        }).length;
+
+        // Visual individual events breakdown (active upcoming only)
         const perEvent = cachedMetrics.financial?.perEvent || [];
         const officialEvents = [
-          { key: "luna_llena", matchKeys: ["luna_llena", "luna-llena", "the-corset-society/luna-llena"], title: "🌕 Noche de Luna Llena", subtitle: "Halloween 31 Oct • Reserva 40% & Pago 100%" },
+          { key: "luna_llena", matchKeys: ["luna_llena", "luna-llena", "the-corset-society/luna-llena"], title: "🌕 Noche de Luna Llena", subtitle: "Halloween 31 Oct • Próximo Evento Oficial" },
           { key: "corset_vip", matchKeys: ["corset_vip", "corset-vip", "vip"], title: "💎 Membresía Anual VIP", subtitle: "The Corset Society • Credencial Anual" },
-          { key: "impacto_10_oct", matchKeys: ["impacto_10_oct", "impacto-10-oct"], title: "🎭 Impacto Producciones", subtitle: "10 Oct • Reserva Gratis (7:00-9:30 PM sin cover)" },
-          { key: "sitio_9_oct", matchKeys: ["sitio_9_oct", "sitio-9-oct"], title: "🍷 Sitio Licorera", subtitle: "9 Oct • Reserva General Gratuita" },
         ];
 
         const cards = officialEvents.map(ev => {
@@ -1793,7 +1856,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   ${reservas > 0 ? `<span class="text-[#ffb74d]">🔖 ${reservas} Reservas (40%)</span>` : ''}
                   ${pagos > 0 ? `<span class="text-[#81c784]">💵 ${pagos} Pagos (100%)</span>` : ''}
                   ${gratuitas > 0 ? `<span class="text-[#ead397]">🎁 ${gratuitas} Gratuitos</span>` : ''}
-                  ${asistidos > 0 ? `<span class="text-[#64b5f6]">✓ ${asistidos} Asistidos</span>` : ''}
+                  ${asistidos > 0 ? `<span class="text-[#64b5f6]">${asistidos} Asistidos</span>` : ''}
                   ${count === 0 ? `<span class="text-[#f7f4ee]/30 italic">Sin pases emitidos aún</span>` : ''}
                 </div>
               </div>
@@ -1804,11 +1867,25 @@ const isAuthenticated = verifyAdminSessionToken(token);
         eventsBreakdownHtml = `
           <div class="mb-3 p-3 rounded-2xl bg-[#1b0a1d] border border-[#c5a059]/40 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold">📊 Desglose Individual por Evento</span>
+              <span class="text-[11px] uppercase tracking-wider text-[#c5a059] font-bold">📊 Desglose Próximo Evento & Tendencias</span>
               <span class="text-[10px] text-[#f7f4ee]/50 font-sans">Reservas vs Pases</span>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               ${cards}
+            </div>
+            <div class="grid grid-cols-3 gap-2 pt-2 border-t border-[#c5a059]/20 text-center">
+              <div class="p-2 rounded-xl bg-[#140816] border border-[#c5a059]/20">
+                <div class="text-[10px] text-[#f7f4ee]/60 uppercase font-semibold">📅 Última Semana</div>
+                <div class="text-sm font-bold font-mono text-[#ead397] mt-0.5">${countWeek}</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#140816] border border-[#c5a059]/20">
+                <div class="text-[10px] text-[#f7f4ee]/60 uppercase font-semibold">🎉 Fines de Sem. (V-S-D)</div>
+                <div class="text-sm font-bold font-mono text-[#ead397] mt-0.5">${countWeekend}</div>
+              </div>
+              <div class="p-2 rounded-xl bg-[#140816] border border-[#c5a059]/20">
+                <div class="text-[10px] text-[#f7f4ee]/60 uppercase font-semibold">🗓️ Último Mes</div>
+                <div class="text-sm font-bold font-mono text-[#ead397] mt-0.5">${countMonth}</div>
+              </div>
             </div>
           </div>
         `;
@@ -1882,6 +1959,11 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   <div class="text-[10px] text-[#c5a059]/70 font-mono break-all">Hash: ${t.ticket_hash}</div>
                 </div>
                 <div class="flex items-center gap-2 self-end sm:self-center">
+                  ${t.lead_id ? `
+                    <button type="button" class="btn-edit-lead-from-drawer px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold hover:brightness-110 shadow-sm" data-lead-id="${t.lead_id}">
+                      ✏️ Editar
+                    </button>
+                  ` : ''}
                   ${isPending ? `
                     <button type="button" class="btn-mark-paid px-3 py-1.5 rounded-lg bg-[#2e7d32] text-white text-xs font-bold hover:brightness-110 shadow-sm" data-ticket-id="${t.id}">
                       ✓ Confirmar Pago
@@ -1931,6 +2013,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
         });
       });
     }
+
+    // Bind edit lead from any drawer
+    drawerContent.querySelectorAll(".btn-edit-lead-from-drawer").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const leadId = btn.getAttribute("data-lead-id");
+        if (leadId) openEditLeadModal(leadId);
+      });
+    });
 
     bindDeleteButtons();
   }

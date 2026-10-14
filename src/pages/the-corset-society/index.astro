@@ -161,12 +161,37 @@ import CorsetHeader from "../../components/CorsetHeader.astro";
 
     function checkCorsetAffiliateDiscount() {
       try {
+        let myAlias = (localStorage.getItem("user_alias") || "").trim().toLowerCase();
+        let myReferredBy = (localStorage.getItem("user_referred_by") || "").trim().toLowerCase();
+        try {
+          const rawProfile = localStorage.getItem("user_profile");
+          if (rawProfile) {
+            const parsed = JSON.parse(rawProfile);
+            if (parsed.alias) myAlias = parsed.alias.trim().toLowerCase();
+            if (parsed.referredBy) myReferredBy = parsed.referredBy.trim().toLowerCase();
+          }
+        } catch (_) {}
+
         const urlParams = new URLSearchParams(window.location.search);
         const refParam = urlParams.get("ref") || urlParams.get("r");
-        let activeRef = refParam || localStorage.getItem("affiliate_ref");
+        let activeRef = refParam ? refParam.trim().toLowerCase() : null;
+
+        if (activeRef && myAlias && activeRef === myAlias) {
+          activeRef = myReferredBy || "segisw";
+        }
+        if (myReferredBy && myAlias && activeRef && activeRef !== myReferredBy) {
+          activeRef = myReferredBy;
+        }
+
+        if (!activeRef) {
+          activeRef = localStorage.getItem("affiliate_ref");
+        }
         if (!activeRef) {
           const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
           if (match) activeRef = decodeURIComponent(match[1]).trim().toLowerCase();
+        }
+        if (activeRef && myAlias && activeRef === myAlias) {
+          activeRef = myReferredBy || "segisw";
         }
         if (activeRef) {
           const title = document.getElementById("corset-vip-card-title");

@@ -22,10 +22,54 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const baseMonto = modalidad_pago === "reserva_40" ? priceInfo.reserva_40 : priceInfo.total;
-    const affiliateRef = (body.ref || body.afiliado_id || cookies?.get("affiliate_ref")?.value || "")
+    const rawAffiliateRef = (body.ref || body.afiliado_id || cookies?.get("affiliate_ref")?.value || "")
       .toString()
       .trim()
       .toLowerCase() || null;
+
+    // Anti self-referral and locked referrer resolution
+    let affiliateRef = rawAffiliateRef;
+    if (whatsapp || email || alias_nombre) {
+      try {
+        const clientRef = await pool.connect();
+        try {
+          const cleanPhone = (whatsapp || "").toString().replace(/\D/g, "");
+          const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+          const cleanEmail = (email || "").toString().trim().toLowerCase();
+          const cleanAlias = (alias_nombre || "").toString().trim().toLowerCase();
+
+          // 1. Si el usuario ya existe en leads y tiene un afiliado_id registrado, ese referidor está sellado
+          const existingLeadRes = await clientRef.query(
+            `SELECT afiliado_id FROM leads 
+             WHERE (email IS NOT NULL AND LOWER(email) = $1)
+                OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $2)
+             LIMIT 1`,
+            [cleanEmail, last10]
+          );
+          if (existingLeadRes.rows.length > 0 && existingLeadRes.rows[0].afiliado_id) {
+            affiliateRef = existingLeadRes.rows[0].afiliado_id.toLowerCase();
+          } else {
+            // 2. Si no tiene referidor sellado, verificar que no sea auto-referido contra la tabla de afiliados
+            if (affiliateRef) {
+              const selfAff = await clientRef.query(
+                `SELECT alias FROM afiliados 
+                 WHERE LOWER(alias) = LOWER($1)
+                   AND ((email IS NOT NULL AND LOWER(email) = $2)
+                        OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $3)
+                        OR (nombre IS NOT NULL AND LOWER(nombre) = $4))
+                 LIMIT 1`,
+                [affiliateRef, cleanEmail, last10, cleanAlias]
+              );
+              if (selfAff.rows.length > 0 || (cleanAlias && affiliateRef === cleanAlias)) {
+                affiliateRef = null;
+              }
+            }
+          }
+        } finally {
+          clientRef.release();
+        }
+      } catch (_) {}
+    }
 
     // Check if user has active VIP credential for permanent 10% discount
     let isVipActive = false;
@@ -154,6 +198,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     }
 
+    // Invariant: First Signup Locks Last-Click Referral.
+    // If the registered lead already has an attributed ambassador (lead.afiliado_id), that affiliate is immutable and takes absolute priority!
+    const lockedAffiliate = lead.afiliado_id || (affiliateRef && affiliateRef !== (lead.alias_nombre || '').toLowerCase() ? affiliateRef : null);
+
     const isDigitalGateway = metodo_pago === "pasarela_digital" || metodo_pago === "dlocal_go";
 
     if (!isDigitalGateway) {
@@ -166,7 +214,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         `📧 *Email:* ${email}\n` +
         `🎟️ *Entrada:* ${priceInfo.label}\n` +
         `💵 *Modalidad:* ${modalidad_pago === "reserva_40" ? "Separación 40% ($" + monto.toLocaleString("es-CO") + ")" : "Pago Total ($" + monto.toLocaleString("es-CO") + ")"}\n` +
-        (affiliateRef ? `🤝 *Referido por:* ${affiliateRef}\n` : "") +
+        (lockedAffiliate ? `🤝 *Referido por:* ${lockedAffiliate}\n` : "") +
         `\nHola Segisw, deseo coordinar mi pago manual vía Bre-B, Nequi o transferencia bancaria para el evento.`
       );
       const waUrl = `https://wa.me/573194194785?text=${waText}`;
@@ -207,7 +255,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             monto,
             metodo_pago || "pasarela_digital",
             "pendiente",
-            affiliateRef,
+            lockedAffiliate,
             ticketHash,
           ]
         );

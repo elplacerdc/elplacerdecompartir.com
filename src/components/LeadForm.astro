@@ -37,7 +37,38 @@ const {
   <form id="lead-form" class="space-y-5">
     <input type="hidden" name="corset_vip" value={isVip ? "true" : "false"} />
 
-    <!-- WhatsApp Phone with Progressive OTP Verification -->
+    <!-- 1. Modalidad de Asistencia o Participación -->
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Modalidad de Asistencia <span class="text-[#b84a39]">*</span>
+      </label>
+      <select
+        name="rol"
+        id="input-rol"
+        class="w-full px-4 py-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+      >
+        <option value="pareja">👫 Pareja</option>
+        <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
+        <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
+      </select>
+    </div>
+
+    <!-- 2. Alias / Pseudónimo con placeholder dinámico -->
+    <div>
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+        Alias / Pseudónimo <span class="text-[#b84a39]">*</span>
+      </label>
+      <input
+        type="text"
+        name="alias_nombre"
+        id="input-alias"
+        required
+        placeholder="Nombre discreto de Pareja (ej: Camilo & Andrea)"
+        class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
+      />
+    </div>
+
+    <!-- 3. WhatsApp Phone with Progressive OTP Verification -->
     <div>
       <div id="step-wa-phone" class="space-y-2">
         <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
@@ -103,9 +134,25 @@ const {
     <!-- Box para usuario existente detectado -->
     <div id="lead-existing-box" class="hidden p-5 rounded-xl bg-[#c5a059]/15 border border-[#c5a059]/40 space-y-4"></div>
 
-    <!-- Campos adicionales para registro nuevo (desplegados solo tras verificar número y comprobar que no existe) -->
-    <div id="lead-remaining-fields" class="hidden space-y-5">
-      <!-- Email with Real-time OTP (Optional in community, Required in VIP) -->
+    <!-- Campos complementarios para registro nuevo (Ciudad y Email) -->
+    <div id="lead-remaining-fields" class="space-y-5">
+      <!-- 4. Ciudad -->
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
+          Ciudad
+        </label>
+        <select
+          name="ciudad"
+          id="input-ciudad"
+          class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
+        >
+          <option value="Bogotá">Bogotá</option>
+          <option value="Medellín">Medellín</option>
+          <option value="Otra">Otra ciudad</option>
+        </select>
+      </div>
+
+      <!-- 5. Correo Electrónico (al final) con Real-time OTP -->
       <div>
         <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
           Correo Electrónico {isVip ? <span class="text-[#c5a059]">(Requerido para membresía VIP *)</span> : <span class="text-[#f7f4ee]/40">(Opcional)</span>}
@@ -151,53 +198,6 @@ const {
           </div>
         </div>
         <p id="email-verified-badge" class="hidden text-xs text-[#81c784] font-medium mt-1">✓ Correo verificado</p>
-      </div>
-
-      <!-- Pseudónimo -->
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-          Pseudónimo <span class="text-[#b84a39]">*</span>
-        </label>
-        <input
-          type="text"
-          name="alias_nombre"
-          id="input-alias"
-          required
-          placeholder="Tu alias o nombre discreto"
-          class="w-full px-4 py-3 rounded-lg bg-[#140816]/90 border border-[#c5a059]/30 text-[#f7f4ee] placeholder-[#f7f4ee]/30 focus:outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] text-sm transition-all"
-        />
-      </div>
-
-      <!-- Rol / Identidad con Emojis Canónicos -->
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-          Modalidad de Asistencia o Participación <span class="text-[#b84a39]">*</span>
-        </label>
-        <select
-          name="rol"
-          id="input-rol"
-          class="w-full px-4 py-3 rounded-lg bg-[#140816] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
-        >
-          <option value="pareja">👫 Pareja</option>
-          <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
-          <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
-        </select>
-      </div>
-
-      <!-- Ciudad -->
-      <div>
-        <label class="block text-xs font-semibold uppercase tracking-wider text-[#f7f4ee]/80 mb-2">
-          Ciudad
-        </label>
-        <select
-          name="ciudad"
-          id="input-ciudad"
-          class="w-full px-4 py-3 rounded-lg bg-[#050505] border border-[#c5a059]/30 text-[#f7f4ee] focus:outline-none focus:border-[#c5a059] text-sm transition-all"
-        >
-          <option value="Bogotá">Bogotá</option>
-          <option value="Medellín">Medellín</option>
-          <option value="Otra">Otra ciudad</option>
-        </select>
       </div>
 
       <button
@@ -253,6 +253,28 @@ const {
   let waVerified = false;
   let emailVerified = false;
   const isVip = (document.querySelector('input[name="corset_vip"]') as HTMLInputElement)?.value === "true";
+
+  function updateLeadAliasPlaceholder(roleVal: string) {
+    if (!inputAlias) return;
+    const r = (roleVal || "").toLowerCase();
+    if (r.includes("pareja")) {
+      inputAlias.placeholder = "Nombre discreto de Pareja (ej: Camilo & Andrea)";
+    } else if (r.includes("mujer") || r.includes("unicornio")) {
+      inputAlias.placeholder = "Nombre discreto de Mujer (ej: Valeria)";
+    } else if (r.includes("hombre") || r.includes("single")) {
+      inputAlias.placeholder = "Nombre discreto de Hombre (ej: Alejandro)";
+    } else {
+      inputAlias.placeholder = "Tu alias o nombre discreto";
+    }
+  }
+
+  inputRol?.addEventListener("change", () => {
+    updateLeadAliasPlaceholder(inputRol.value);
+  });
+
+  if (inputRol) {
+    updateLeadAliasPlaceholder(inputRol.value);
+  }
 
   // Capture URL affiliate parameter on mount if present
   try {

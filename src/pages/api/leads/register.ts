@@ -31,10 +31,36 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     }
 
-    const affiliateRef = (body.ref || body.afiliado_id || cookies.get("affiliate_ref")?.value || "")
+    const rawRef = (body.ref || body.afiliado_id || cookies.get("affiliate_ref")?.value || "")
       .toString()
       .trim()
-      .toLowerCase() || undefined;
+      .toLowerCase();
+
+    // Anti self-referral: an ambassador cannot refer themselves
+    let affiliateRef: string | undefined = rawRef || undefined;
+    if (affiliateRef && cleanAlias.toLowerCase() === affiliateRef) {
+      affiliateRef = undefined;
+    }
+
+    if (affiliateRef && (email || whatsapp)) {
+      try {
+        const { pool } = await import("../../../db");
+        const cleanPhone = (whatsapp || "").toString().replace(/\D/g, "");
+        const last10Phone = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+        const selfAffCheck = await pool.query(
+          `SELECT alias FROM afiliados 
+           WHERE LOWER(alias) = LOWER($1) 
+             AND ((email IS NOT NULL AND LOWER(email) = LOWER($2)) 
+                  OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $3))
+           LIMIT 1`,
+          [affiliateRef, (email || "").toString().trim().toLowerCase(), last10Phone]
+        );
+        if (selfAffCheck.rows.length > 0) {
+          affiliateRef = undefined;
+        }
+      } catch (_) {}
+    }
+
     const isCorsetVip = Boolean(corset_vip === true || corset_vip === "true");
     const targetChannel = body.channel || body.targetChannel || (isCorsetVip ? "corset" : (origen === "alianza_centro_cultural" ? "centro_cultural" : "elplacerdc"));
 

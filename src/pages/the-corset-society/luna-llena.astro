@@ -72,7 +72,20 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
           🧚‍♀️ ¿Hada, elfo, duende o una criatura salida de tu imaginación? Ven caracterizado y vive la experiencia.
         </p>
 
-        <div class="pt-4">
+        <!-- Promoción Exclusiva Gala Halloween: 1 Año de Membresía VIP Incluido -->
+        <div class="my-6 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#2a0e28] via-[#140816] to-[#2a0e28] border-2 border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.3)] text-center space-y-4 max-w-3xl mx-auto">
+          <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#c5a059]/50 bg-[#c5a059]/15 text-xs tracking-[0.2em] uppercase text-[#ead397] font-bold">
+            <span>🎃</span> Promoción Exclusiva Gala Halloween <span>💎</span>
+          </div>
+          <h3 class="text-2xl sm:text-3xl font-bold font-serif text-[#f7f4ee]">
+            ¡Tu Entrada a Luna Llena Activa <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">1 Año de Membresía VIP</span> de Regalo!
+          </h3>
+          <p class="max-w-2xl mx-auto text-xs sm:text-sm font-sans text-[#f7f4ee]/90 leading-relaxed">
+            Quienes adquieran su pase y asistan a la <strong>Mascarada de Halloween Noir</strong> reciben la activación formal de su <strong>Credencial VIP Anual de The Corset Society ($199.000 COP) totalmente sin costo</strong>. Acceso a convocatorias secretas, 20% de descuento permanente en eventos y tu enlace exclusivo de embajador.
+          </p>
+        </div>
+
+        <div class="pt-2">
           <a
             href="#reservas"
             class="inline-flex items-center gap-3 px-8 py-3.5 rounded-full font-serif font-semibold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059] text-[#050505] shadow-[0_0_25px_rgba(197,160,89,0.35)] hover:shadow-[0_0_35px_rgba(197,160,89,0.6)] hover:scale-105 active:scale-95 transition-all duration-300"
@@ -134,19 +147,6 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Promoción Exclusiva Gala Halloween: 1 Año de Membresía VIP Incluido -->
-      <div class="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#2a0e28] via-[#140816] to-[#2a0e28] border-2 border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.3)] text-center space-y-4">
-        <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#c5a059]/50 bg-[#c5a059]/15 text-xs tracking-[0.2em] uppercase text-[#ead397] font-bold">
-          <span>🎃</span> Promoción Exclusiva Gala Halloween <span>💎</span>
-        </div>
-        <h3 class="text-2xl sm:text-3xl font-bold font-serif text-[#f7f4ee]">
-          ¡Tu Entrada a Luna Llena Activa <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">1 Año de Membresía VIP</span> de Regalo!
-        </h3>
-        <p class="max-w-2xl mx-auto text-xs sm:text-sm font-sans text-[#f7f4ee]/90 leading-relaxed">
-          Quienes adquieran su pase y asistan a la <strong>Mascarada de Halloween Noir</strong> reciben la activación formal de su <strong>Credencial VIP Anual de The Corset Society ($199.000 COP) totalmente sin costo</strong>. Acceso a convocatorias secretas, 20% de descuento permanente en eventos y tu enlace exclusivo de embajador.
-        </p>
       </div>
 
       <!-- Pricing & Interactive Checkout Section -->
@@ -381,19 +381,24 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
               </div>
             </div>
 
-            <!-- Tier Select -->
-            <div class="space-y-2">
-              <label for="tipo_entrada" class="block text-xs uppercase tracking-wider text-[#c5a059] font-bold">Tipo de Pase</label>
-              <select 
-                id="tipo_entrada" 
-                name="tipo_entrada" 
-                onchange="updateSummary()" 
-                class="w-full bg-[#140a18] border border-[#c5a059]/40 rounded-xl px-4 py-3 text-sm text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
+            <!-- Tier Select (Controlled visually by interactive cards) -->
+            <input type="hidden" id="tipo_entrada" name="tipo_entrada" value="pareja" />
+
+            <!-- Aviso cuando los datos están precargados de la cuenta oficial -->
+            <div id="prefilled-profile-notice" class="hidden p-3.5 rounded-xl bg-[#140816] border border-[#c5a059]/40 text-xs font-sans text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🔒</span>
+                <div>
+                  <span class="text-[#ead397] font-semibold block text-[11px]">Datos vinculados a tu cuenta oficial</span>
+                  <span class="text-[#f7f4ee]/70 text-[10px]">Para modificar tu nombre, correo o modalidad:</span>
+                </div>
+              </div>
+              <a 
+                href="/dashboard#section-profile-settings" 
+                class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 inline-flex items-center gap-1"
               >
-                <option value="pareja">👫 Pareja — {cookieRef ? `$${precioParejaSsr.toLocaleString('es-CO')} (${discLabelSsr}, separa con $${separaParejaSsr.toLocaleString('es-CO')})` : "$100.000 (o separa con $40.000)"}</option>
-                <option value="single">🙋‍♂️ Single (Hombre Solo) — {cookieRef ? `$${precioSingleSsr.toLocaleString('es-CO')} (${discLabelSsr}, separa con $${separaSingleSsr.toLocaleString('es-CO')})` : "$120.000 (o separa con $50.000)"}</option>
-                <option value="unicornio">🦄 Unicornio (Mujer Sola) — {cookieRef ? `$${precioUnicornioSsr.toLocaleString('es-CO')} (${discLabelSsr}, separa con $${separaUnicornioSsr.toLocaleString('es-CO')})` : "$30.000 (o separa con $10.000)"}</option>
-              </select>
+                <span>⚙️</span> Editar mi Perfil →
+              </a>
             </div>
 
             <!-- Lead Details -->
@@ -486,11 +491,41 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const qRef = urlParams.get("ref") || urlParams.get("r");
-      let storedRef = qRef || localStorage.getItem("affiliate_ref");
+
+      // Datos de sesión activa para prevenir auto-referido
+      let myAlias = (localStorage.getItem("user_alias") || "").trim().toLowerCase();
+      let myReferredBy = (localStorage.getItem("user_referred_by") || "").trim().toLowerCase();
+      try {
+        const rawProfile = localStorage.getItem("user_profile");
+        if (rawProfile) {
+          const parsed = JSON.parse(rawProfile);
+          if (parsed.alias) myAlias = parsed.alias.trim().toLowerCase();
+          if (parsed.referredBy) myReferredBy = parsed.referredBy.trim().toLowerCase();
+        }
+      } catch (_) {}
+
+      let candidateRef = qRef ? qRef.trim().toLowerCase() : null;
+
+      // Si el candidato es el propio alias del usuario logueado, usar su verdadero embajador referidor (o 'segisw')
+      if (candidateRef && myAlias && candidateRef === myAlias) {
+        candidateRef = myReferredBy || "segisw";
+      }
+
+      // Si el usuario ya está registrado en la comunidad bajo un embajador, su referidor está sellado
+      if (myReferredBy && myAlias && candidateRef && candidateRef !== myReferredBy) {
+        candidateRef = myReferredBy;
+      }
+
+      let storedRef = candidateRef || localStorage.getItem("affiliate_ref");
       if (!storedRef) {
         const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
         if (match) storedRef = decodeURIComponent(match[1]).trim().toLowerCase();
       }
+
+      if (storedRef && myAlias && storedRef === myAlias) {
+        storedRef = myReferredBy || "segisw";
+      }
+
       if (storedRef) {
         activeRef = storedRef.trim().toLowerCase();
         localStorage.setItem("affiliate_ref", activeRef);
@@ -515,7 +550,95 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
     };
 
     async function applyDynamicDiscountUI() {
-      if (!activeDiscount) return;
+      let isVipUser = false;
+      let userAttendedCount = 0;
+
+      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
+      const userIdent = sessionPhone || localStorage.getItem("user_email") || localStorage.getItem("user_alias");
+      if (userIdent) {
+        try {
+          const userRes = await fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(userIdent)}`);
+          const userData = await userRes.json();
+          if (userData?.stats) {
+            userAttendedCount = userData.stats.attendedEventsCount || 0;
+            if (userData.stats.vipStatus === "vip_activo") {
+              isVipUser = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      // 1. VIP Activo: tarifa de honor permanente del 20%
+      if (isVipUser) {
+        PRICING.pareja.total = 80000;
+        PRICING.pareja.reserva_40 = 32000;
+        PRICING.single.total = 96000;
+        PRICING.single.reserva_40 = 40000;
+        PRICING.unicornio.total = 24000;
+        PRICING.unicornio.reserva_40 = 8000;
+
+        const banner = document.getElementById("affiliateDiscountBanner");
+        if (banner) {
+          banner.classList.remove("hidden");
+          banner.innerHTML = `
+            <div class="flex items-start gap-3 w-full justify-between">
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">👑</span>
+                <div>
+                  <strong class="text-white block text-sm font-serif">Tarifa de Honor VIP Corset</strong>
+                  <span class="text-xs text-[#f7f4ee]/90">Membresía anual activa. Cuentas con 20% de descuento permanente en tus entradas.</span>
+                </div>
+              </div>
+              <span class="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-bold text-xs uppercase tracking-wider shadow-md shrink-0">
+                -20% VIP
+              </span>
+            </div>
+          `;
+        }
+        updatePricingBadges("-20% VIP");
+        updateSummary();
+        return;
+      }
+
+      // 2. Usuario con eventos asistidos previos: ya consumió el beneficio de primera entrada
+      if (userAttendedCount > 0) {
+        activeDiscount = false;
+        PRICING.pareja.total = 100000;
+        PRICING.pareja.reserva_40 = 40000;
+        PRICING.single.total = 120000;
+        PRICING.single.reserva_40 = 50000;
+        PRICING.unicornio.total = 30000;
+        PRICING.unicornio.reserva_40 = 10000;
+
+        const banner = document.getElementById("affiliateDiscountBanner");
+        if (banner) {
+          banner.classList.remove("hidden");
+          banner.innerHTML = `
+            <div class="flex items-start gap-3 w-full justify-between">
+              <div class="flex items-start gap-3">
+                <span class="text-2xl">🎟️</span>
+                <div>
+                  <strong class="text-white block text-sm font-serif">Tarifa Oficial Estándar</strong>
+                  <span class="text-xs text-[#f7f4ee]/80">Tu beneficio de embajador para primera entrada ya fue utilizado en tu asistencia previa.</span>
+                </div>
+              </div>
+              <span class="px-3 py-1.5 rounded-full bg-[#140816] text-[#ead397] border border-[#c5a059]/40 font-mono text-[11px] uppercase tracking-wider shrink-0">
+                Tarifa Regular
+              </span>
+            </div>
+          `;
+        }
+        hidePricingBadges();
+        updateSummary();
+        return;
+      }
+
+      // 3. Usuario nuevo con referido: aplicar descuento de primera entrada
+      if (!activeDiscount || !activeRef) {
+        hidePricingBadges();
+        updateSummary();
+        return;
+      }
 
       let isVipRef = activeRef === 'segisw';
       try {
@@ -545,7 +668,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
               <span class="text-2xl">🎉</span>
               <div>
                 <strong class="text-white block text-sm font-serif">${isVipRef ? 'Beneficio de Embajador VIP' : 'Beneficio de Embajador'}</strong>
-                <span class="text-xs text-[#f7f4ee]/90">${isVipRef ? '20%' : '10%'} de descuento de cortesía por invitación de <strong class="text-[#c5a059]">@${activeRef}</strong></span>
+                <span class="text-xs text-[#f7f4ee]/90">${isVipRef ? '20%' : '10%'} de descuento de cortesía por invitación de <strong class="text-[#c5a059]">@${activeRef}</strong> en tu primer acceso</span>
               </div>
             </div>
             <span class="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-bold text-xs uppercase tracking-wider shadow-md shrink-0">
@@ -555,7 +678,11 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         `;
       }
 
-      // Show discount badges on cards
+      updatePricingBadges(discLabel);
+      updateSummary();
+    }
+
+    function updatePricingBadges(discLabel) {
       const badgeP = document.getElementById("badge-disc-pareja");
       if (badgeP) {
         badgeP.textContent = discLabel;
@@ -572,7 +699,6 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         badgeU.classList.remove("hidden");
       }
 
-      // Update tier price labels
       const pPareja = document.getElementById("tier-price-pareja");
       if (pPareja) {
         pPareja.innerHTML = `<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$100.000</span><span class="text-[#81c784]">$${PRICING.pareja.total.toLocaleString('es-CO')}</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>`;
@@ -599,18 +725,30 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       if (sUni) {
         sUni.innerHTML = `O separa con solo <strong class="text-[#81c784]">$${PRICING.unicornio.reserva_40.toLocaleString('es-CO')} COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($10.000)</span>`;
       }
+    }
 
-      // Update dropdown options
-      const select = document.getElementById("tipo_entrada");
-      if (select) {
-        const cur = select.value;
-        select.innerHTML = `
-          <option value="pareja" ${cur === 'pareja' ? 'selected' : ''}>👫 Pareja — $${PRICING.pareja.total.toLocaleString('es-CO')} (${discLabel}, separa con $${PRICING.pareja.reserva_40.toLocaleString('es-CO')})</option>
-          <option value="single" ${cur === 'single' ? 'selected' : ''}>🙋‍♂️ Single (Hombre Solo) — $${PRICING.single.total.toLocaleString('es-CO')} (${discLabel}, separa con $${PRICING.single.reserva_40.toLocaleString('es-CO')})</option>
-          <option value="unicornio" ${cur === 'unicornio' ? 'selected' : ''}>🦄 Unicornio (Mujer Sola) — $${PRICING.unicornio.total.toLocaleString('es-CO')} (${discLabel}, separa con $${PRICING.unicornio.reserva_40.toLocaleString('es-CO')})</option>
-        `;
-      }
-      updateSummary();
+    function hidePricingBadges() {
+      const badgeP = document.getElementById("badge-disc-pareja");
+      if (badgeP) badgeP.classList.add("hidden");
+      const badgeS = document.getElementById("badge-disc-single");
+      if (badgeS) badgeS.classList.add("hidden");
+      const badgeU = document.getElementById("badge-disc-unicornio");
+      if (badgeU) badgeU.classList.add("hidden");
+
+      const pPareja = document.getElementById("tier-price-pareja");
+      if (pPareja) pPareja.innerHTML = `<span class="text-[#ead397]">$100.000</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>`;
+      const sPareja = document.getElementById("tier-separa-pareja");
+      if (sPareja) sPareja.innerHTML = `O separa con solo <strong class="text-[#ead397]">$40.000 COP</strong> (saldo en puerta $60.000)`;
+
+      const pSingle = document.getElementById("tier-price-single");
+      if (pSingle) pSingle.innerHTML = `<span class="text-[#ead397]">$120.000</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>`;
+      const sSingle = document.getElementById("tier-separa-single");
+      if (sSingle) sSingle.innerHTML = `O separa con solo <strong class="text-[#ead397]">$50.000 COP</strong> (saldo en puerta $70.000)`;
+
+      const pUni = document.getElementById("tier-price-unicornio");
+      if (pUni) pUni.innerHTML = `<span class="text-[#ead397]">$30.000</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>`;
+      const sUni = document.getElementById("tier-separa-unicornio");
+      if (sUni) sUni.innerHTML = `O separa con solo <strong class="text-[#ead397]">$10.000 COP</strong> (saldo en puerta $20.000)`;
     }
 
     function selectTier(tier, shouldScroll = false) {
@@ -661,13 +799,55 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         return;
       }
 
-      // Deshabilitar botones para evitar multi-clic concurrente
+      // Coordinación manual por WhatsApp (Bre-B, Nequi, transferencia)
+      if (metodo === 'nequi_breb') {
+        const prices = PRICING[tipo_entrada] || PRICING.pareja;
+        const montoHoy = modalidad === 'reserva_40' ? prices.reserva_40 : prices.total;
+        const modName = modalidad === 'reserva_40' ? 'Separación de Cupo (40%)' : 'Pago Total (100%)';
+        const passName = tipo_entrada === 'pareja' ? '👫 Pareja' : (tipo_entrada === 'single' ? '🙋‍♂️ Single' : '🦄 Unicornio');
+
+        const waText = encodeURIComponent(
+          `¡Hola Segisw / El Placer DC! Deseo coordinar el pago manual para la Noche de Luna Llena:\n\n` +
+          `• Alias: ${alias}\n` +
+          `• WhatsApp: ${whatsapp}\n` +
+          `• Correo: ${email}\n` +
+          `• Pase: ${passName}\n` +
+          `• Modalidad: ${modName}\n` +
+          `• Monto a transferir: $${montoHoy.toLocaleString('es-CO')} COP\n` +
+          `${activeRef ? `• Embajador: @${activeRef}\n` : ''}\n` +
+          `Solicito los datos para transferir por Bre-B, Nequi o Bancolombia.`
+        );
+        const waUrl = `https://wa.me/573194194785?text=${waText}`;
+
+        if (msg) {
+          msg.innerHTML = `
+            <div class="p-4 rounded-2xl bg-[#140816] border border-[#c5a059]/50 text-xs text-[#ead397] space-y-2.5 text-left mt-2 shadow-lg">
+              <div class="font-bold flex items-center gap-1.5 text-white">
+                <span>📲</span> <span>Coordinación de Transferencia Manual (Bre-B / Nequi / Bancolombia)</span>
+              </div>
+              <p class="text-[#f7f4ee]/80 leading-relaxed text-[11px]">
+                Te hemos redirigido a la línea oficial para coordinar tu transferencia manual por <strong>$${montoHoy.toLocaleString('es-CO')} COP</strong>. Tu entrada y credencial digital sellada serán activadas por el administrador una vez confirmado el comprobante.
+              </p>
+              <div class="pt-1 flex flex-wrap gap-2">
+                <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2e7d32] text-white font-bold text-xs hover:bg-[#388e3c] shadow-sm">
+                  <span>Abrir WhatsApp Ahora 💬</span>
+                </a>
+              </div>
+            </div>
+          `;
+        }
+
+        window.open(waUrl, "_blank");
+        if (btnDigital) btnDigital.disabled = false;
+        if (btnNequi) btnNequi.disabled = false;
+        return;
+      }
+
+      // Pasarela Digital online
       if (btnDigital) btnDigital.disabled = true;
       if (btnNequi) btnNequi.disabled = true;
 
-      if (msg) msg.textContent = metodo === 'pasarela_digital' 
-        ? 'Conectando con la pasarela segura de pagos...' 
-        : 'Generando enlace directo con atención oficial...';
+      if (msg) msg.textContent = 'Conectando con la pasarela segura de pagos...';
 
       try {
         const res = await fetch('/api/checkout/create', {
@@ -769,13 +949,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         if (btnSingle) btnSingle.classList.add("hidden");
         if (btnPareja) btnPareja.classList.remove("hidden");
         if (btnUnicornio) btnUnicornio.classList.remove("hidden");
-        if (select) {
-          Array.from(select.options).forEach((opt) => {
-            opt.hidden = opt.value !== "single";
-            if (opt.value === "single") opt.selected = true;
-          });
-          select.value = "single";
-        }
+        if (select) select.value = "single";
         selectTier("single", false);
       } else if (userRole === "mujer_sola" || userRole === "unicornio") {
         cardPareja.classList.add("hidden");
@@ -785,13 +959,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         if (btnUnicornio) btnUnicornio.classList.add("hidden");
         if (btnPareja) btnPareja.classList.remove("hidden");
         if (btnSingle) btnSingle.classList.remove("hidden");
-        if (select) {
-          Array.from(select.options).forEach((opt) => {
-            opt.hidden = opt.value !== "unicornio";
-            if (opt.value === "unicornio") opt.selected = true;
-          });
-          select.value = "unicornio";
-        }
+        if (select) select.value = "unicornio";
         selectTier("unicornio", false);
       } else if (userRole === "pareja") {
         cardSingle.classList.add("hidden");
@@ -801,13 +969,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         if (btnPareja) btnPareja.classList.add("hidden");
         if (btnSingle) btnSingle.classList.remove("hidden");
         if (btnUnicornio) btnUnicornio.classList.remove("hidden");
-        if (select) {
-          Array.from(select.options).forEach((opt) => {
-            opt.hidden = opt.value !== "pareja";
-            if (opt.value === "pareja") opt.selected = true;
-          });
-          select.value = "pareja";
-        }
+        if (select) select.value = "pareja";
         selectTier("pareja", false);
       }
     }
@@ -831,10 +993,26 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       const inputAlias = document.getElementById("alias_nombre");
       const inputPhone = document.getElementById("whatsapp");
       const inputEmail = document.getElementById("email");
+      const noticeBanner = document.getElementById("prefilled-profile-notice");
+
+      function lockReadOnly(el) {
+        if (!el || !el.value) return;
+        el.readOnly = true;
+        el.classList.add("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
+        el.title = "Dato vinculado a tu cuenta oficial. Para modificarlo haz clic en 'Editar mi Perfil'.";
+      }
 
       if (inputAlias && aliasVal && !inputAlias.value) inputAlias.value = aliasVal;
       if (inputPhone && phoneVal && !inputPhone.value) inputPhone.value = phoneVal;
       if (inputEmail && emailVal && !inputEmail.value) inputEmail.value = emailVal;
+
+      if (aliasVal) lockReadOnly(inputAlias);
+      if (phoneVal) lockReadOnly(inputPhone);
+      if (emailVal) lockReadOnly(inputEmail);
+
+      if (aliasVal || phoneVal || emailVal) {
+        if (noticeBanner) noticeBanner.classList.remove("hidden");
+      }
 
       if ((!aliasVal || !emailVal) && sessionPhone) {
         try {
@@ -849,27 +1027,37 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
             if (lead.alias_nombre) {
               localStorage.setItem("user_alias", lead.alias_nombre);
               if (inputAlias && !inputAlias.value) inputAlias.value = lead.alias_nombre;
+              lockReadOnly(inputAlias);
             }
             if (lead.email) {
               localStorage.setItem("user_email", lead.email);
               if (inputEmail && !inputEmail.value) inputEmail.value = lead.email;
+              lockReadOnly(inputEmail);
             }
             if (lead.whatsapp) {
               localStorage.setItem("user_phone", lead.whatsapp);
               if (inputPhone && !inputPhone.value) inputPhone.value = lead.whatsapp;
+              lockReadOnly(inputPhone);
             }
             if (lead.rol) {
               localStorage.setItem("user_role", lead.rol);
               applyRoleTicketFilter(lead.rol);
             }
+            if (noticeBanner) noticeBanner.classList.remove("hidden");
           }
         } catch (_) {}
       }
     }
 
     async function checkUserRoleAndFilter() {
-      let userRole = localStorage.getItem("user_role");
-      const sessionPhone = localStorage.getItem("ambassador_session_phone");
+      let userProfile = null;
+      try {
+        const raw = localStorage.getItem("user_profile");
+        if (raw) userProfile = JSON.parse(raw);
+      } catch (_) {}
+
+      let userRole = userProfile?.rol || localStorage.getItem("user_role");
+      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
 
       if (!userRole && sessionPhone) {
         try {
@@ -891,11 +1079,42 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       }
     }
 
+    // Expose global methods
+    window.setTemporaryPassMode = setTemporaryPassMode;
+    window.selectTier = selectTier;
+    window.handleCheckout = handleCheckout;
+    window.updateSummary = updateSummary;
+    window.applyRoleTicketFilter = applyRoleTicketFilter;
+
+    // Real-time reactive hydration when user inputs phone or email
+    const inputPhone = document.getElementById("whatsapp");
+    const inputEmail = document.getElementById("email");
+
+    inputPhone?.addEventListener("change", async () => {
+      const val = inputPhone.value.trim();
+      if (val && val.length >= 7) {
+        localStorage.setItem("user_phone", val);
+        await hydrateSessionFormFields();
+        await checkUserRoleAndFilter();
+        await applyDynamicDiscountUI();
+      }
+    });
+
+    inputEmail?.addEventListener("change", async () => {
+      const val = inputEmail.value.trim();
+      if (val && val.includes("@")) {
+        localStorage.setItem("user_email", val);
+        await hydrateSessionFormFields();
+        await checkUserRoleAndFilter();
+        await applyDynamicDiscountUI();
+      }
+    });
+
     // Initialize display immediately or on load
     async function initPricing() {
-      applyDynamicDiscountUI();
       await checkUserRoleAndFilter();
       await hydrateSessionFormFields();
+      await applyDynamicDiscountUI();
       updateSummary();
     }
 

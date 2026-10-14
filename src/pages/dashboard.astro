@@ -80,8 +80,8 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           </div>
         </div>
 
-        <!-- 3 Primary Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <!-- 4 Primary Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
             <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Registros con tu Enlace</span>
             <span id="metric-leads" class="text-3xl font-serif font-bold text-[#ead397]">0</span>
@@ -97,7 +97,13 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
             <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Entradas Ganadas</span>
             <span id="metric-tickets" class="text-3xl font-serif font-bold text-[#e57373]">0</span>
-            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1 whitespace-nowrap">3 compras = 1 entrada (máx. 3 entradas)</span>
+            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1 whitespace-nowrap">3 compras = 1 entrada (máx. 3)</span>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-[#140816]/90 border border-[#c5a059]/30 text-center">
+            <span class="text-xs uppercase tracking-wider text-[#f7f4ee]/60 block mb-1">Eventos Asistidos</span>
+            <span id="metric-attended" class="text-3xl font-serif font-bold text-[#64b5f6]">0</span>
+            <span class="text-[10px] text-[#f7f4ee]/40 block mt-1">Eventos propios a los que asististe</span>
           </div>
         </div>
 
@@ -225,13 +231,36 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
             </div>
           </div>
 
-          <!-- 2. Share Actions (SECOND inside this section, no raw URL text input) -->
-          <div class="pt-6 border-t border-[#c5a059]/20 space-y-3">
-            <h4 class="text-sm font-semibold text-[#f7f4ee]/80">Compartir tu Enlace</h4>
+          <!-- 2. Share Actions with Destination Dropdown -->
+          <div class="pt-6 border-t border-[#c5a059]/20 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+              <h4 class="text-sm font-semibold text-[#f7f4ee]/90">Compartir tu Enlace de Embajador</h4>
+              <span class="text-[11px] text-[#c5a059] font-mono">Generador dinámico de enlaces</span>
+            </div>
+
+            <div class="space-y-1.5">
+              <label for="select-share-dest" class="block text-xs uppercase tracking-wider text-[#c5a059] font-bold">
+                Página de Destino:
+              </label>
+              <select id="select-share-dest" class="w-full sm:max-w-md px-3.5 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/40 text-xs text-[#ead397] font-sans focus:outline-none focus:border-[#c5a059]">
+                <option value="/">🏠 Portada Principal (El Placer DC)</option>
+                <option value="/the-corset-society">💎 The Corset Society (Club Privado VIP)</option>
+                <option value="/the-corset-society/luna-llena">🌕 Noche de Luna Llena (Halloween 31 Oct)</option>
+                <option value="/centro-cultural">🏛️ Centro Cultural & Alianzas</option>
+              </select>
+            </div>
+
+            <!-- Current URL preview box -->
+            <div class="p-3 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 flex items-center justify-between gap-2">
+              <span id="share-url-preview" class="text-xs font-mono text-[#ead397] break-all select-all">
+                https://elplacerdecompartir.com/?ref=...
+              </span>
+            </div>
+
             <div class="flex flex-wrap gap-3">
               <button 
                 id="btn-copy-url" 
-                class="px-5 py-3 rounded-lg text-xs uppercase tracking-wider font-bold bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all flex items-center gap-2 shadow-md"
+                class="px-5 py-3 rounded-lg text-xs uppercase tracking-wider font-bold bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all flex items-center gap-2 shadow-md cursor-pointer"
               >
                 Copiar Enlace
               </button>
@@ -271,38 +300,10 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
 
           <form id="profile-settings-form" class="space-y-4">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Alias / Nombre -->
-              <div class="space-y-1.5">
-                <label for="profile-alias" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
-                  Alias / Pseudónimo
-                </label>
-                <input 
-                  type="text" 
-                  id="profile-alias" 
-                  name="alias_nombre" 
-                  placeholder="Tu alias" 
-                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
-                />
-              </div>
-
-              <!-- Correo Electrónico -->
-              <div class="space-y-1.5">
-                <label for="profile-email" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
-                  Correo Electrónico
-                </label>
-                <input 
-                  type="email" 
-                  id="profile-email" 
-                  name="email" 
-                  placeholder="tu@correo.com" 
-                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
-                />
-              </div>
-
-              <!-- Modalidad / Rol -->
+              <!-- 1. Modalidad / Rol -->
               <div class="space-y-1.5">
                 <label for="profile-rol" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
-                  Modalidad / Rol
+                  Modalidad de Asistencia *
                 </label>
                 <select 
                   id="profile-rol" 
@@ -313,10 +314,38 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
                   <option value="mujer_sola">🦄 Mujer Sola (Unicornio)</option>
                   <option value="hombre_solo">🙋‍♂️ Hombre Solo (Single)</option>
                 </select>
-                <span class="text-[10px] text-[#f7f4ee]/50 block">Define las opciones de entradas a eventos que se mostrarán en la plataforma.</span>
+                <span class="text-[10px] text-[#f7f4ee]/50 block">Define las opciones de pases adaptados a tu modalidad.</span>
               </div>
 
-              <!-- Ciudad -->
+              <!-- 2. Alias / Nombre -->
+              <div class="space-y-1.5">
+                <label for="profile-alias" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
+                  Alias / Pseudónimo *
+                </label>
+                <input 
+                  type="text" 
+                  id="profile-alias" 
+                  name="alias_nombre" 
+                  placeholder="Nombre discreto de Pareja" 
+                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
+                />
+              </div>
+
+              <!-- 3. WhatsApp -->
+              <div class="space-y-1.5">
+                <label for="profile-wa" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
+                  WhatsApp
+                </label>
+                <input 
+                  type="tel" 
+                  id="profile-wa" 
+                  name="whatsapp" 
+                  placeholder="310 123 4567" 
+                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
+                />
+              </div>
+
+              <!-- 4. Ciudad -->
               <div class="space-y-1.5">
                 <label for="profile-ciudad" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
                   Ciudad
@@ -330,6 +359,20 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
                   <option value="Medellín">Medellín</option>
                   <option value="Otra">Otra ciudad</option>
                 </select>
+              </div>
+
+              <!-- 5. Correo Electrónico (al final) -->
+              <div class="space-y-1.5 sm:col-span-2">
+                <label for="profile-email" class="block text-xs font-semibold text-[#c5a059] uppercase tracking-wider">
+                  Correo Electrónico
+                </label>
+                <input 
+                  type="email" 
+                  id="profile-email" 
+                  name="email" 
+                  placeholder="tu@correo.com" 
+                  class="w-full px-4 py-2.5 rounded-xl bg-[#0a0608] border border-[#c5a059]/30 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#ead397] font-sans"
+                />
               </div>
             </div>
 
@@ -403,14 +446,38 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
 
         // Pre-llenar campos de ajustes de perfil
         const profileAlias = document.getElementById("profile-alias") as HTMLInputElement | null;
+        const profileWa = document.getElementById("profile-wa") as HTMLInputElement | null;
         const profileEmail = document.getElementById("profile-email") as HTMLInputElement | null;
         const profileRol = document.getElementById("profile-rol") as HTMLSelectElement | null;
         const profileCiudad = document.getElementById("profile-ciudad") as HTMLSelectElement | null;
 
+        function updateAliasPlaceholder(roleVal: string) {
+          if (!profileAlias) return;
+          const r = (roleVal || "").toLowerCase();
+          if (r.includes("pareja")) {
+            profileAlias.placeholder = "Nombre discreto de Pareja (ej: C & A)";
+          } else if (r.includes("mujer") || r.includes("unicornio")) {
+            profileAlias.placeholder = "Nombre discreto de Mujer (ej: Valeria)";
+          } else if (r.includes("hombre") || r.includes("single")) {
+            profileAlias.placeholder = "Nombre discreto de Hombre (ej: Alex)";
+          } else {
+            profileAlias.placeholder = "Nombre discreto o alias";
+          }
+        }
+
         if (profileAlias) profileAlias.value = stats.alias_nombre || stats.nombre || stats.alias || "";
+        if (profileWa) profileWa.value = stats.whatsapp || sessionIdentifier || "";
         if (profileEmail) profileEmail.value = stats.email || "";
-        if (profileRol && stats.rol) profileRol.value = stats.rol;
+        if (profileRol && stats.rol) {
+          profileRol.value = stats.rol;
+          updateAliasPlaceholder(stats.rol);
+        }
         if (profileCiudad && stats.ciudad) profileCiudad.value = stats.ciudad;
+
+        profileRol?.addEventListener("change", () => {
+          updateAliasPlaceholder(profileRol.value);
+        });
+
         const profile = {
           alias: stats.alias,
           alias_nombre: stats.alias_nombre || stats.nombre || stats.alias,
@@ -418,6 +485,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           email: stats.email || "",
           rol: stats.rol || "",
           ciudad: stats.ciudad || "",
+          referredBy: stats.referredBy || null,
         };
         localStorage.setItem("user_profile", JSON.stringify(profile));
         localStorage.setItem("user_phone", profile.whatsapp);
@@ -430,28 +498,58 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           localStorage.setItem("user_vip_status", stats.vipStatus);
         }
         if (stats.referredBy) {
+          localStorage.setItem("user_referred_by", stats.referredBy);
           try {
             localStorage.setItem("affiliate_ref", stats.referredBy);
             document.cookie = `affiliate_ref=${encodeURIComponent(stats.referredBy)}; path=/; max-age=2592000; SameSite=Lax`;
           } catch (_) {}
+        } else {
+          // Si el usuario no tiene referido registrado y tenía guardado su propio alias, limpiarlo
+          const currentStoredRef = localStorage.getItem("affiliate_ref");
+          if (currentStoredRef && (currentStoredRef.toLowerCase() === (stats.alias || "").toLowerCase())) {
+            localStorage.removeItem("affiliate_ref");
+            document.cookie = "affiliate_ref=; path=/; max-age=0; SameSite=Lax";
+          }
         }
 
+        const metricAttended = document.getElementById("metric-attended");
         if (metricLeads) metricLeads.textContent = stats.leadsCount.toString();
         if (metricPurchases) metricPurchases.textContent = stats.purchasesCount.toString();
         if (metricTickets) metricTickets.textContent = stats.freeTicketsEarned.toString();
+        if (metricAttended) metricAttended.textContent = (stats.attendedEventsCount || 0).toString();
 
-        activeShareUrl = `https://elplacerdecompartir.com/?ref=${stats.alias}`;
+        // Dynamic share URL generator
+        const selectShareDest = document.getElementById("select-share-dest") as HTMLSelectElement | null;
+        function updateShareLinks(alias: string, path: string = "/") {
+          const origin = "https://elplacerdecompartir.com";
+          let targetPath = path || "/";
+          if (!targetPath.startsWith("/")) targetPath = "/" + targetPath;
+          if (targetPath !== "/" && targetPath.endsWith("/")) targetPath = targetPath.slice(0, -1);
+          
+          activeShareUrl = targetPath === "/" 
+            ? `${origin}/?ref=${alias}`
+            : `${origin}${targetPath}/?ref=${alias}`;
+
+          const shareUrlPreview = document.getElementById("share-url-preview");
+          if (shareUrlPreview) shareUrlPreview.textContent = activeShareUrl;
+
+          if (btnShareWa) {
+            const waMsg = encodeURIComponent(`¡Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${activeShareUrl}`);
+            btnShareWa.href = `https://wa.me/?text=${waMsg}`;
+          }
+
+          if (btnShareX) {
+            const xMsg = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society: ${activeShareUrl}`);
+            btnShareX.href = `https://x.com/intent/tweet?text=${xMsg}`;
+          }
+        }
+
+        updateShareLinks(stats.alias, selectShareDest?.value || "/");
         if (inputNewCode) inputNewCode.value = stats.alias;
 
-        if (btnShareWa) {
-          const waMsg = encodeURIComponent(`¡Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${activeShareUrl}`);
-          btnShareWa.href = `https://wa.me/?text=${waMsg}`;
-        }
-
-        if (btnShareX) {
-          const xMsg = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society: ${activeShareUrl}`);
-          btnShareX.href = `https://x.com/intent/tweet?text=${xMsg}`;
-        }
+        selectShareDest?.addEventListener("change", () => {
+          updateShareLinks(currentAlias, selectShareDest.value);
+        });
 
         // Render VIP status card
         const vipBadge = document.getElementById("vip-status-badge");
@@ -517,29 +615,9 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           }
           if (vipDesc) vipDesc.textContent = "Accede a las veladas secretas de The Corset Society solicitando tu admisión al círculo exclusivo.";
           if (vipActionContainer) {
-            const effectiveRef = stats.referredBy ||
-              localStorage.getItem("affiliate_ref") ||
-              (document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/)?.[1]) ||
-              new URLSearchParams(window.location.search).get("ref");
-            const isReferredUser = Boolean(effectiveRef);
-            const isVipDiscount = Boolean(
-              stats.isReferrerVip ||
-              (effectiveRef && effectiveRef.toLowerCase() === "segisw")
-            );
-
-            const vipPriceDisplay = isReferredUser 
-              ? (isVipDiscount ? "$159.200 COP" : "$179.100 COP")
-              : "$199.000 COP";
-
-            const vipDiscountTag = isReferredUser
-              ? (isVipDiscount 
-                  ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-20% Descuento Embajador VIP)</span>'
-                  : ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Descuento Embajador)</span>')
-              : '';
-
             vipActionContainer.innerHTML = `
-              <a href="/the-corset-society" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#c5a059]/60 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all inline-block text-center">
-                Solicita VIP (${vipPriceDisplay})${vipDiscountTag} →
+              <a href="/the-corset-society#solicitud-admision-vip" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#c5a059]/60 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all inline-block text-center shadow-md">
+                Solicitar Admisión VIP →
               </a>
             `;
           }
@@ -701,6 +779,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
   const btnSaveProfile = document.getElementById("btn-save-profile") as HTMLButtonElement | null;
   const profileFeedback = document.getElementById("profile-update-feedback");
   const profileAliasInput = document.getElementById("profile-alias") as HTMLInputElement | null;
+  const profileWaInput = document.getElementById("profile-wa") as HTMLInputElement | null;
   const profileEmailInput = document.getElementById("profile-email") as HTMLInputElement | null;
   const profileRolSelect = document.getElementById("profile-rol") as HTMLSelectElement | null;
   const profileCiudadSelect = document.getElementById("profile-ciudad") as HTMLSelectElement | null;
@@ -731,6 +810,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         body: JSON.stringify({
           identifier: sessionIdentifier,
           alias_nombre: profileAliasInput?.value.trim(),
+          whatsapp: profileWaInput?.value.trim() || undefined,
           email: profileEmailInput?.value.trim(),
           rol: profileRolSelect?.value,
           ciudad: profileCiudadSelect?.value,

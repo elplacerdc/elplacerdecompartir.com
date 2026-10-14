@@ -236,6 +236,14 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
       }
 
       if (entity === "lead") {
+        let cleanRol = data.rol ? data.rol.toString().trim().toLowerCase() : "otro";
+        if (cleanRol === "single") cleanRol = "hombre_solo";
+        else if (cleanRol === "unicornio") cleanRol = "mujer_sola";
+        else if (cleanRol === "general") cleanRol = "otro";
+        if (!["hombre_solo", "mujer_sola", "pareja", "otro"].includes(cleanRol)) {
+          cleanRol = "otro";
+        }
+
         const res = await client.query(`
           INSERT INTO leads (alias_nombre, whatsapp, email, rol, ciudad, origen, metadata)
           VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -244,7 +252,7 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
           data.alias_nombre || "Invitado Manual",
           data.whatsapp || null,
           data.email || null,
-          data.rol || "otro",
+          cleanRol,
           data.ciudad || "Bogotá",
           data.origen || "admin_manual",
           JSON.stringify({ created_by: "admin", note: data.note || "" }),
@@ -483,21 +491,59 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
           corset_vip, vip_until, primer_pago_acreditado, vip_status
         } = updates;
 
-        let computedVip = corset_vip;
-        let computedVipUntil = vip_until;
+        // 1. Normalizar rol para cumplir estrictamente con leads_rol_check
+        let cleanRol = rol ? rol.toString().trim().toLowerCase() : null;
+        if (cleanRol === "single") cleanRol = "hombre_solo";
+        else if (cleanRol === "unicornio") cleanRol = "mujer_sola";
+        else if (cleanRol === "general") cleanRol = "otro";
+        if (cleanRol && !["hombre_solo", "mujer_sola", "pareja", "otro"].includes(cleanRol)) {
+          cleanRol = "otro";
+        }
+
+        // 2. Obtener lead actual para sincronizar tags y metadata
+        const existingLeadRes = await client.query("SELECT * FROM leads WHERE id::text = $1", [id]);
+        const existingLead = existingLeadRes.rows[0];
+        if (!existingLead) {
+          return new Response(JSON.stringify({ success: false, error: "Lead no encontrado" }), { status: 404 });
+        }
+
+        let computedVip: boolean = existingLead.corset_vip;
+        let computedVipUntil: string | null = existingLead.vip_until ? new Date(existingLead.vip_until).toISOString() : null;
+
+        let existingMeta = existingLead.metadata || {};
+        let existingTags: string[] = Array.isArray(existingMeta.tags) ? [...existingMeta.tags] : [];
 
         if (vip_status === "vip_activo") {
           computedVip = true;
-          if (!computedVipUntil) {
-            computedVipUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
-          }
+          computedVipUntil = vip_until || (computedVipUntil && new Date(computedVipUntil) > new Date() ? computedVipUntil : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString());
+          if (!existingTags.includes("vip_activo")) existingTags.push("vip_activo");
+          if (!existingTags.includes("corset_vip")) existingTags.push("corset_vip");
+          existingTags = existingTags.filter((t) => t !== "posible vip" && t !== "posible_vip");
         } else if (vip_status === "no_vip") {
           computedVip = false;
           computedVipUntil = null;
+          existingTags = existingTags.filter((t) => t !== "vip_activo" && t !== "corset_vip" && t !== "posible vip" && t !== "posible_vip");
         } else if (vip_status === "posible_vip") {
           computedVip = true;
           computedVipUntil = null;
+          if (!existingTags.includes("posible vip")) existingTags.push("posible vip");
+          if (!existingTags.includes("corset_vip")) existingTags.push("corset_vip");
+          existingTags = existingTags.filter((t) => t !== "vip_activo");
+        } else {
+          // Si no se envió vip_status explícito, respetar corset_vip si vino definido
+          if (corset_vip !== undefined) {
+            computedVip = Boolean(corset_vip);
+          }
+          if (vip_until !== undefined) {
+            computedVipUntil = vip_until ? new Date(vip_until).toISOString() : null;
+          }
         }
+
+        const updatedMetadata = {
+          ...existingMeta,
+          tags: Array.from(new Set(existingTags)),
+          vip_until: computedVipUntil,
+        };
 
         const res = await client.query(`
           UPDATE leads
@@ -507,27 +553,53 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
               rol = COALESCE($4, rol),
               ciudad = COALESCE($5, ciudad),
               origen = COALESCE($6, origen),
-              afiliado_id = CASE WHEN $7 IS NOT NULL THEN $7 ELSE afiliado_id END,
-              corset_vip = CASE WHEN $8::boolean IS NOT NULL THEN $8::boolean ELSE corset_vip END,
-              vip_until = CASE WHEN $9::text IS NOT NULL THEN ($9::text)::timestamptz ELSE vip_until END,
+              afiliado_id = $7::text,
+              corset_vip = $8::boolean,
+              vip_until = ($9::text)::timestamptz,
               primer_pago_acreditado = CASE WHEN $10::boolean IS NOT NULL THEN $10::boolean ELSE primer_pago_acreditado END,
+              metadata = $11::jsonb,
               updated_at = NOW()
-          WHERE id::text = $11
+          WHERE id::text = $12
           RETURNING *
         `, [
           alias_nombre || null,
           whatsapp || null,
           email || null,
-          rol || null,
+          cleanRol || null,
           ciudad || null,
           origen || null,
-          afiliado_id !== undefined ? afiliado_id : null,
-          computedVip !== undefined ? computedVip : null,
-          computedVipUntil !== undefined ? (computedVipUntil ? String(computedVipUntil) : null) : null,
+          afiliado_id !== undefined ? (afiliado_id || null) : existingLead.afiliado_id,
+          computedVip,
+          computedVipUntil ? String(computedVipUntil) : null,
           primer_pago_acreditado !== undefined ? primer_pago_acreditado : null,
+          JSON.stringify(updatedMetadata),
           id
         ]);
-        return new Response(JSON.stringify({ success: true, record: res.rows[0] }), { status: 200 });
+
+        const updatedLead = res.rows[0];
+
+        // 3. Sincronizar en afiliados si corresponde
+        try {
+          const finalAlias = updatedLead.alias_nombre || alias_nombre;
+          const finalWa = updatedLead.whatsapp || whatsapp;
+          const finalEmail = updatedLead.email || email;
+          const oldWa = existingLead.whatsapp;
+          const oldEmail = existingLead.email;
+
+          await client.query(`
+            UPDATE afiliados
+            SET nombre = COALESCE($1, nombre),
+                whatsapp = COALESCE($2, whatsapp),
+                email = COALESCE($3, email),
+                updated_at = NOW()
+            WHERE (email IS NOT NULL AND (LOWER(email) = LOWER($4) OR LOWER(email) = LOWER($3)))
+               OR (whatsapp IS NOT NULL AND (whatsapp = $5 OR whatsapp = $2))
+          `, [finalAlias || null, finalWa || null, finalEmail || null, oldEmail || "", oldWa || ""]);
+        } catch (affSyncErr: any) {
+          console.warn("[Admin Lead Affiliate Sync Err]:", affSyncErr.message);
+        }
+
+        return new Response(JSON.stringify({ success: true, record: updatedLead }), { status: 200 });
       }
 
       if (entity === "affiliate") {

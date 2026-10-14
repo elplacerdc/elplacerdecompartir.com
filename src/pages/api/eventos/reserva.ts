@@ -44,7 +44,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     }
 
-    const affiliateRef = cookies.get("affiliate_ref")?.value || null;
+    const rawAffiliateRef = cookies.get("affiliate_ref")?.value?.trim().toLowerCase() || null;
+    let affiliateRef = rawAffiliateRef;
+    if (affiliateRef && alias_nombre && affiliateRef === alias_nombre.trim().toLowerCase()) {
+      affiliateRef = null;
+    }
 
     // 1. Upsert lead into PostgreSQL leads table
     const leadResult = await upsertLead(
@@ -110,7 +114,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           "registro_web",
           `RES-${Date.now()}`,
           "confirmada",
-          affiliateRef,
+          leadResult.lead?.afiliado_id || affiliateRef,
           ticketHash,
         ]
       );

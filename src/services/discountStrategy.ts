@@ -64,9 +64,40 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
 
     const client = await pool.connect();
     try {
+      // Prevención de auto-referido: un embajador no puede ser su propio referente
+      let effectiveAffiliateRef = affiliateRef;
+      if (effectiveAffiliateRef && (cleanEmail || phoneVariants.length > 0)) {
+        try {
+          const selfCheck = await client.query(
+            `SELECT alias FROM afiliados 
+             WHERE LOWER(alias) = LOWER($1)
+               AND ((email IS NOT NULL AND LOWER(email) = LOWER($2)) 
+                    OR ($3::text[] IS NOT NULL AND whatsapp = ANY($3::text[])))
+             LIMIT 1`,
+            [effectiveAffiliateRef.trim(), cleanEmail || '', phoneVariants.length > 0 ? phoneVariants : null]
+          );
+          if (selfCheck.rows.length > 0) {
+            // Si el comprador es el mismo embajador, verificar su referidor original en leads
+            const leadRefCheck = await client.query(
+              `SELECT afiliado_id FROM leads 
+               WHERE (email IS NOT NULL AND LOWER(email) = LOWER($1))
+                  OR ($2::text[] IS NOT NULL AND whatsapp = ANY($2::text[]))
+               LIMIT 1`,
+              [cleanEmail || '', phoneVariants.length > 0 ? phoneVariants : null]
+            );
+            const trueRef = leadRefCheck.rows[0]?.afiliado_id;
+            if (trueRef && trueRef.toLowerCase() !== effectiveAffiliateRef.trim().toLowerCase()) {
+              effectiveAffiliateRef = trueRef;
+            } else {
+              effectiveAffiliateRef = "segisw";
+            }
+          }
+        } catch (_) {}
+      }
+
       // Consultar si el embajador referente cuenta con credencial VIP activa
       let isReferringAmbassadorVip = false;
-      if (affiliateRef) {
+      if (effectiveAffiliateRef) {
         try {
           const ambRes = await client.query(
             `SELECT l.vip_until, l.metadata 
@@ -74,7 +105,7 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
              LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
              WHERE LOWER(a.alias) = LOWER($1)
              LIMIT 1`,
-            [affiliateRef.trim()]
+            [effectiveAffiliateRef.trim()]
           );
           if (ambRes.rows.length > 0) {
             const amb = ambRes.rows[0];
@@ -112,7 +143,7 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
             FROM event_tickets et
             JOIN leads l ON et.lead_id = l.id
             WHERE (${conditions.join(" OR ")})
-              AND et.estado IN ('confirmado', 'aprobado', 'pagado')
+              AND et.estado IN ('confirmado', 'aprobado', 'pagado', 'asistido')
           `;
 
           const checkRes = await client.query(ticketCheckQuery, queryParams);

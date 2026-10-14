@@ -267,7 +267,7 @@ export async function upsertLead(
       if (resolvedChannel === "elplacerdc" || data.origen === "web_comunidad" || (!existingTags.includes("general") && !existingTags.includes("corset") && !existingTags.includes("alianzas"))) {
         newTagsToAdd.push("general");
       }
-      const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen !== "web_comunidad" && data.origen !== "evento_luna_llena" && data.origen !== "alianza_centro_cultural";
+      const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen === "web_corset";
       if (isExplicitCorsetVipSubmission) {
         newTagsToAdd.push("corset");
         newTagsToAdd.push("corset_vip");
@@ -361,7 +361,7 @@ export async function upsertLead(
 
     // 3. New Lead Insertion Path (Ensure canonical tags array is initialized monotonically)
     const initialTags: string[] = [];
-    const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen !== "web_comunidad" && data.origen !== "evento_luna_llena" && data.origen !== "alianza_centro_cultural";
+    const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen === "web_corset";
     if (isExplicitCorsetVipSubmission) {
       initialTags.push("corset");
       initialTags.push("corset_vip");
@@ -546,10 +546,13 @@ export async function ensureAffiliateCode(aliasOrName: string, whatsapp?: string
       }
     }
 
-    // 2. Derive base code from aliasOrName
+    // 2. Derive base code from aliasOrName (NFD converts á->a, é->e, etc. without stripping them)
     const baseCode = (aliasOrName || "embajador")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
       .trim()
       .toLowerCase()
+      .replace(/\s+/g, "")
       .replace(/[^a-z0-9_-]/g, "") || "embajador";
 
     let candidate = baseCode;
@@ -595,6 +598,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
   purchasesCount: number;
   freeTicketsEarned: number;
   subsequentDiscounts: number;
+  attendedEventsCount: number;
   vipStatus: "no_vip" | "posible_vip" | "vip_activo";
   referredLeads: Array<{ email_masked: string; created_at: Date; compro_entrada: boolean; channel_tag: string }>;
 } | null> {
@@ -606,7 +610,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
 
     let res = await client.query(
       `SELECT * FROM afiliados 
-       WHERE LOWER(alias) = $1 OR email = $1 
+       WHERE LOWER(alias) = $1 OR LOWER(email) = $1 
           OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[]))
        LIMIT 1`,
       [clean, phoneVariants.length > 0 ? phoneVariants : null]
@@ -624,7 +628,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
       }
       if (!leadRow && clean) {
         const leadRes = await client.query(
-          `SELECT * FROM leads WHERE email = $1 LIMIT 1`,
+          `SELECT * FROM leads WHERE LOWER(email) = $1 LIMIT 1`,
           [clean]
         );
         leadRow = leadRes.rows[0];
@@ -634,7 +638,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
         await ensureAffiliateCode(leadRow.alias_nombre || "Embajador", leadRow.whatsapp, leadRow.email);
         res = await client.query(
           `SELECT * FROM afiliados 
-           WHERE email = $1 
+           WHERE LOWER(email) = $1 
               OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[]))
            LIMIT 1`,
           [clean, phoneVariants.length > 0 ? phoneVariants : null]
@@ -665,8 +669,8 @@ export async function getAffiliateStats(identifier: string): Promise<{
     let vipStatus: "no_vip" | "posible_vip" | "vip_activo" = "no_vip";
     const ambPhoneVariants = getPhoneVariants(row.whatsapp);
     const ambLeadRes = await client.query(
-      `SELECT corset_vip, vip_until, metadata, primer_pago_acreditado, rol, ciudad, alias_nombre, email, afiliado_id FROM leads 
-       WHERE (email IS NOT NULL AND email = $1) 
+      `SELECT id, corset_vip, vip_until, metadata, primer_pago_acreditado, rol, ciudad, alias_nombre, email, afiliado_id FROM leads 
+       WHERE (email IS NOT NULL AND LOWER(email) = LOWER($1)) 
           OR ($2::text[] IS NOT NULL AND array_length($2::text[], 1) > 0 AND whatsapp = ANY($2::text[])) 
        LIMIT 1`,
       [row.email, ambPhoneVariants.length > 0 ? ambPhoneVariants : null]
@@ -680,7 +684,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
       );
       if (hasActiveVip) {
         vipStatus = "vip_activo";
-      } else if (Boolean(ambLead.corset_vip) || (ambLead.metadata?.tags && (ambLead.metadata.tags.includes("corset") || ambLead.metadata.tags.includes("posible vip")))) {
+      } else if (Boolean(ambLead.corset_vip) || (ambLead.metadata?.tags && (ambLead.metadata.tags.includes("posible vip") || ambLead.metadata.tags.includes("corset_vip")))) {
         vipStatus = "posible_vip";
       }
     }
@@ -717,6 +721,27 @@ export async function getAffiliateStats(identifier: string): Promise<{
     const freeTicketsEarned = Math.min(3, Math.floor(purchases / 3));
     const subsequentDiscounts = Math.max(0, purchases - 9);
 
+    // Contar eventos propios asistidos por el usuario (pagos, gratuitos y ganados por 3 compras, etc.)
+    let attendedEventsCount = 0;
+    try {
+      const ambEmail = ambLead?.email || row.email;
+      const cleanEmail = ambEmail && ambEmail.trim() ? ambEmail.trim().toLowerCase() : null;
+      const leadId = ambLead?.id ? String(ambLead.id) : null;
+      const attendedRes = await client.query(
+        `SELECT COUNT(*)::int AS cnt FROM event_tickets et
+         LEFT JOIN leads l ON et.lead_id = l.id
+         WHERE (
+           (COALESCE(NULLIF($1::text, ''), NULL) IS NOT NULL AND et.lead_id = $1::uuid) OR 
+           (array_length($2::text[], 1) > 0 AND l.whatsapp = ANY($2::text[])) OR 
+           ($3::text IS NOT NULL AND LOWER(l.email) = $3)
+         ) AND et.estado = 'asistido'`,
+        [leadId, phoneVariants.length > 0 ? phoneVariants : [], cleanEmail]
+      );
+      attendedEventsCount = attendedRes.rows[0]?.cnt || 0;
+    } catch (e) {
+      console.warn("[getAffiliateStats] Error counting attended events:", e);
+    }
+
     return {
       alias: row.alias,
       nombre: row.nombre || row.alias,
@@ -732,6 +757,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
       purchasesCount: purchases,
       freeTicketsEarned,
       subsequentDiscounts,
+      attendedEventsCount,
       vipStatus,
       referredLeads: referredLeadsRes.rows.map((r) => {
         const tags = Array.isArray(r.metadata?.tags) ? r.metadata.tags : [];
@@ -753,7 +779,13 @@ export async function updateAffiliateCode(oldAlias: string, newAlias: string): P
   const client = await pool.connect();
   try {
     const cleanOld = oldAlias.trim().toLowerCase();
-    const cleanNew = newAlias.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    const cleanNew = newAlias
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "")
+      .replace(/[^a-z0-9_-]/g, "");
 
     if (!cleanNew || cleanNew.length < 3) {
       return { success: false, error: "El código debe tener al menos 3 caracteres alfanuméricos" };

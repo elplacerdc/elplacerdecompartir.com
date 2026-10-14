@@ -117,13 +117,39 @@ const initialPct = isVipRefSsr ? "20%" : "10%";
       } catch (_) {}
 
       // 2. Affiliate Ref and Discount UI
+      let myAlias = (localStorage.getItem("user_alias") || "").trim().toLowerCase();
+      let myReferredBy = (localStorage.getItem("user_referred_by") || "").trim().toLowerCase();
+      try {
+        const rawProfile = localStorage.getItem("user_profile");
+        if (rawProfile) {
+          const parsed = JSON.parse(rawProfile);
+          if (parsed.alias) myAlias = parsed.alias.trim().toLowerCase();
+          if (parsed.referredBy) myReferredBy = parsed.referredBy.trim().toLowerCase();
+        }
+      } catch (_) {}
+
       const urlParams = new URLSearchParams(window.location.search);
       const refParam = urlParams.get("ref") || urlParams.get("r");
-      let localRef = refParam || localStorage.getItem("affiliate_ref");
+      let localRef = refParam ? refParam.trim().toLowerCase() : null;
+
+      if (localRef && myAlias && localRef === myAlias) {
+        localRef = myReferredBy || "segisw";
+      }
+      if (myReferredBy && myAlias && localRef && localRef !== myReferredBy) {
+        localRef = myReferredBy;
+      }
+
+      if (!localRef) {
+        localRef = localStorage.getItem("affiliate_ref");
+      }
       if (!localRef) {
         const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
         if (match) localRef = decodeURIComponent(match[1]).trim().toLowerCase();
       }
+      if (localRef && myAlias && localRef === myAlias) {
+        localRef = myReferredBy || "segisw";
+      }
+
       if (localRef) {
         const cleanRef = localRef.trim().toLowerCase();
         localStorage.setItem("affiliate_ref", cleanRef);

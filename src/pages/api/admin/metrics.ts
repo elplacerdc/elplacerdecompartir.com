@@ -25,7 +25,7 @@ export const GET: APIRoute = async ({ cookies }) => {
     const possibleVipCountRes = await client.query(`
       SELECT COUNT(*)::int AS count 
       FROM leads 
-      WHERE (corset_vip = true OR metadata->'tags' ? 'posible vip' OR metadata->'tags' ? 'corset' OR metadata->'tags' ? 'corset_vip')
+      WHERE (corset_vip = true OR metadata->'tags' ? 'posible vip' OR metadata->'tags' ? 'corset_vip')
         AND (metadata->>'vip_until' IS NULL OR (metadata->>'vip_until')::timestamptz <= NOW())
     `);
     const activePaidVipCountRes = await client.query(`
@@ -129,7 +129,7 @@ export const GET: APIRoute = async ({ cookies }) => {
         COALESCE(a.referidos_pagados, 0) AS affiliate_sales_count,
         COALESCE(a.entradas_ganadas, 0) AS affiliate_tickets_won,
         (CASE WHEN (COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) > NOW()) OR (l.metadata->'tags' ? 'vip_activo') THEN true ELSE false END) AS is_active_vip,
-        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset') AND (COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) IS NULL OR COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) <= NOW()) THEN true ELSE false END) AS is_possible_vip,
+        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset_vip') AND (COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) IS NULL OR COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) <= NOW()) THEN true ELSE false END) AS is_possible_vip,
         (SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id) AS tickets_count,
         COALESCE((SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id AND et.estado = 'asistido'), 0) AS attended_events_count,
         COALESCE((SELECT json_agg(json_build_object('evento', et.evento, 'created_at', et.created_at, 'estado', et.estado, 'tipo_entrada', et.tipo_entrada, 'monto_pagado', et.monto_pagado)) FROM event_tickets et WHERE et.lead_id = l.id), '[]'::json) AS events_list,
@@ -219,7 +219,10 @@ export const GET: APIRoute = async ({ cookies }) => {
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, must-revalidate"
+        },
       }
     );
   } catch (error: any) {
