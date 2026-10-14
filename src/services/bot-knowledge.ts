@@ -32,6 +32,17 @@ const STATIC_EVENTS: EventItem[] = [
     url: "https://elplacerdecompartir.com/eventos/impacto-10-oct",
   },
   {
+    id: "taller-baile-erotico-16-oct",
+    title: "Taller de Baile Erótico — Sensualidad & Heels",
+    date: "2026-10-16",
+    time: "7:30 P.M. (Llegada) • 8:00 P.M. (Inicio Taller) • Velada hasta las 4:00 A.M.",
+    venue: "Centro Cultural El Placer DC (Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá)",
+    description: "Clase y taller de Sensualidad, Expresión Corporal y Heels Dance para todo público de mente abierta sin importar su inclinación. Entrada para solos y parejas al mismo costo.",
+    pricing: "Pase Solo Taller: $40.000 COP (pago completo únicamente) | Pase Taller + Velada VIP hasta 4am (con media de licor incluida): $120.000 COP (separa con $60.000 COP). Con embajador: $36.000 / $108.000 (separa con $54.000). Con VIP: $32.000 / $96.000 (separa con $48.000).",
+    url: "https://elplacerdecompartir.com/taller-baile-erotico/",
+    reserve_url: "https://elplacerdecompartir.com/taller-baile-erotico/",
+  },
+  {
     id: "luna-llena-31-oct",
     title: "The Corset Society — Noche de Luna Llena (Mascarada en el Bosque)",
     date: "2026-10-31",
@@ -185,6 +196,7 @@ SOLO tienes permitido brindar los siguientes enlaces oficiales exactos. NUNCA in
 • Galería fotográfica oficial: https://elplacerdecompartir.com/galeria-centro-cultural
 • Velada Íntima 'Sitio': https://elplacerdecompartir.com/eventos/sitio-9-oct
 • Evento Aliado Impacto Producciones: https://elplacerdecompartir.com/eventos/impacto-10-oct
+• Taller de Baile Erótico (16 Octubre - Información y Reservas): https://elplacerdecompartir.com/taller-baile-erotico
 • The Corset Society (círculo VIP y membresías): https://elplacerdecompartir.com/the-corset-society
 • Noche de Luna Llena (31 Octubre - Información y Experiencia): https://elplacerdecompartir.com/the-corset-society/luna-llena
 • Noche de Luna Llena (Reserva de Entradas y Pago Directo): https://elplacerdecompartir.com/the-corset-society/luna-llena
@@ -240,6 +252,8 @@ const CANONICAL_VALID_PATHS = new Set([
   "/terminos",
   "/login",
   "/adminn",
+  "/taller-baile-erotico",
+  "/taller-baile-erotico/",
 ]);
 
 const ROUTE_ALIASES: Record<string, string> = {
@@ -261,6 +275,13 @@ const ROUTE_ALIASES: Record<string, string> = {
   "/galeria": "/galeria-centro-cultural",
   "/alianza": "/centro-cultural",
   "/alianzas": "/centro-cultural",
+  "/baile-erotico": "/taller-baile-erotico",
+  "/taller-baile": "/taller-baile-erotico",
+  "/taller": "/taller-baile-erotico",
+  "/baile": "/taller-baile-erotico",
+  "/chair-dance": "/taller-baile-erotico",
+  "/pole-exotic": "/taller-baile-erotico",
+  "/heels": "/taller-baile-erotico",
 };
 
 export function sanitizeAndValidateUrls(text: string): string {

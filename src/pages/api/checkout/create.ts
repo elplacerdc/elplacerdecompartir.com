@@ -3,25 +3,45 @@ import { pool, upsertLead } from "../../../db";
 import { resolveDiscount } from "../../../services/discountStrategy";
 import crypto from "crypto";
 
-const PRICES: Record<string, { total: number; reserva_40: number; label: string }> = {
-  pareja: { total: 100000, reserva_40: 40000, label: "Pareja" },
-  single: { total: 120000, reserva_40: 50000, label: "Single (Hombre Solo)" },
-  unicornio: { total: 30000, reserva_40: 10000, label: "Unicornio (Mujer Sola)" },
+interface EventTier {
+  total: number;
+  reserva?: number;
+  label: string;
+}
+
+const EVENT_PRICES: Record<string, Record<string, EventTier>> = {
+  luna_llena: {
+    pareja: { total: 100000, reserva: 40000, label: "Pareja" },
+    single: { total: 120000, reserva: 50000, label: "Single (Hombre Solo)" },
+    unicornio: { total: 30000, reserva: 10000, label: "Unicornio (Mujer Sola)" },
+  },
+  taller_baile_erotico: {
+    taller_solo: { total: 40000, label: "Pase Solo Taller (Individual o Pareja)" },
+    taller_velada: { total: 120000, reserva: 60000, label: "Pase Taller + Velada VIP Centro Cultural (hasta 4am)" },
+  },
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
     const body = await request.json();
     const { tipo_entrada, metodo_pago, alias_nombre, email, whatsapp } = body;
-    const rawModalidad = body.modalidad_pago || body.tipo_pago || "pago_total";
-    const modalidad_pago = rawModalidad === "reserva_40" ? "reserva_40" : "pago_total";
+    
+    const rawEvento = (body.evento || body.event || "luna_llena").toString().toLowerCase().replace(/-/g, "_");
+    const evento = rawEvento.includes("taller") || rawEvento.includes("baile") ? "taller_baile_erotico" : "luna_llena";
+    const eventTiers = EVENT_PRICES[evento] || EVENT_PRICES.luna_llena;
+    const priceInfo = eventTiers[tipo_entrada] || EVENT_PRICES.luna_llena[tipo_entrada] || EVENT_PRICES.taller_baile_erotico[tipo_entrada];
 
-    const priceInfo = PRICES[tipo_entrada];
     if (!priceInfo) {
       return new Response(JSON.stringify({ error: "Tipo de entrada inválido" }), { status: 400 });
     }
 
-    const baseMonto = modalidad_pago === "reserva_40" ? priceInfo.reserva_40 : priceInfo.total;
+    const rawModalidad = body.modalidad_pago || body.tipo_pago || "pago_total";
+    let modalidad_pago = "pago_total";
+    if (priceInfo.reserva && (rawModalidad === "reserva" || rawModalidad === "reserva_40" || rawModalidad === "reserva_50")) {
+      modalidad_pago = evento === "taller_baile_erotico" ? "reserva_50" : "reserva_40";
+    }
+
+    const baseMonto = modalidad_pago !== "pago_total" && priceInfo.reserva ? priceInfo.reserva : priceInfo.total;
     const rawAffiliateRef = (body.ref || body.afiliado_id || cookies?.get("affiliate_ref")?.value || "")
       .toString()
       .trim()
@@ -114,12 +134,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         alias_nombre,
         email,
         whatsapp,
-        rol: tipo_entrada === "pareja" ? "pareja" : tipo_entrada === "unicornio" ? "mujer_sola" : "hombre_solo",
+        rol: (tipo_entrada === "pareja" || tipo_entrada === "taller_velada") ? "pareja" : tipo_entrada === "unicornio" ? "mujer_sola" : "hombre_solo",
         corset_vip: isVipActive,
-        origen: "evento_luna_llena",
+        origen: `evento_${evento}`,
         afiliado_id: affiliateRef || undefined,
       },
-      "corset"
+      evento === "taller_baile_erotico" ? "elplacerdc" : "corset"
     );
 
     if (leadResult.status === "conflict") {
@@ -131,8 +151,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(JSON.stringify({ error: "No se pudo vincular el perfil de invitado." }), { status: 500 });
     }
 
-    // 1.1 Validar filtro dinámico para hombres solos (Single)
-    if (tipo_entrada === "single") {
+    // 1.1 Validar filtro dinámico para hombres solos (Single en Luna Llena)
+    if (evento === "luna_llena" && tipo_entrada === "single") {
       const clientRatio = await pool.connect();
       try {
         const countsRes = await clientRatio.query(
@@ -206,14 +226,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (!isDigitalGateway) {
       // Manual coordination via WhatsApp (Bre-B, Nequi, Transferencia)
-      // Zero DB ticket creation, zero automatic reservation, zero QR/notifications until manually approved in /adminn.
+      const waTitle = evento === "taller_baile_erotico"
+        ? `💃 *COORDINACIÓN DE PAGO MANUAL — TALLER DE BAILE ERÓTICO — EL PLACER DE COMPARTIR*`
+        : `🌕 *COORDINACIÓN DE PAGO MANUAL — NOCHE DE LUNA LLENA — THE CORSET SOCIETY*`;
+
+      const modLabel = modalidad_pago === "reserva_50"
+        ? `Separación 50% ($${monto.toLocaleString("es-CO")})`
+        : modalidad_pago === "reserva_40"
+        ? `Separación 40% ($${monto.toLocaleString("es-CO")})`
+        : `Pago Total ($${monto.toLocaleString("es-CO")})`;
+
       const waText = encodeURIComponent(
-        `🌕 *COORDINACIÓN DE PAGO MANUAL — NOCHE DE LUNA LLENA — THE CORSET SOCIETY*\n\n` +
+        `${waTitle}\n\n` +
         `👤 *Alias/Nombre:* ${alias_nombre}\n` +
         `📱 *WhatsApp:* ${whatsapp}\n` +
         `📧 *Email:* ${email}\n` +
         `🎟️ *Entrada:* ${priceInfo.label}\n` +
-        `💵 *Modalidad:* ${modalidad_pago === "reserva_40" ? "Separación 40% ($" + monto.toLocaleString("es-CO") + ")" : "Pago Total ($" + monto.toLocaleString("es-CO") + ")"}\n` +
+        `💵 *Modalidad:* ${modLabel}\n` +
         (lockedAffiliate ? `🤝 *Referido por:* ${lockedAffiliate}\n` : "") +
         `\nHola Segisw, deseo coordinar mi pago manual vía Bre-B, Nequi o transferencia bancaria para el evento.`
       );
@@ -232,9 +261,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     try {
       const existing = await client.query(
         `SELECT id, ticket_hash FROM event_tickets 
-         WHERE lead_id = $1 AND evento = 'luna_llena' AND tipo_entrada = $2 AND tipo_pago = $3 AND estado = 'pendiente' AND created_at > NOW() - INTERVAL '60 seconds'
+         WHERE lead_id = $1 AND evento = $2 AND tipo_entrada = $3 AND tipo_pago = $4 AND estado = 'pendiente' AND created_at > NOW() - INTERVAL '60 seconds'
          ORDER BY created_at DESC LIMIT 1`,
-        [lead.id, tipo_entrada, modalidad_pago]
+        [lead.id, evento, tipo_entrada, modalidad_pago]
       );
 
       if (existing.rows.length > 0) {
@@ -249,7 +278,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
           [
             lead.id,
-            "luna_llena",
+            evento,
             tipo_entrada,
             modalidad_pago,
             monto,
@@ -273,6 +302,14 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       ? "https://api-sbx.dlocalgo.com/v1/payments" 
       : "https://api.dlocalgo.com/v1/payments";
 
+    const eventDesc = evento === "taller_baile_erotico"
+      ? `Taller Baile Erótico: ${priceInfo.label} (${modalidad_pago === "reserva_50" ? "Separación 50%" : "Pago Total"})`.slice(0, 95)
+      : `Cover Luna Llena: ${priceInfo.label} (${modalidad_pago === "reserva_40" ? "Separación 40%" : "Pago Total"})`.slice(0, 95);
+
+    const backUrl = evento === "taller_baile_erotico"
+      ? "https://elplacerdecompartir.com/taller-baile-erotico/"
+      : "https://elplacerdecompartir.com/the-corset-society/luna-llena/";
+
     if (apiKey && secretKey) {
       try {
         const dlRes = await fetch(dlocalUrl, {
@@ -287,9 +324,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             currency: "COP",
             country: "CO",
             order_id: ticketId,
-            description: `Cover Luna Llena: ${priceInfo.label} (${modalidad_pago === "reserva_40" ? "Separación 40%" : "Pago Total"})`.slice(0, 95),
+            description: eventDesc,
             success_url: `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticketHash}`,
-            back_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena",
+            back_url: backUrl,
             notification_url: "https://elplacerdecompartir.com/api/webhooks/dlocal",
           }),
         });

@@ -123,7 +123,7 @@ export async function notifyNewLead(
       `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
       `Hemos recibido tu postulación de admisión. The Corset Society es la línea de alta exclusividad de ElPlacerDC: un círculo privado de gala con credencial VIP por suscripción anual ($199.000 COP) que otorga acceso a convocatorias privadas, encuentros de ticket alto, descuentos permanentes y beneficios exclusivos.\n\n` +
       `Conoce los detalles de la membresía y activa tu credencial en nuestra página oficial:\n` +
-      `👉 https://elplacerdecompartir.com/corset-vip?ref=segisw\n\n` +
+      `👉 https://elplacerdecompartir.com/corset-vip/?ref=segisw\n\n` +
       `Tu perfil se encuentra en evaluación confidencial por el comité de admisión.\n\n` +
       `_«El acceso se concede, no se anuncia.»_\n\n` +
       `🏛️ *Dirección & Comité de Admisión • The Corset Society*`;
@@ -188,7 +188,7 @@ export async function notifyNewLead(
 
             <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
             <div style="text-align: center; margin: 30px 0 10px 0;">
-              <a href="https://elplacerdecompartir.com/corset-vip?ref=segisw" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
+              <a href="https://elplacerdecompartir.com/corset-vip/?ref=segisw" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
             </div>
 
           </div>
@@ -239,7 +239,7 @@ export async function notifyNewLead(
 
             <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
             <div style="text-align: center; margin: 30px 0 10px 0;">
-              <a href="https://elplacerdecompartir.com/galeria-centro-cultural?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Explorar Centro Cultural & Galería 🏛️ →</a>
+              <a href="https://elplacerdecompartir.com/galeria-centro-cultural/?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Explorar Centro Cultural & Galería 🏛️ →</a>
             </div>
 
           </div>
@@ -325,18 +325,30 @@ export async function notifyNewTicket(
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
   const affCode = options?.affiliateCode || "segisw";
-  const eventShareUrl = `https://elplacerdecompartir.com/the-corset-society/luna-llena?ref=${encodeURIComponent(affCode)}`;
+  const isTaller = ticket.evento.includes("taller") || ticket.evento.includes("baile");
+  const eventShareUrl = isTaller
+    ? `https://elplacerdecompartir.com/taller-baile-erotico/?ref=${encodeURIComponent(affCode)}`
+    : `https://elplacerdecompartir.com/the-corset-society/luna-llena/?ref=${encodeURIComponent(affCode)}`;
 
   // 1. WhatsApp Directo al Comprador (Dirección real y conciso sin 'leer más')
-  const buyerWaText = 
-    `🌕 *CREDENCIAL CONFIRMADA — THE CORSET SOCIETY*\n\n` +
-    `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*, tu acceso para la *Noche de Luna Llena* (31 de Octubre) está confirmado.\n\n` +
-    `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n` +
-    `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
-    `📍 *Lugar:* Centro Cultural ElPlacerDC: Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá.\n\n` +
-    `🔐 *Tu credencial digital con QR:*\n${ticketUrl}\n\n` +
-    `💎 *Tu enlace de embajador (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
-    `_«El acceso se concede, no se anuncia.»_`;
+  const buyerWaText = isTaller
+    ? `💃 *CREDENCIAL CONFIRMADA — TALLER DE BAILE ERÓTICO*\n\n` +
+      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*, tu acceso para el *Taller de Baile Erótico* (Viernes 16 de Octubre) está confirmado.\n\n` +
+      `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago === "reserva_50" ? "Separación 50%" : "Pago Total 100%"})\n` +
+      `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
+      `📍 *Lugar:* Centro Cultural ElPlacerDC: Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá.\n` +
+      `⏰ *Horario:* Llegada 7:30 P.M. • Inicio Taller 8:00 P.M.\n\n` +
+      `🔐 *Tu credencial digital con QR:*\n${ticketUrl}\n\n` +
+      `💎 *Tu enlace de embajador (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
+      `_«Sensualidad & Heels en total libertad y consentimiento lúcido.»_`
+    : `🌕 *CREDENCIAL CONFIRMADA — THE CORSET SOCIETY*\n\n` +
+      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*, tu acceso para la *Noche de Luna Llena* (31 de Octubre) está confirmado.\n\n` +
+      `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n` +
+      `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
+      `📍 *Lugar:* Centro Cultural ElPlacerDC: Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá.\n\n` +
+      `🔐 *Tu credencial digital con QR:*\n${ticketUrl}\n\n` +
+      `💎 *Tu enlace de embajador (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
+      `_«El acceso se concede, no se anuncia.»_`;
 
   sendEvolutionWhatsApp(lead.whatsapp, buyerWaText).catch((e) =>
     console.error("[NotifyTicket Buyer WhatsApp Err]:", e)
@@ -458,13 +470,16 @@ export async function notifyEventReservation(
     affiliateCode?: string;
   }
 ): Promise<void> {
+  const isTaller = ticket.evento.includes("taller") || ticket.evento.includes("baile");
   const isLuna = ticket.evento.includes("luna_llena") || ticket.evento.includes("luna-llena");
   const isSitio = ticket.evento.includes("sitio") || ticket.evento.includes("9-oct");
   const isImpacto = ticket.evento.includes("impacto") || ticket.evento.includes("10-oct");
   const isCorsetVip = ticket.evento.includes("corset_vip") || ticket.evento.includes("vip");
 
   let eventTitle = "Evento Oficial El Placer de Compartir";
-  if (isLuna) {
+  if (isTaller) {
+    eventTitle = "Taller de Baile Erótico — Sensualidad & Heels (Viernes 16 de Octubre)";
+  } else if (isLuna) {
     eventTitle = "The Corset Society — Noche de Luna Llena (Gala Mascarada Noir de Halloween)";
   } else if (isSitio) {
     eventTitle = "Evento Oficial ElPlacerDC (Viernes 9 de Octubre)";
@@ -481,15 +496,17 @@ export async function notifyEventReservation(
   const affCode = options?.affiliateCode || "segisw";
 
   // URL del evento específico para el enlace de embajador
-  const eventPageUrl = isLuna
-    ? `https://elplacerdecompartir.com/the-corset-society/luna-llena`
+  const eventPageUrl = isTaller
+    ? `https://elplacerdecompartir.com/taller-baile-erotico/`
+    : isLuna
+    ? `https://elplacerdecompartir.com/the-corset-society/luna-llena/`
     : isSitio
-    ? `https://elplacerdecompartir.com/eventos/sitio-9-oct`
+    ? `https://elplacerdecompartir.com/eventos/sitio-9-oct/`
     : isImpacto
-    ? `https://elplacerdecompartir.com/eventos/impacto-10-oct`
-    : `https://elplacerdecompartir.com/the-corset-society/luna-llena`;
+    ? `https://elplacerdecompartir.com/eventos/impacto-10-oct/`
+    : `https://elplacerdecompartir.com/taller-baile-erotico/`;
 
-  const affLink = `${eventPageUrl}?ref=${encodeURIComponent(affCode)}`;
+  const affLink = `${eventPageUrl.replace(/\/+$/, "")}/?ref=${encodeURIComponent(affCode)}`;
 
   // Programar recordatorios persistentes en PostgreSQL SSoT (BAI-284)
   if (isLuna) {
@@ -703,7 +720,7 @@ export async function notifyNewAlliance(
 
           <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
           <div style="text-align: center; margin: 30px 0 10px 0;">
-            <a href="https://elplacerdecompartir.com/galeria-centro-cultural?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería de Espacios del Centro Cultural 🏛️ →</a>
+            <a href="https://elplacerdecompartir.com/galeria-centro-cultural/?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería de Espacios del Centro Cultural 🏛️ →</a>
           </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />

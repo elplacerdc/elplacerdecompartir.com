@@ -57,11 +57,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (url.pathname.startsWith("/r/")) {
       const toParam = url.searchParams.get("to");
       if (toParam === "luna-llena") {
-        return context.redirect("/the-corset-society/luna-llena");
+        return context.redirect("/the-corset-society/luna-llena/");
       } else if (toParam === "corset") {
-        return context.redirect("/the-corset-society");
+        return context.redirect("/the-corset-society/");
+      } else if (toParam === "taller-baile-erotico" || toParam === "baile-erotico") {
+        return context.redirect("/taller-baile-erotico/");
       }
-      return context.redirect("/centro-cultural");
+      return context.redirect("/centro-cultural/");
     }
   }
 

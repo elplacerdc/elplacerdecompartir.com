@@ -73,9 +73,15 @@ if (hash) {
           <div class="p-8 space-y-6 text-center">
             <!-- Event Header -->
             <div class="border-b border-[#c5a059]/30 pb-4 space-y-1">
-              <span class="text-[10px] uppercase tracking-[0.25em] text-[#c5a059] font-bold">Gala Privada</span>
-              <h2 class="text-xl sm:text-2xl font-bold text-[#f7f4ee]">Noche de Luna Llena 🌕</h2>
-              <p class="text-xs font-sans text-[#ead397]">Sábado 31 Octubre 2026 • Bogotá</p>
+              <span class="text-[10px] uppercase tracking-[0.25em] text-[#c5a059] font-bold">
+                {ticket.evento?.includes("taller") || ticket.evento?.includes("baile") ? "Taller Cultural" : "Gala Privada"}
+              </span>
+              <h2 class="text-xl sm:text-2xl font-bold text-[#f7f4ee]">
+                {ticket.evento?.includes("taller") || ticket.evento?.includes("baile") ? "Taller de Baile Erótico 💃" : "Noche de Luna Llena 🌕"}
+              </h2>
+              <p class="text-xs font-sans text-[#ead397]">
+                {ticket.evento?.includes("taller") || ticket.evento?.includes("baile") ? "Viernes 16 Octubre 2026 • Centro Cultural Bogotá" : "Sábado 31 Octubre 2026 • Bogotá"}
+              </p>
             </div>
 
             <!-- Status Badge -->

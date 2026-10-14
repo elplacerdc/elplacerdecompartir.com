@@ -1,0 +1,864 @@
+---
+// taller-baile-erotico.astro - Evento Oficial ElPlacerDC / Centro Cultural
+import Layout from "../layouts/Layout.astro";
+import { pool } from "../db/index";
+
+const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchParams.get("ref") || Astro.url.searchParams.get("r") || null;
+
+let isVipRefSsr = false;
+if (cookieRef) {
+  const cleanRef = cookieRef.trim().toLowerCase();
+  if (cleanRef === "segisw") {
+    isVipRefSsr = true;
+  } else {
+    try {
+      const { rows } = await pool.query(
+        `SELECT l.vip_until, l.metadata 
+         FROM afiliados a 
+         LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
+         WHERE LOWER(a.alias) = LOWER($1)
+         LIMIT 1`,
+        [cleanRef]
+      );
+      if (rows.length > 0) {
+        const row = rows[0];
+        const hasVipUntil = row.vip_until && new Date(row.vip_until) > new Date();
+        const hasVipTag = Array.isArray(row.metadata?.tags) && (row.metadata.tags.includes("vip_activo") || row.metadata.tags.includes("corset_vip"));
+        if (hasVipUntil || hasVipTag) {
+          isVipRefSsr = true;
+        }
+      }
+    } catch (_) {}
+  }
+}
+
+const discPercentSsr = isVipRefSsr ? 0.20 : (cookieRef ? 0.10 : 0);
+const discLabelSsr = isVipRefSsr ? "-20%" : "-10%";
+
+// Precios base: Solo Taller $40k (pago completo), Taller + Velada $120k (reserva 50% = $60k)
+const baseSoloSsr = 40000;
+const baseVeladaSsr = 120000;
+const baseSeparaVeladaSsr = 60000;
+
+const precioSoloTallerSsr = Math.round(baseSoloSsr * (1 - discPercentSsr));
+const precioVeladaSsr = Math.round(baseVeladaSsr * (1 - discPercentSsr));
+const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
+---
+
+<Layout 
+  title="Taller de Baile Erótico — Sensualidad & Heels | El Placer de Compartir"
+  description="Clase y taller inmersivo de baile erótico en el nuevo Centro Cultural ElPlacerDC. Sensualidad, Heels y expresión corporal para todo público de mente abierta en Bogotá."
+  ogImage="/media/eventos-elplacerdc/flyer_taller-baile-erotico-16-oct.jpg"
+  ogImageWidth={1080}
+  ogImageHeight={1446}
+  canonicalUrl="https://elplacerdecompartir.com/taller-baile-erotico/"
+  isCorset={false}
+>
+  <div class="min-h-screen bg-[#180A1A] text-[#f7f4ee] font-sans selection:bg-[#c5a059] selection:text-[#0a0608] relative overflow-hidden">
+    
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16 relative z-10">
+      
+      <!-- HERO SECTION -->
+      <section class="text-center space-y-6 max-w-4xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#c5a059]/40 bg-[#380b1e]/60 text-xs tracking-[0.2em] uppercase text-[#ead397] font-semibold shadow-md">
+          <span>✨</span> Evento Oficial • Centro Cultural ElPlacerDC <span>💃</span>
+        </div>
+
+        <h1 class="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold tracking-tight text-[#f7f4ee] leading-tight">
+          Taller de Baile Erótico <br />
+          <span class="italic font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">
+            Sensualidad & Heels
+          </span>
+        </h1>
+
+        <p class="max-w-3xl mx-auto text-base sm:text-lg font-light text-[#f7f4ee]/85 leading-relaxed">
+          Sensualidad, cadencia y Heels Dance en un espacio íntimo de libre exploración y conexión corporal. Diseñado para todo público de mente abierta sin importar su inclinación sexual: personas solas, parejas, swinger y chicas trans.
+        </p>
+
+        <div class="p-3.5 rounded-xl bg-[#250F22] border border-[#c5a059]/30 text-xs sm:text-sm text-[#ead397] max-w-2xl mx-auto font-medium">
+          🎟️ <strong>Entrada para solos y parejas:</strong> Puedes asistir de forma individual o en pareja; el valor de cada pase es exactamente el mismo.
+        </div>
+
+        <!-- 5. FLYER OFICIAL ANTES DEL BOTÓN DE RESERVA -->
+        <div class="my-6 max-w-sm sm:max-w-md mx-auto bg-[#250F22] p-3.5 sm:p-4 rounded-3xl border border-[#c5a059]/40 shadow-2xl flex flex-col items-center">
+          <img 
+            src="/media/eventos-elplacerdc/flyer_taller-baile-erotico-16-oct.jpg" 
+            alt="Flyer Oficial Taller de Baile Erótico — Viernes 16 Octubre" 
+            class="rounded-2xl w-full max-h-[580px] object-contain shadow-lg border border-[#c5a059]/20"
+            loading="eager"
+          />
+          <div class="pt-3 text-center">
+            <span class="inline-block px-3 py-1 rounded-full bg-[#180A1A] border border-[#c5a059]/30 text-[11px] text-[#ead397] font-semibold">
+              Flyer Oficial de Convocatoria • Viernes 16 Octubre 2026
+            </span>
+          </div>
+        </div>
+
+        <!-- BOTONES DE ACCIÓN (UBICADOS TRAS EL FLYER) -->
+        <div class="pt-2 flex flex-wrap gap-4 justify-center">
+          <a
+            href="#tarifas"
+            class="inline-flex items-center gap-3 px-8 py-3.5 rounded-full font-serif font-bold text-xs sm:text-sm tracking-wider uppercase bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059] text-[#0a0608] shadow-[0_0_25px_rgba(197,160,89,0.35)] hover:shadow-[0_0_35px_rgba(197,160,89,0.55)] hover:scale-105 active:scale-95 transition-all duration-300"
+          >
+            <span>Reservar Mi Entrada</span>
+            <span>↓</span>
+          </a>
+          <a
+            href="https://wa.me/573194194785?text=Hola%20Segisw%2C%20deseo%20m%C3%A1s%20informaci%C3%B3n%20del%20Taller%20de%20Baile%20Er%C3%B3tico%20del%2016%20de%20Octubre"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-6 py-3.5 rounded-full font-serif font-semibold text-xs sm:text-sm tracking-wider text-[#ead397] border border-[#c5a059]/40 hover:bg-[#c5a059]/10 transition-all"
+          >
+            <span>Consultar por WhatsApp</span>
+            <span>💬</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- BARRA LOGÍSTICA DE DETALLES -->
+      <section class="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 rounded-2xl bg-[#250F22] border border-[#c5a059]/30 text-center text-xs">
+        <div class="space-y-1">
+          <div class="text-[#c5a059] font-bold uppercase tracking-wider">📅 Fecha</div>
+          <div class="text-[#f7f4ee] font-semibold text-sm">Viernes 16 de Octubre</div>
+          <div class="text-[#f7f4ee]/60">2026</div>
+        </div>
+        <div class="space-y-1">
+          <div class="text-[#c5a059] font-bold uppercase tracking-wider">⏰ Horario</div>
+          <div class="text-[#f7f4ee] font-semibold text-sm">7:30 PM Llegada</div>
+          <div class="text-[#f7f4ee]/60">Inicio Taller 8:00 PM (1h)</div>
+        </div>
+        <div class="space-y-1">
+          <div class="text-[#c5a059] font-bold uppercase tracking-wider">📍 Sede Permanente</div>
+          <div class="text-[#f7f4ee] font-semibold text-sm">Centro Cultural ElPlacerDC</div>
+          <div class="text-[#f7f4ee]/60">Calle 67 # 23-46 Piso 2, Bogotá</div>
+        </div>
+        <div class="space-y-1">
+          <div class="text-[#c5a059] font-bold uppercase tracking-wider">🍸 Velada Extendida</div>
+          <div class="text-[#f7f4ee] font-semibold text-sm">Hasta las 4:00 AM</div>
+          <div class="text-[#f7f4ee]/60">Incluye media de licor</div>
+        </div>
+      </section>
+
+      <!-- SHOWCASE VISUAL: FOTOS Y VIDEOS DE LA PROFE -->
+      <section class="space-y-8">
+        <div class="text-center space-y-2">
+          <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold">Galería & Multimedia</span>
+          <h2 class="text-2xl sm:text-4xl font-serif font-bold text-[#f7f4ee]">Conoce a Nuestra Instructora</h2>
+          <p class="text-xs sm:text-sm text-[#f7f4ee]/70 max-w-xl mx-auto">
+            Disfruta de demostraciones exclusivas de sensualidad y Heels Dance preparadas para la clase.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start max-w-5xl mx-auto">
+          
+          <!-- Fotos de la Instructora -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-serif font-bold uppercase tracking-wider text-[#c5a059] text-center">
+              📸 Galería Fotográfica
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="rounded-2xl overflow-hidden border border-[#c5a059]/30 bg-[#250F22] group shadow-md">
+                <img 
+                  src="/media/eventos-elplacerdc/profe-bailarina-exotica_1.jpg" 
+                  alt="Instructora Baile Erótico ElPlacerDC" 
+                  class="w-full h-56 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                <div class="p-2.5 text-center text-[11px] text-[#ead397] font-medium bg-[#180A1A]/90">
+                  Técnica & Heels
+                </div>
+              </div>
+              <div class="rounded-2xl overflow-hidden border border-[#c5a059]/30 bg-[#250F22] group shadow-md">
+                <img 
+                  src="/media/eventos-elplacerdc/profe-bailarina-exotica_2.jpg" 
+                  alt="Demostración Baile Erótico ElPlacerDC" 
+                  class="w-full h-56 sm:h-64 object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                />
+                <div class="p-2.5 text-center text-[11px] text-[#ead397] font-medium bg-[#180A1A]/90">
+                  Sensualidad & Expresión
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Videos de Demostración -->
+          <div class="space-y-4">
+            <h3 class="text-sm font-serif font-bold uppercase tracking-wider text-[#c5a059] text-center">
+              🎥 Demostraciones en Video
+            </h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="rounded-2xl overflow-hidden border border-[#c5a059]/30 bg-[#250F22] p-2.5 space-y-2 shadow-md">
+                <div class="flex items-center justify-between text-xs text-[#ead397] font-semibold px-1">
+                  <span>Demostración 1</span>
+                  <span class="text-[10px] text-[#f7f4ee]/50">MP4</span>
+                </div>
+                <div class="rounded-xl overflow-hidden bg-black aspect-[9/16] max-h-72 mx-auto">
+                  <video 
+                    src="/media/eventos-elplacerdc/video_profe-bailarina-exotica_1.mp4" 
+                    controls 
+                    playsinline 
+                    preload="metadata"
+                    class="w-full h-full object-contain"
+                  ></video>
+                </div>
+              </div>
+
+              <div class="rounded-2xl overflow-hidden border border-[#c5a059]/30 bg-[#250F22] p-2.5 space-y-2 shadow-md">
+                <div class="flex items-center justify-between text-xs text-[#ead397] font-semibold px-1">
+                  <span>Demostración 2</span>
+                  <span class="text-[10px] text-[#f7f4ee]/50">MP4</span>
+                </div>
+                <div class="rounded-xl overflow-hidden bg-black aspect-[9/16] max-h-72 mx-auto">
+                  <video 
+                    src="/media/eventos-elplacerdc/video_profe-bailarina-exotica_2.mp4" 
+                    controls 
+                    playsinline 
+                    preload="metadata"
+                    class="w-full h-full object-contain"
+                  ></video>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TEMÁTICA & RECOMENDACIONES DE VESTUARIO -->
+      <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="p-6 sm:p-8 rounded-3xl bg-[#250F22] border border-[#c5a059]/40 space-y-4 shadow-lg">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#c5a059]/15 text-xs text-[#ead397] font-bold uppercase tracking-wider">
+            <span>✨</span> Lo Que Aprenderás
+          </div>
+          <h3 class="text-xl sm:text-2xl font-serif font-bold text-[#f7f4ee]">Expresión & Desbloqueo Corporal</h3>
+          <ul class="space-y-3 text-xs sm:text-sm text-[#f7f4ee]/80 font-light">
+            <li class="flex items-start gap-2.5">
+              <span class="text-[#c5a059] font-bold">✓</span>
+              <span><strong>Heels Dance:</strong> Técnica de postura, caminata y cadencia en tacones con seguridad y elegancia.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="text-[#c5a059] font-bold">✓</span>
+              <span><strong>Expresión y Movimiento Sensual:</strong> Transiciones fluidas, trabajo de ritmo y proyección corporal.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="text-[#c5a059] font-bold">✓</span>
+              <span><strong>Desbloqueo de Sensualidad:</strong> Conexión con tu propio cuerpo y el de tu pareja en una atmósfera segura, cuidada y libre de presiones.</span>
+            </li>
+            <li class="flex items-start gap-2.5">
+              <span class="text-[#c5a059] font-bold">✓</span>
+              <span><strong>Atmósfera Inclusiva:</strong> Espacio de mente abierta para solas, solos, parejas y chicas trans por igual.</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="p-6 sm:p-8 rounded-3xl bg-[#250F22] border border-[#c5a059]/40 space-y-4 shadow-lg">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#c5a059]/15 text-xs text-[#ead397] font-bold uppercase tracking-wider">
+            <span>👗</span> Recomendaciones de Vestuario
+          </div>
+          <h3 class="text-xl sm:text-2xl font-serif font-bold text-[#f7f4ee]">Dress Code Sugerido</h3>
+          <div class="space-y-4 text-xs sm:text-sm text-[#f7f4ee]/80 font-light">
+            <div class="p-4 rounded-2xl bg-[#180A1A] border border-[#c5a059]/20 space-y-1">
+              <span class="font-bold text-[#ead397] flex items-center gap-2">👠 Para Mujeres:</span>
+              <p>Tacones, ropa sexy, mallas sensuales o prendas que despierten tu pasión y te hagan sentir cómoda al moverte.</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#180A1A] border border-[#c5a059]/20 space-y-1">
+              <span class="font-bold text-[#ead397] flex items-center gap-2">👞 Para Hombres:</span>
+              <p>Ropa cómoda y mucha actitud. Tacones opcionales para todo hombre que quiera aprender o le guste el femme style y heels dance.</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- SECCIÓN DE TARIFAS Y CHECKOUT -->
+      <section id="tarifas" class="pt-6 space-y-8 scroll-mt-24">
+        
+        <div class="text-center space-y-3">
+          <span class="text-xs uppercase tracking-widest text-[#c5a059] font-bold">Pases & Entradas Oficiales</span>
+          <h2 class="text-3xl sm:text-4xl font-serif font-bold text-[#ead397]">Elige Tu Experiencia</h2>
+          <p class="text-xs sm:text-sm text-[#f7f4ee]/70 max-w-xl mx-auto">
+            Selecciona el pase que mejor se adapte a tus planes. Al elegir tu pase, se activará en el formulario de pago inferior.
+          </p>
+        </div>
+
+        <!-- 7. Banner Dinámico de Descuento Embajador (Sin OFF, distinción VIP) -->
+        <div id="affiliateBanner" class={`${cookieRef ? '' : 'hidden'} max-w-2xl mx-auto p-4 rounded-2xl bg-[#380b1e] border border-[#c5a059] text-center space-y-1 shadow-md`}>
+          <div class="text-xs font-bold text-[#ead397] uppercase tracking-wider flex items-center justify-center gap-2">
+            <span>🎉</span>
+            <span id="affiliateBannerTitle">
+              {isVipRefSsr ? 'Has sido invitado por un Embajador VIP' : 'Has sido invitado por un Embajador'}
+            </span>
+          </div>
+          <div class="text-xs text-[#f7f4ee]/90">
+            Embajador: <strong id="affiliateAliasText" class="text-[#c5a059]">{cookieRef || 'embajador'}</strong> • Beneficio aplicado: <strong id="affiliateDiscText" class="text-[#81c784]">{discLabelSsr}</strong>
+          </div>
+        </div>
+
+        <!-- Cards de Tarifas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          
+          <!-- Card 1: Solo Taller -->
+          <div 
+            id="card-taller_solo" 
+            class="p-6 sm:p-8 rounded-3xl bg-[#250F22] border-2 border-[#c5a059]/40 hover:border-[#c5a059] transition-all flex flex-col justify-between space-y-6 shadow-xl relative cursor-pointer" 
+            onclick="selectTierAndScroll('taller_solo')"
+          >
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="px-3 py-1 rounded-full bg-[#c5a059]/20 text-[#ead397] font-bold text-xs uppercase tracking-wider">
+                  Solo Taller 🩰
+                </span>
+                <span id="badge-disc-solo" class={`${cookieRef ? '' : 'hidden'} text-[11px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2.5 py-0.5 rounded-full font-mono`}>
+                  {discLabelSsr}
+                </span>
+              </div>
+
+              <div>
+                <div class="text-3xl sm:text-4xl font-serif font-bold text-[#f7f4ee]" id="price-display-solo">
+                  {cookieRef ? (
+                    <>
+                      <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$40.000</span>
+                      <span class="text-[#81c784]">${precioSoloTallerSsr.toLocaleString('es-CO')}</span>
+                      <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>
+                    </>
+                  ) : (
+                    <>$40.000 <span class="text-xs font-normal text-[#f7f4ee]/50 font-sans">COP</span></>
+                  )}
+                </div>
+                <p class="text-xs text-[#ead397] mt-1 font-medium">
+                  ⚡ Pago completo únicamente (sin separación parcial)
+                </p>
+              </div>
+
+              <ul class="text-xs sm:text-sm text-[#f7f4ee]/80 space-y-2 pt-2 border-t border-[#c5a059]/20">
+                <li class="flex items-center gap-2">✓ Entrada válida para solo o en pareja (mismo valor)</li>
+                <li class="flex items-center gap-2">✓ 1 hora de clase magistral intensiva guiada</li>
+                <li class="flex items-center gap-2">✓ Técnicas de Sensualidad y Heels Dance</li>
+                <li class="flex items-center gap-2">✓ Ambiente libre de prejuicios y seguro</li>
+              </ul>
+            </div>
+
+            <button 
+              type="button" 
+              class="tier-btn w-full py-3 rounded-full border border-[#c5a059] text-xs font-serif uppercase tracking-wider font-bold text-[#c5a059] hover:bg-[#c5a059] hover:text-[#0a0608] transition-all"
+            >
+              Seleccionar Solo Taller →
+            </button>
+          </div>
+
+          <!-- Card 2: Taller + Velada VIP -->
+          <div 
+            id="card-taller_velada" 
+            class="p-6 sm:p-8 rounded-3xl bg-[#250F22] border-2 border-[#c5a059] shadow-[0_0_30px_rgba(197,160,89,0.2)] flex flex-col justify-between space-y-6 relative cursor-pointer" 
+            onclick="selectTierAndScroll('taller_velada')"
+          >
+            <div class="absolute -top-3.5 right-6 px-3 py-1 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] font-bold text-[10px] uppercase tracking-wider shadow-md">
+              Recomendada ⭐
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="px-3 py-1 rounded-full bg-[#c5a059]/20 text-[#ead397] font-bold text-xs uppercase tracking-wider">
+                  Taller + Velada VIP 🍸
+                </span>
+                <span id="badge-disc-velada" class={`${cookieRef ? '' : 'hidden'} text-[11px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2.5 py-0.5 rounded-full font-mono`}>
+                  {discLabelSsr}
+                </span>
+              </div>
+
+              <div>
+                <div class="text-3xl sm:text-4xl font-serif font-bold text-[#f7f4ee]" id="price-display-velada">
+                  {cookieRef ? (
+                    <>
+                      <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$120.000</span>
+                      <span class="text-[#81c784]">${precioVeladaSsr.toLocaleString('es-CO')}</span>
+                      <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>
+                    </>
+                  ) : (
+                    <>$120.000 <span class="text-xs font-normal text-[#f7f4ee]/50 font-sans">COP</span></>
+                  )}
+                </div>
+                <p id="separa-display-velada" class="text-xs text-[#ead397] mt-1 font-medium">
+                  {cookieRef ? (
+                    <>O separa con la mitad: <strong class="text-[#81c784]">${separaVeladaSsr.toLocaleString('es-CO')} COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[10px]">($60.000)</span></>
+                  ) : (
+                    <>O separa con la mitad: <strong class="text-[#81c784]">$60.000 COP</strong></>
+                  )}
+                </p>
+              </div>
+
+              <ul class="text-xs sm:text-sm text-[#f7f4ee]/80 space-y-2 pt-2 border-t border-[#c5a059]/20">
+                <li class="flex items-center gap-2">✓ Entrada válida para solo o en pareja (mismo valor)</li>
+                <li class="flex items-center gap-2">✓ Todo lo incluido en el Taller de Baile Erótico</li>
+                <li class="flex items-center gap-2">✓ <strong>Permanencia hasta las 4:00 AM</strong> en el Centro Cultural</li>
+                <li class="flex items-center gap-2">✓ <strong>Incluye media de licor</strong> (solo o en pareja)</li>
+                <li class="flex items-center gap-2">✓ Espacios de ambientación sensorial y música</li>
+              </ul>
+            </div>
+
+            <button 
+              type="button" 
+              class="tier-btn w-full py-3 rounded-full bg-[#c5a059] text-[#0a0608] font-serif uppercase tracking-wider font-bold hover:bg-[#ead397] transition-all shadow-md"
+            >
+              Seleccionar Taller + Velada →
+            </button>
+          </div>
+
+        </div>
+
+        <!-- 3. FORMULARIO DE RESERVA Y PAGO (CON ANCLA Y AUTOFILL INMUTABLE) -->
+        <div id="checkout" class="max-w-2xl mx-auto p-6 sm:p-8 rounded-3xl bg-[#250F22] border border-[#c5a059] shadow-2xl space-y-6 scroll-mt-24">
+          <div class="border-b border-[#c5a059]/30 pb-4 text-center sm:text-left">
+            <h3 class="text-xl sm:text-2xl font-serif font-bold text-[#ead397]">
+              Completar Reserva de Acceso
+            </h3>
+            <p class="text-xs text-[#f7f4ee]/70 mt-1">
+              Genera tu credencial oficial con código QR y coordina tu pago seguro.
+            </p>
+          </div>
+
+          <!-- Aviso de Datos Vinculados a Cuenta Oficial + Botón Editar Perfil -->
+          <div id="prefilled-profile-notice" class="hidden p-3.5 rounded-xl bg-[#140816] border border-[#c5a059]/40 text-xs font-sans text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🔒</span>
+              <div>
+                <span class="text-[#ead397] font-semibold block text-[11px]">Datos vinculados a tu cuenta oficial</span>
+                <span class="text-[#f7f4ee]/70 text-[10px]">Para modificar tu nombre, correo o modalidad:</span>
+              </div>
+            </div>
+            <a 
+              href="/dashboard#section-profile-settings" 
+              class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 inline-flex items-center gap-1"
+            >
+              <span>⚙️</span> Editar mi Perfil →
+            </a>
+          </div>
+
+          <form id="checkoutForm" class="space-y-5">
+            <input type="hidden" id="selectedTierInput" name="tipo_entrada" value="taller_velada" />
+
+            <!-- Selector de Modalidad (Pago Total vs Separación) -->
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059]">
+                Modalidad de Pago:
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <label id="opt-pago-total" class="flex items-center gap-2.5 p-3 rounded-xl bg-[#180A1A] border border-[#c5a059]/40 cursor-pointer hover:border-[#c5a059]">
+                  <input type="radio" name="modalidad" value="pago_total" checked onchange="updateSummary()" class="accent-[#c5a059]" />
+                  <div>
+                    <span class="font-bold text-[#f7f4ee] block">Pago Total (100%)</span>
+                    <span class="text-[11px] text-[#ead397]" id="summary-total-label">Garantiza tu cupo de inmediato</span>
+                  </div>
+                </label>
+
+                <label id="opt-reserva-50" class="flex items-center gap-2.5 p-3 rounded-xl bg-[#180A1A] border border-[#c5a059]/40 cursor-pointer hover:border-[#c5a059]">
+                  <input type="radio" name="modalidad" value="reserva_50" onchange="updateSummary()" class="accent-[#c5a059]" />
+                  <div>
+                    <span class="font-bold text-[#f7f4ee] block">Separar Cupo (50%)</span>
+                    <span class="text-[11px] text-[#81c784]" id="summary-separa-label">Saldo restante en puerta</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Campos de Contacto -->
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
+                  Nombre o Alias de Asistencia <span class="text-[#b84a39]">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="alias_nombre" 
+                  name="alias_nombre" 
+                  required 
+                  placeholder="Ej: Andrés / Pareja Sw / Laura"
+                  class="w-full px-3.5 py-2.5 rounded-xl bg-[#180A1A] border border-[#c5a059]/40 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
+                />
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
+                    WhatsApp (con indicativo) <span class="text-[#b84a39]">*</span>
+                  </label>
+                  <input 
+                    type="tel" 
+                    id="whatsapp" 
+                    name="whatsapp" 
+                    required 
+                    placeholder="Ej: +57 310 123 4567"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#180A1A] border border-[#c5a059]/40 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-1">
+                    Correo Electrónico <span class="text-[#b84a39]">*</span>
+                  </label>
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    placeholder="Para recibir tu credencial con QR"
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-[#180A1A] border border-[#c5a059]/40 text-xs text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen de Liquidación -->
+            <div class="p-4 rounded-2xl bg-[#180A1A] border border-[#c5a059]/30 space-y-2 text-xs">
+              <div class="flex justify-between items-center text-[#f7f4ee]/70">
+                <span>Pase Seleccionado:</span>
+                <strong id="summary-tier-name" class="text-[#ead397]">Taller + Velada VIP</strong>
+              </div>
+              <div class="flex justify-between items-center text-[#f7f4ee]/70">
+                <span>Modalidad:</span>
+                <strong id="summary-mod-name" class="text-[#f7f4ee]">Pago Total (100%)</strong>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-[#c5a059]/20 text-sm">
+                <span class="font-bold text-[#ead397]">Monto a Pagar Hoy:</span>
+                <span id="summary-monto-hoy" class="font-bold text-lg text-[#81c784]">$120.000 COP</span>
+              </div>
+              <div id="summary-saldo-puerta-row" class="hidden flex justify-between items-center text-[11px] text-[#f7f4ee]/60">
+                <span>Saldo pendiente al ingresar:</span>
+                <span id="summary-saldo-puerta" class="font-semibold text-[#ead397]">$60.000 COP</span>
+              </div>
+            </div>
+
+            <!-- Botones de Acción de Pago -->
+            <div class="pt-2 space-y-3">
+              <button 
+                type="button" 
+                onclick="submitCheckout('pasarela_digital')"
+                id="btnDigitalPay"
+                class="w-full py-3.5 rounded-full bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059] text-[#0a0608] font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.3)] transition-all cursor-pointer"
+              >
+                Pagar en Línea Seguro (PSE / Tarjeta) →
+              </button>
+
+              <button 
+                type="button" 
+                onclick="submitCheckout('whatsapp_manual')"
+                id="btnManualPay"
+                class="w-full py-3 rounded-full border border-[#c5a059]/50 text-xs font-serif uppercase tracking-wider text-[#ead397] hover:bg-[#c5a059]/15 transition-all text-center block cursor-pointer"
+              >
+                Coordinar Pago Manual por WhatsApp (Bre-B / Nequi / Bancolombia)
+              </button>
+            </div>
+
+            <p id="checkoutMsg" class="text-center text-xs text-[#ead397] min-h-[1.5rem]"></p>
+          </form>
+
+          <div class="text-[11px] text-center text-[#f7f4ee]/50 space-y-1 pt-3 border-t border-[#c5a059]/20">
+            <p>🛡️ Reserva formal respaldada por la comunidad El Placer de Compartir.</p>
+            <p>Atención directa por WhatsApp: <strong>+57 319 419 4785</strong> • Calle 67 # 23-46 Piso 2, Bogotá</p>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <script is:inline>
+    let activeRef = null;
+    let discPercent = 0;
+    let isVipRef = false;
+
+    // 0. Precios base oficiales actualizados: $40.000 y $120.000
+    const PRICING = {
+      taller_solo: {
+        total: 40000,
+        reserva_50: null,
+        name: "Solo Taller (Individual o Pareja)"
+      },
+      taller_velada: {
+        total: 120000,
+        reserva_50: 60000,
+        name: "Taller + Velada VIP Centro Cultural"
+      }
+    };
+
+    let selectedTier = "taller_velada";
+
+    // 1. Inicialización de Afiliados y Descuentos
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qRef = urlParams.get("ref") || urlParams.get("r");
+
+      let storedRef = qRef ? qRef.trim().toLowerCase() : localStorage.getItem("affiliate_ref");
+      if (!storedRef) {
+        const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
+        if (match) storedRef = decodeURIComponent(match[1]).trim().toLowerCase();
+      }
+
+      if (storedRef) {
+        activeRef = storedRef.trim().toLowerCase();
+        localStorage.setItem("affiliate_ref", activeRef);
+        document.cookie = 'affiliate_ref=' + encodeURIComponent(activeRef) + '; path=/; max-age=2592000; SameSite=Lax';
+        
+        isVipRef = (activeRef === "segisw");
+        discPercent = isVipRef ? 0.20 : 0.10;
+
+        const banner = document.getElementById("affiliateBanner");
+        if (banner) banner.classList.remove("hidden");
+        
+        const bannerTitle = document.getElementById("affiliateBannerTitle");
+        if (bannerTitle) {
+          bannerTitle.textContent = isVipRef 
+            ? "Has sido invitado por un Embajador VIP" 
+            : "Has sido invitado por un Embajador";
+        }
+
+        const affText = document.getElementById("affiliateAliasText");
+        if (affText) affText.textContent = activeRef;
+
+        const discText = document.getElementById("affiliateDiscText");
+        if (discText) discText.textContent = isVipRef ? "-20%" : "-10%";
+
+        applyDiscountToCards();
+      }
+    } catch (_) {}
+
+    function applyDiscountToCards() {
+      if (discPercent <= 0) return;
+
+      const pSolo = Math.round(PRICING.taller_solo.total * (1 - discPercent));
+      const pVelada = Math.round(PRICING.taller_velada.total * (1 - discPercent));
+      const sVelada = Math.round(PRICING.taller_velada.reserva_50 * (1 - discPercent));
+
+      const dispSolo = document.getElementById("price-display-solo");
+      if (dispSolo) {
+        dispSolo.innerHTML = `<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$40.000</span><span class="text-[#81c784]">$${pSolo.toLocaleString('es-CO')}</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>`;
+      }
+      const badgeSolo = document.getElementById("badge-disc-solo");
+      if (badgeSolo) {
+        badgeSolo.textContent = discPercent === 0.20 ? "-20%" : "-10%";
+        badgeSolo.classList.remove("hidden");
+      }
+
+      const dispVelada = document.getElementById("price-display-velada");
+      if (dispVelada) {
+        dispVelada.innerHTML = `<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$120.000</span><span class="text-[#81c784]">$${pVelada.toLocaleString('es-CO')}</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>`;
+      }
+      const separaVelada = document.getElementById("separa-display-velada");
+      if (separaVelada) {
+        separaVelada.innerHTML = `O separa con la mitad: <strong class="text-[#81c784]">$${sVelada.toLocaleString('es-CO')} COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[10px]">($60.000)</span>`;
+      }
+      const badgeVelada = document.getElementById("badge-disc-velada");
+      if (badgeVelada) {
+        badgeVelada.textContent = discPercent === 0.20 ? "-20%" : "-10%";
+        badgeVelada.classList.remove("hidden");
+      }
+    }
+
+    // 2. Selección de Pase con Desplazamiento Suave al Formulario de Pago
+    function selectTierAndScroll(tierKey) {
+      selectTier(tierKey);
+      const checkoutEl = document.getElementById("checkout");
+      if (checkoutEl) {
+        checkoutEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    function selectTier(tierKey) {
+      selectedTier = tierKey;
+      const tierInput = document.getElementById("selectedTierInput");
+      if (tierInput) tierInput.value = tierKey;
+
+      const cardSolo = document.getElementById("card-taller_solo");
+      const cardVelada = document.getElementById("card-taller_velada");
+      const optReserva = document.getElementById("opt-reserva-50");
+
+      if (tierKey === "taller_solo") {
+        if (cardSolo) {
+          cardSolo.classList.add("border-[#c5a059]", "shadow-[0_0_25px_rgba(197,160,89,0.3)]");
+          cardSolo.classList.remove("border-[#c5a059]/40");
+        }
+        if (cardVelada) {
+          cardVelada.classList.remove("border-[#c5a059]", "shadow-[0_0_30px_rgba(197,160,89,0.2)]");
+          cardVelada.classList.add("border-[#c5a059]/40");
+        }
+        // Solo Taller: NO permite reserva, solo pago completo
+        if (optReserva) optReserva.classList.add("hidden");
+        const radioTotal = document.querySelector('input[name="modalidad"][value="pago_total"]');
+        if (radioTotal) radioTotal.checked = true;
+      } else {
+        if (cardVelada) {
+          cardVelada.classList.add("border-[#c5a059]", "shadow-[0_0_30px_rgba(197,160,89,0.2)]");
+          cardVelada.classList.remove("border-[#c5a059]/40");
+        }
+        if (cardSolo) {
+          cardSolo.classList.remove("border-[#c5a059]", "shadow-[0_0_25px_rgba(197,160,89,0.3)]");
+          cardSolo.classList.add("border-[#c5a059]/40");
+        }
+        // Taller + Velada: Sí permite separación del 50%
+        if (optReserva) optReserva.classList.remove("hidden");
+      }
+
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const tierInfo = PRICING[selectedTier];
+      const modRadio = document.querySelector('input[name="modalidad"]:checked');
+      const modalidad = modRadio ? modRadio.value : "pago_total";
+
+      const totalReal = Math.round(tierInfo.total * (1 - discPercent));
+      const reservaReal = tierInfo.reserva_50 ? Math.round(tierInfo.reserva_50 * (1 - discPercent)) : null;
+
+      const sumTierName = document.getElementById("summary-tier-name");
+      const sumModName = document.getElementById("summary-mod-name");
+      const sumMontoHoy = document.getElementById("summary-monto-hoy");
+      const saldoRow = document.getElementById("summary-saldo-puerta-row");
+      const saldoPuerta = document.getElementById("summary-saldo-puerta");
+
+      if (sumTierName) sumTierName.textContent = tierInfo.name;
+
+      if (modalidad === "reserva_50" && reservaReal) {
+        if (sumModName) sumModName.textContent = "Separación de Cupo (50%)";
+        if (sumMontoHoy) sumMontoHoy.textContent = `$${reservaReal.toLocaleString('es-CO')} COP`;
+        if (saldoRow) saldoRow.classList.remove("hidden");
+        if (saldoPuerta) saldoPuerta.textContent = `$${(totalReal - reservaReal).toLocaleString('es-CO')} COP`;
+      } else {
+        if (sumModName) sumModName.textContent = "Pago Total (100%)";
+        if (sumMontoHoy) sumMontoHoy.textContent = `$${totalReal.toLocaleString('es-CO')} COP`;
+        if (saldoRow) saldoRow.classList.add("hidden");
+      }
+    }
+
+    // 3. Carga Automática Inmutable de Usuario Activo y Enlace a Editar Perfil
+    async function hydrateSessionFormFields() {
+      let userProfile = null;
+      try {
+        const raw = localStorage.getItem("user_profile");
+        if (raw) userProfile = JSON.parse(raw);
+      } catch (_) {}
+
+      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
+      const aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
+      const emailVal = userProfile?.email || localStorage.getItem("user_email");
+      const phoneVal = userProfile?.whatsapp || sessionPhone;
+
+      const inputAlias = document.getElementById("alias_nombre");
+      const inputPhone = document.getElementById("whatsapp");
+      const inputEmail = document.getElementById("email");
+      const noticeBanner = document.getElementById("prefilled-profile-notice");
+
+      function lockReadOnly(el) {
+        if (!el || !el.value) return;
+        el.readOnly = true;
+        el.classList.add("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
+        el.title = "Dato vinculado a tu cuenta oficial. Para modificarlo haz clic en 'Editar mi Perfil'.";
+      }
+
+      if (inputAlias && aliasVal && !inputAlias.value) inputAlias.value = aliasVal;
+      if (inputPhone && phoneVal && !inputPhone.value) inputPhone.value = phoneVal;
+      if (inputEmail && emailVal && !inputEmail.value) inputEmail.value = emailVal;
+
+      if (aliasVal) lockReadOnly(inputAlias);
+      if (phoneVal) lockReadOnly(inputPhone);
+      if (emailVal) lockReadOnly(inputEmail);
+
+      if (aliasVal || phoneVal || emailVal) {
+        if (noticeBanner) noticeBanner.classList.remove("hidden");
+      }
+
+      if ((!aliasVal || !emailVal) && sessionPhone) {
+        try {
+          const res = await fetch("/api/leads/check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ whatsapp: sessionPhone }),
+          });
+          const data = await res.json();
+          if (data.exists && data.lead) {
+            const lead = data.lead;
+            if (lead.alias_nombre) {
+              localStorage.setItem("user_alias", lead.alias_nombre);
+              if (inputAlias && !inputAlias.value) inputAlias.value = lead.alias_nombre;
+              lockReadOnly(inputAlias);
+            }
+            if (lead.email) {
+              localStorage.setItem("user_email", lead.email);
+              if (inputEmail && !inputEmail.value) inputEmail.value = lead.email;
+              lockReadOnly(inputEmail);
+            }
+            if (lead.whatsapp) {
+              localStorage.setItem("user_phone", lead.whatsapp);
+              if (inputPhone && !inputPhone.value) inputPhone.value = lead.whatsapp;
+              lockReadOnly(inputPhone);
+            }
+            if (noticeBanner) noticeBanner.classList.remove("hidden");
+          }
+        } catch (_) {}
+      }
+    }
+
+    async function submitCheckout(metodo) {
+      const msg = document.getElementById("checkoutMsg");
+      const alias = document.getElementById("alias_nombre")?.value?.trim();
+      const whatsapp = document.getElementById("whatsapp")?.value?.trim();
+      const email = document.getElementById("email")?.value?.trim();
+      const modRadio = document.querySelector('input[name="modalidad"]:checked');
+      const modalidad = modRadio ? modRadio.value : "pago_total";
+
+      if (!alias || !whatsapp || !email) {
+        if (msg) msg.textContent = "⚠️ Por favor completa tu nombre, WhatsApp y correo electrónico.";
+        return;
+      }
+
+      const btnDigital = document.getElementById("btnDigitalPay");
+      const btnManual = document.getElementById("btnManualPay");
+      if (btnDigital) btnDigital.disabled = true;
+      if (btnManual) btnManual.disabled = true;
+
+      if (msg) msg.textContent = "⏳ Procesando tu reserva segura...";
+
+      try {
+        const res = await fetch("/api/checkout/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            evento: "taller_baile_erotico",
+            tipo_entrada: selectedTier,
+            modalidad_pago: modalidad,
+            metodo_pago: metodo,
+            alias_nombre: alias,
+            whatsapp,
+            email,
+            ref: activeRef
+          })
+        });
+
+        const data = await res.json();
+        if (data.success && data.redirect_url) {
+          if (msg) msg.textContent = "✓ Redireccionando a la pasarela segura...";
+          window.location.href = data.redirect_url;
+        } else if (data.error) {
+          if (msg) msg.textContent = `❌ ${data.error}`;
+          if (btnDigital) btnDigital.disabled = false;
+          if (btnManual) btnManual.disabled = false;
+        } else {
+          if (msg) msg.textContent = "⚠️ Ocurrió un error al generar la orden.";
+          if (btnDigital) btnDigital.disabled = false;
+          if (btnManual) btnManual.disabled = false;
+        }
+      } catch (err) {
+        if (msg) msg.textContent = "❌ Error de conexión al procesar el pago.";
+        if (btnDigital) btnDigital.disabled = false;
+        if (btnManual) btnManual.disabled = false;
+      }
+    }
+
+    // Inicializar resumen e hidratar campos al cargar
+    updateSummary();
+    hydrateSessionFormFields();
+  </script>
+</Layout>

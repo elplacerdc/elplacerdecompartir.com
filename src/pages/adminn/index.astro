@@ -1501,6 +1501,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
               id="expense-evento" 
               class="px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397] focus:outline-none focus:border-[#c5a059]"
             >
+              <option value="taller_baile_erotico">Taller Baile Erótico (16 Oct)</option>
               <option value="luna_llena">Noche Luna Llena</option>
               <option value="sitio_9_oct">Inauguración Licorera</option>
               <option value="impacto_10_oct">Impacto Producciones</option>
@@ -1828,6 +1829,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
         // Visual individual events breakdown (active upcoming only)
         const perEvent = cachedMetrics.financial?.perEvent || [];
         const officialEvents = [
+          { key: "taller_baile_erotico", matchKeys: ["taller_baile_erotico", "taller-baile-erotico", "taller_baile", "baile_erotico", "taller"], title: "💃 Taller de Baile Erótico", subtitle: "Viernes 16 Oct • Centro Cultural" },
           { key: "luna_llena", matchKeys: ["luna_llena", "luna-llena", "the-corset-society/luna-llena"], title: "🌕 Noche de Luna Llena", subtitle: "Halloween 31 Oct • Próximo Evento Oficial" },
           { key: "corset_vip", matchKeys: ["corset_vip", "corset-vip", "vip"], title: "💎 Membresía Anual VIP", subtitle: "The Corset Society • Credencial Anual" },
         ];
@@ -2188,6 +2190,31 @@ const isAuthenticated = verifyAdminSessionToken(token);
           return opts;
         }
 
+        if (eventKey === "taller_baile_erotico") {
+          const opts: any[] = [];
+          if (discountType === "vip_20") {
+            opts.push(
+              { id: "taller_solo", label: "💃 Solo Taller (1h) — Embajador VIP -20% ($32.000 COP) [Pago Completo Único]", price: 32000, tipoPago: "total_100", categoria: "pago" },
+              { id: "taller_velada", label: "👑 Taller + Velada VIP — Embajador VIP -20% ($96.000 COP) [Pago Total]", price: 96000, tipoPago: "total_100", categoria: "pago" },
+              { id: "taller_velada_reserva", label: "👑 Taller + Velada VIP — Separación 50% ($48.000 COP, saldo en puerta)", price: 48000, tipoPago: "reserva_50", categoria: "pago" }
+            );
+          } else if (discountType === "std_10") {
+            opts.push(
+              { id: "taller_solo", label: "💃 Solo Taller (1h) — Embajador -10% ($36.000 COP) [Pago Completo Único]", price: 36000, tipoPago: "total_100", categoria: "pago" },
+              { id: "taller_velada", label: "👑 Taller + Velada VIP — Embajador -10% ($108.000 COP) [Pago Total]", price: 108000, tipoPago: "total_100", categoria: "pago" },
+              { id: "taller_velada_reserva", label: "👑 Taller + Velada VIP — Separación 50% ($54.000 COP, saldo en puerta)", price: 54000, tipoPago: "reserva_50", categoria: "pago" }
+            );
+          } else {
+            opts.push(
+              { id: "taller_solo", label: "💃 Solo Taller (1h) — Tarifa Regular ($40.000 COP) [Pago Completo Único]", price: 40000, tipoPago: "total_100", categoria: "pago" },
+              { id: "taller_velada", label: "👑 Taller + Velada VIP — Tarifa Regular ($120.000 COP) [Pago Total]", price: 120000, tipoPago: "total_100", categoria: "pago" },
+              { id: "taller_velada_reserva", label: "👑 Taller + Velada VIP — Separación 50% ($60.000 COP, saldo $60k en puerta)", price: 60000, tipoPago: "reserva_50", categoria: "pago" }
+            );
+          }
+          opts.push({ id: "cortesia_taller", label: "🎟️ Pase Invitado de Honor Taller ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" });
+          return opts;
+        }
+
         if (eventKey === "corset_vip") {
           const opts: any[] = [];
           if (discountType === "vip_20") {
@@ -2207,6 +2234,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
       }
 
       const EVENT_CATALOG: Record<string, { name: string; isFree: boolean }> = {
+        taller_baile_erotico: {
+          name: "💃 Taller de Baile Erótico — Sensualidad & Heels (Viernes 16 Oct)",
+          isFree: false
+        },
         luna_llena: {
           name: "The Corset Society — Noche de Luna Llena (Halloween - 31 Oct)",
           isFree: false
