@@ -15,16 +15,16 @@ if (cookieRef) {
     try {
       const { rows } = await pool.query(
         `SELECT l.vip_until, l.metadata 
-         FROM leads l 
-         LEFT JOIN affiliates a ON (a.lead_id = l.id OR LOWER(a.custom_slug) = LOWER($1))
-         WHERE LOWER(l.alias_nombre) = LOWER($1) OR LOWER(a.custom_slug) = LOWER($1)
+         FROM afiliados a 
+         LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
+         WHERE LOWER(a.alias) = LOWER($1)
          LIMIT 1`,
         [cleanRef]
       );
       if (rows.length > 0) {
         const row = rows[0];
         const hasVipUntil = row.vip_until && new Date(row.vip_until) > new Date();
-        const hasVipTag = Array.isArray(row.metadata?.tags) && row.metadata.tags.includes("vip_activo");
+        const hasVipTag = Array.isArray(row.metadata?.tags) && (row.metadata.tags.includes("vip_activo") || row.metadata.tags.includes("corset_vip"));
         if (hasVipUntil || hasVipTag) {
           isVipRefSsr = true;
         }
@@ -176,19 +176,6 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         <!-- Ancla de Pago sobre la sección de pase adaptado -->
         <div id="reservas" class="scroll-mt-24"></div>
 
-        <!-- Dynamic Role Filter Banner -->
-        <div id="role-filter-banner" class="hidden p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/40 text-xs text-[#ead397] mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2 shadow-md">
-          <div class="flex items-center gap-2">
-            <span>🎭</span>
-            <span>Mostrando pase adaptado a tu modalidad: <strong id="role-filter-label" class="text-white capitalize"></strong></span>
-          </div>
-          <div class="block sm:inline">
-            <a href="/dashboard#section-profile-settings" class="underline text-xs text-[#ead397] hover:text-white transition-colors shrink-0">
-              <span class="sm:hidden"><br /></span>Cambiar rol en Perfil →
-            </a>
-          </div>
-        </div>
-
         <!-- Cover Tier Cards -->
         <div id="tier-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <!-- Pareja -->
@@ -323,7 +310,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
           <!-- Control 1: Cambiar tipo de pase para esta compra sin alterar rol de perfil -->
           <div id="role-switch-container" class="p-4 rounded-2xl bg-[#0a0608] border border-[#c5a059]/40 text-xs font-sans text-center space-y-2.5 shadow-md">
             <div class="text-[#ead397] font-serif font-bold text-xs flex items-center justify-center gap-1.5">
-              <span>💡</span> ¿Deseas asistir en otra modalidad para esta reserva?
+              <span>💡</span> ¿Deseas asistir en otra modalidad?
             </div>
             <p class="text-[#f7f4ee]/70 text-[11px] leading-relaxed">
               Puedes seleccionar temporalmente otro tipo de pase para esta velada sin modificar tu rol registrado en la comunidad:
@@ -331,6 +318,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
             <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
               <button 
                 type="button" 
+                id="btn-switch-pareja"
                 onclick="setTemporaryPassMode('pareja')" 
                 class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-sans text-xs cursor-pointer"
               >
@@ -338,6 +326,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
               </button>
               <button 
                 type="button" 
+                id="btn-switch-single"
                 onclick="setTemporaryPassMode('single')" 
                 class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-sans text-xs cursor-pointer"
               >
@@ -345,17 +334,11 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
               </button>
               <button 
                 type="button" 
+                id="btn-switch-unicornio"
                 onclick="setTemporaryPassMode('unicornio')" 
                 class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-sans text-xs cursor-pointer"
               >
                 🦄 Pase Unicornio (Mujer)
-              </button>
-              <button 
-                type="button" 
-                onclick="showAllPassModes()" 
-                class="px-3.5 py-1.5 rounded-full border border-[#f7f4ee]/30 text-[#f7f4ee]/60 hover:text-white hover:bg-[#f7f4ee]/10 transition-all font-sans text-xs cursor-pointer"
-              >
-                👁️ Ver todos
               </button>
             </div>
           </div>
@@ -563,11 +546,6 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
               <div>
                 <strong class="text-white block text-sm font-serif">${isVipRef ? 'Beneficio de Embajador VIP' : 'Beneficio de Embajador'}</strong>
                 <span class="text-xs text-[#f7f4ee]/90">${isVipRef ? '20%' : '10%'} de descuento de cortesía aplicado por invitación exclusiva de <strong class="text-[#c5a059]">@${activeRef}</strong></span>
-                <p class="text-[11px] text-[#ead397] mt-1.5 border-t border-[#c5a059]/20 pt-1">
-                  ${isVipRef 
-                    ? '✨ <em>Nota Elegante: Al reservar tu entrada, puedes <a href="/corset-vip#vip-checkout-box" class="underline font-bold text-white hover:text-[#c5a059]">activar tu Credencial VIP</a> para disfrutar de tarifas preferenciales todo el año y compartir este mismo 20% a tu círculo.</em>' 
-                    : '✨ <em>Nota Elegante: Al confirmar tu asistencia o reserva, tu propio enlace quedará listo para que también puedas compartirlo con tu círculo.</em>'}
-                </p>
               </div>
             </div>
             <span class="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-bold text-xs uppercase tracking-wider shadow-md shrink-0">
@@ -773,10 +751,11 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       const cardSingle = document.getElementById("tier-card-single");
       const cardUnicornio = document.getElementById("tier-card-unicornio");
       const container = document.getElementById("tier-cards-container");
-      const banner = document.getElementById("role-filter-banner");
-      const label = document.getElementById("role-filter-label");
       const select = document.getElementById("tipo_entrada");
       const controlsWrapper = document.getElementById("role-controls-wrapper");
+      const btnPareja = document.getElementById("btn-switch-pareja");
+      const btnSingle = document.getElementById("btn-switch-single");
+      const btnUnicornio = document.getElementById("btn-switch-unicornio");
 
       if (!cardPareja || !cardSingle || !cardUnicornio) return;
 
@@ -787,10 +766,9 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         cardUnicornio.classList.add("hidden");
         cardSingle.classList.remove("hidden");
         if (container) container.className = "max-w-md mx-auto";
-        if (banner && label) {
-          label.textContent = isTemporarySwitch ? "Hombre Solo (Single - Elección Temporal)" : "Hombre Solo (Single)";
-          banner.classList.remove("hidden");
-        }
+        if (btnSingle) btnSingle.classList.add("hidden");
+        if (btnPareja) btnPareja.classList.remove("hidden");
+        if (btnUnicornio) btnUnicornio.classList.remove("hidden");
         if (select) {
           Array.from(select.options).forEach((opt) => {
             opt.hidden = opt.value !== "single";
@@ -804,10 +782,9 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         cardSingle.classList.add("hidden");
         cardUnicornio.classList.remove("hidden");
         if (container) container.className = "max-w-md mx-auto";
-        if (banner && label) {
-          label.textContent = isTemporarySwitch ? "Mujer Sola (Unicornio - Elección Temporal)" : "Mujer Sola (Unicornio)";
-          banner.classList.remove("hidden");
-        }
+        if (btnUnicornio) btnUnicornio.classList.add("hidden");
+        if (btnPareja) btnPareja.classList.remove("hidden");
+        if (btnSingle) btnSingle.classList.remove("hidden");
         if (select) {
           Array.from(select.options).forEach((opt) => {
             opt.hidden = opt.value !== "unicornio";
@@ -821,10 +798,9 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         cardUnicornio.classList.add("hidden");
         cardPareja.classList.remove("hidden");
         if (container) container.className = "max-w-md mx-auto";
-        if (banner && label) {
-          label.textContent = isTemporarySwitch ? "Pareja (Modalidad Temporal)" : "Pareja";
-          banner.classList.remove("hidden");
-        }
+        if (btnPareja) btnPareja.classList.add("hidden");
+        if (btnSingle) btnSingle.classList.remove("hidden");
+        if (btnUnicornio) btnUnicornio.classList.remove("hidden");
         if (select) {
           Array.from(select.options).forEach((opt) => {
             opt.hidden = opt.value !== "pareja";
@@ -838,24 +814,6 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
 
     function setTemporaryPassMode(mode) {
       applyRoleTicketFilter(mode, true);
-    }
-
-    function showAllPassModes() {
-      const cardPareja = document.getElementById("tier-card-pareja");
-      const cardSingle = document.getElementById("tier-card-single");
-      const cardUnicornio = document.getElementById("tier-card-unicornio");
-      const container = document.getElementById("tier-cards-container");
-      const banner = document.getElementById("role-filter-banner");
-      const select = document.getElementById("tipo_entrada");
-
-      if (cardPareja) cardPareja.classList.remove("hidden");
-      if (cardSingle) cardSingle.classList.remove("hidden");
-      if (cardUnicornio) cardUnicornio.classList.remove("hidden");
-      if (container) container.className = "grid grid-cols-1 md:grid-cols-3 gap-6";
-      if (banner) banner.classList.add("hidden");
-      if (select) {
-        Array.from(select.options).forEach((opt) => { opt.hidden = false; });
-      }
     }
 
     async function hydrateSessionFormFields() {

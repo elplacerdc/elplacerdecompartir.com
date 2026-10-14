@@ -267,7 +267,7 @@ export async function upsertLead(
       if (resolvedChannel === "elplacerdc" || data.origen === "web_comunidad" || (!existingTags.includes("general") && !existingTags.includes("corset") && !existingTags.includes("alianzas"))) {
         newTagsToAdd.push("general");
       }
-      if (data.corset_vip || resolvedChannel === "corset" || existingLead.corset_vip) {
+      if (resolvedChannel === "corset" || (data.corset_vip && data.origen === "web_corset")) {
         newTagsToAdd.push("corset");
         newTagsToAdd.push("corset_vip");
         if (!existingTags.includes("vip_activo")) {
@@ -323,7 +323,7 @@ export async function upsertLead(
           canonicalPhone || existingLead.whatsapp,
           normalizedRol,
           data.ciudad || null,
-          Boolean(resolvedChannel === "corset" || data.corset_vip || existingLead.corset_vip),
+          Boolean(resolvedChannel === "corset" || (data.corset_vip && data.origen === "web_corset") || (existingLead.corset_vip && (existingChannels.includes("corset") || existingLead.origen === "web_corset"))),
           data.afiliado_id || null,
           JSON.stringify(mergedMeta),
           existingLead.id,

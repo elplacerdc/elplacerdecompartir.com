@@ -78,6 +78,40 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       [ticket.id]
     );
 
+    // Activación de credencial VIP de Luna Llena al asistir físicamente (en puerta)
+    if (ticket.evento === "luna_llena" && ticket.lead_id) {
+      try {
+        await client.query(`
+          UPDATE leads
+          SET corset_vip = true,
+              vip_until = NOW() + INTERVAL '1 year',
+              metadata = jsonb_set(
+                jsonb_set(
+                  COALESCE(metadata, '{}'::jsonb),
+                  '{vip_until}',
+                  to_jsonb((NOW() + INTERVAL '1 year')::text)
+                ),
+                '{tags}',
+                COALESCE(metadata->'tags', '[]'::jsonb) || '["vip_activo", "corset_vip"]'::jsonb
+              ),
+              updated_at = NOW()
+          WHERE id = $1
+        `, [ticket.lead_id]);
+      } catch (vipErr: any) {
+        console.warn("[Checkin Luna Llena VIP Promo Err]:", vipErr.message);
+      }
+    }
+
+    // Acreditar venta al embajador al momento de asistir (regla de asistencia cumplida)
+    if (ticket.afiliado_ref && ticket.lead_id) {
+      try {
+        const { recordAffiliatePayment } = await import("../../../db");
+        await recordAffiliatePayment(ticket.afiliado_ref, ticket.lead_id);
+      } catch (affErr: any) {
+        console.warn("[Checkin Affiliate Credit Err]:", affErr.message);
+      }
+    }
+
     return new Response(
       JSON.stringify({
         success: true,

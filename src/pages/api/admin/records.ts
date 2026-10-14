@@ -263,11 +263,17 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
             await client.query(`
               UPDATE leads
               SET corset_vip = true,
+                  vip_until = NOW() + INTERVAL '1 year',
                   metadata = jsonb_set(
-                    COALESCE(metadata, '{}'::jsonb),
-                    '{vip_until}',
-                    to_jsonb((NOW() + INTERVAL '1 year')::text)
-                  )
+                    jsonb_set(
+                      COALESCE(metadata, '{}'::jsonb),
+                      '{vip_until}',
+                      to_jsonb((NOW() + INTERVAL '1 year')::text)
+                    ),
+                    '{tags}',
+                    COALESCE(metadata->'tags', '[]'::jsonb) || '["vip_activo", "corset_vip"]'::jsonb
+                  ),
+                  updated_at = NOW()
               WHERE id = $1
             `, [assignedLead.id]);
           } catch (vipErr: any) {
@@ -275,15 +281,61 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
           }
         }
 
-        // Acreditación al embajador si es PAGO REAL y tiene afiliado_id asignado
+        // Activación de credencial VIP con promoción Luna Llena SOLO si es pago completo o asistido
+        const isFullPaidOrAttended = !isCortesia && (tipoPago === "total" || tipoPago === "total_100" || data.estado === "asistido");
+        if (data.evento === "luna_llena" && isFullPaidOrAttended) {
+          try {
+            await client.query(`
+              UPDATE leads
+              SET corset_vip = true,
+                  vip_until = NOW() + INTERVAL '1 year',
+                  metadata = jsonb_set(
+                    jsonb_set(
+                      COALESCE(metadata, '{}'::jsonb),
+                      '{vip_until}',
+                      to_jsonb((NOW() + INTERVAL '1 year')::text)
+                    ),
+                    '{tags}',
+                    COALESCE(metadata->'tags', '[]'::jsonb) || '["vip_activo", "corset_vip"]'::jsonb
+                  ),
+                  updated_at = NOW()
+              WHERE id = $1
+            `, [assignedLead.id]);
+          } catch (vipErr: any) {
+            console.warn("[Admin Luna Llena VIP Promo Err]:", vipErr.message);
+          }
+        }
+
+        // Acreditación al embajador SOLO con pago total (100%) o luego de asistido (no solo con reserva)
         let acreditado = false;
-        if (!isCortesia && assignedLead.afiliado_id) {
+        if (isFullPaidOrAttended && assignedLead.afiliado_id) {
           try {
             const accRes = await recordAffiliatePayment(assignedLead.afiliado_id, assignedLead.id);
             acreditado = accRes.credited;
           } catch (e: any) {
             console.error("[Manual Ticket Accreditation Err]:", e);
           }
+        } else if (!isCortesia && assignedLead.afiliado_id && (tipoPago === "reserva" || tipoPago === "reserva_40")) {
+          // Notificar la reserva aclarando que la acreditación se completará al pagar el 100% o asistir
+          import("../../../services/notifications").then(({ notifyAmbassadorNewReferral }) => {
+            pool.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [assignedLead.afiliado_id])
+              .then(ambRes => {
+                if (ambRes.rows.length > 0) {
+                  notifyAmbassadorNewReferral(ambRes.rows[0], {
+                    alias_nombre: assignedLead.alias_nombre,
+                    email: assignedLead.email
+                  }).catch(() => {});
+                }
+              }).catch(() => {});
+          });
+        }
+
+        // Generar o resolver el código de embajador PROPIO del usuario notificado
+        let userOwnAffiliateCode: string | undefined = undefined;
+        try {
+          userOwnAffiliateCode = await ensureAffiliateCode(assignedLead.alias_nombre || "Embajador", assignedLead.whatsapp, assignedLead.email);
+        } catch (affErr: any) {
+          console.warn("[Ensure Affiliate Code Err]:", affErr.message);
         }
 
         // Notificación automática multi-canal (QR email + WhatsApp) para emisión manual / cortesía
@@ -300,7 +352,7 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
             },
             {
               isNewLead: false,
-              affiliateCode: assignedLead.afiliado_id || undefined,
+              affiliateCode: userOwnAffiliateCode || undefined,
             }
           ).catch((nErr) => console.error("[Admin Manual Pass Notification Err]:", nErr));
         });
@@ -334,19 +386,90 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
           WHERE id::text = $4 OR ticket_hash = $4
           RETURNING *
         `, [updates.estado || null, updates.monto_pagado || null, updates.metodo_pago || null, id]);
-        return new Response(JSON.stringify({ success: true, record: res.rows[0] }), { status: 200 });
+        
+        const updatedTicket = res.rows[0];
+        if (updatedTicket && updates.estado === "asistido") {
+          // Activar VIP de Luna Llena al confirmar asistencia
+          if (updatedTicket.evento === "luna_llena" && updatedTicket.lead_id) {
+            try {
+              await client.query(`
+                UPDATE leads
+                SET corset_vip = true,
+                    vip_until = NOW() + INTERVAL '1 year',
+                    metadata = jsonb_set(
+                      jsonb_set(
+                        COALESCE(metadata, '{}'::jsonb),
+                        '{vip_until}',
+                        to_jsonb((NOW() + INTERVAL '1 year')::text)
+                      ),
+                      '{tags}',
+                      COALESCE(metadata->'tags', '[]'::jsonb) || '["vip_activo", "corset_vip"]'::jsonb
+                    ),
+                    updated_at = NOW()
+                WHERE id = $1
+              `, [updatedTicket.lead_id]);
+            } catch (_) {}
+          }
+          // Acreditar venta al embajador al asistir
+          if (updatedTicket.afiliado_ref && updatedTicket.lead_id) {
+            try {
+              await recordAffiliatePayment(updatedTicket.afiliado_ref, updatedTicket.lead_id);
+            } catch (_) {}
+          }
+        }
+        return new Response(JSON.stringify({ success: true, record: updatedTicket }), { status: 200 });
       }
 
       if (entity === "lead") {
+        const {
+          alias_nombre, whatsapp, email, rol, ciudad, origen, afiliado_id,
+          corset_vip, vip_until, primer_pago_acreditado, vip_status
+        } = updates;
+
+        let computedVip = corset_vip;
+        let computedVipUntil = vip_until;
+
+        if (vip_status === "vip_activo") {
+          computedVip = true;
+          if (!computedVipUntil) {
+            computedVipUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+          }
+        } else if (vip_status === "no_vip") {
+          computedVip = false;
+          computedVipUntil = null;
+        } else if (vip_status === "posible_vip") {
+          computedVip = true;
+          computedVipUntil = null;
+        }
+
         const res = await client.query(`
           UPDATE leads
           SET alias_nombre = COALESCE($1, alias_nombre),
               whatsapp = COALESCE($2, whatsapp),
               email = COALESCE($3, email),
-              rol = COALESCE($4, rol)
-          WHERE id::text = $5
+              rol = COALESCE($4, rol),
+              ciudad = COALESCE($5, ciudad),
+              origen = COALESCE($6, origen),
+              afiliado_id = CASE WHEN $7 IS NOT NULL THEN $7 ELSE afiliado_id END,
+              corset_vip = CASE WHEN $8::boolean IS NOT NULL THEN $8::boolean ELSE corset_vip END,
+              vip_until = CASE WHEN $9::text IS NOT NULL THEN ($9::text)::timestamptz ELSE vip_until END,
+              primer_pago_acreditado = CASE WHEN $10::boolean IS NOT NULL THEN $10::boolean ELSE primer_pago_acreditado END,
+              updated_at = NOW()
+          WHERE id::text = $11
           RETURNING *
-        `, [updates.alias_nombre || null, updates.whatsapp || null, updates.email || null, updates.rol || null, id]);
+        `, [
+          alias_nombre || null,
+          whatsapp || null,
+          email || null,
+          rol || null,
+          ciudad || null,
+          origen || null,
+          afiliado_id !== undefined ? afiliado_id : null,
+          computedVip !== undefined ? computedVip : null,
+          computedVipUntil !== undefined ? (computedVipUntil ? String(computedVipUntil) : null) : null,
+          primer_pago_acreditado !== undefined ? primer_pago_acreditado : null,
+          id
+        ]);
         return new Response(JSON.stringify({ success: true, record: res.rows[0] }), { status: 200 });
       }
 

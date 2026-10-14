@@ -6,10 +6,10 @@ describe("BAI-247: The Corset Society — Sequential OTP & Admission Form", () =
   const corsetIndexPath = resolve(process.cwd(), "src/pages/the-corset-society/index.astro");
   const leadFormPath = resolve(process.cwd(), "src/components/LeadForm.astro");
 
-  it("should not contain 'Paso Obligatorio' and have an anchor link on 'Postulación Prioritaria de Admisión'", () => {
+  it("should not contain 'Paso Obligatorio' and have an anchor link on 'Solicitud de Admisión VIP'", () => {
     const content = readFileSync(corsetIndexPath, "utf-8");
     expect(content.includes("Paso Obligatorio")).toBe(false);
-    expect(content).toMatch(/<a\s+href="#postulacion-vip"[^>]*>Postulación Prioritaria de Admisión<\/a>/);
+    expect(content).toMatch(/<a\s+id="hero-vip-action-btn"\s+href="#solicitud-admision-vip"[^>]*>[\s\S]*?Solicitud de Admisión VIP/);
   });
 
   it("should have sequential OTP step 2 for email in LeadForm.astro for VIP flow", () => {

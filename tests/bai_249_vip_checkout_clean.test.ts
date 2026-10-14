@@ -25,12 +25,15 @@ describe("BAI-249: Checkout VIP — Artefacto Visual Credencial Aislada & Gala",
     expect(stat.size).toBeGreaterThan(100000);
   });
 
-  it("debe incrustar la credencial VIP aislada en checkout.astro con layout de gala", () => {
-    const content = fs.readFileSync(checkoutPagePath, "utf-8");
-    expect(content).toContain("/media/corset-society/credencial_vip_clean.png");
-    expect(content).toContain("Membresía Oficial The Corset Society — Credencial VIP");
-    expect(content).toContain("Credencial Exclusiva Digital");
-    expect(content).toContain("VipCheckout");
+  it("debe unificar checkout en corset-vip.astro y redirigir 301 limpiamente desde checkout.astro", () => {
+    const checkoutContent = fs.readFileSync(checkoutPagePath, "utf-8");
+    expect(checkoutContent).toContain('Astro.redirect("/corset-vip#vip-checkout-box", 301)');
+
+    const corsetVipPath = path.join(rootDir, "src/pages/corset-vip.astro");
+    const vipContent = fs.readFileSync(corsetVipPath, "utf-8");
+    expect(vipContent).toContain("VipCheckout");
+    expect(vipContent).toContain("credencial-vip-checkout.jpg");
+    expect(vipContent).toContain("vip-checkout-box");
   });
 
   it("debe presentar nomenclatura limpia 'Beneficio de Embajador:' en VipCheckout", () => {

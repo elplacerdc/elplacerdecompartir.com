@@ -152,14 +152,13 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               <thead>
                 <tr class="text-[#f7f4ee]/50 border-b border-[#c5a059]/10">
                   <th class="py-2.5 px-3">Usuario Acreditado</th>
-                  <th class="py-2.5 px-3">Comunidad / Círculo</th>
                   <th class="py-2.5 px-3">Estado de Compra</th>
                   <th class="py-2.5 px-3 text-right">Fecha de Registro</th>
                 </tr>
               </thead>
               <tbody id="referred-leads-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/80 font-mono">
                 <tr>
-                  <td colspan="4" class="py-4 text-center text-[#f7f4ee]/40 font-sans">No hay registros acreditados aún. Comparte tu enlace para comenzar a sumar.</td>
+                  <td colspan="3" class="py-4 text-center text-[#f7f4ee]/40 font-sans">No hay registros acreditados aún. Comparte tu enlace para comenzar a sumar.</td>
                 </tr>
               </tbody>
             </table>
@@ -531,12 +530,6 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               <tr>
                 <td class="py-2.5 px-3 font-semibold text-[#ead397] font-mono">${l.email_masked || 'u****@privado.com'}</td>
                 <td class="py-2.5 px-3">
-                  ${l.channel_tag === 'corset'
-                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#721c24]/30 text-[#f7d6cb] border border-[#721c24]/50">The Corset Society</span>'
-                    : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30">ElPlacerDC</span>'
-                  }
-                </td>
-                <td class="py-2.5 px-3">
                   ${l.compro_entrada 
                     ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40">✓ Entrada Acreditada</span>'
                     : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] text-[#f7f4ee]/40 border border-[#f7f4ee]/10">Pendiente de compra</span>'
@@ -548,7 +541,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           }
         } else if (referredLeadsBody) {
           if (referredLeadsCount) referredLeadsCount.textContent = "0";
-          referredLeadsBody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-[#f7f4ee]/40 font-sans">No hay registros acreditados aún. Comparte tu enlace para comenzar a sumar.</td></tr>`;
+          referredLeadsBody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-[#f7f4ee]/40 font-sans">No hay registros acreditados aún. Comparte tu enlace para comenzar a sumar.</td></tr>`;
         }
 
         // Calculate progress to next ticket without repeating text

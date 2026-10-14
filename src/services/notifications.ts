@@ -124,7 +124,7 @@ export async function notifyNewLead(
       `Te contactamos directo por WhatsApp al ser nuestro canal preferencial y confidencial de atención oficial.\n\n` +
       `Hemos recibido tu postulación de admisión. The Corset Society es la línea de alta exclusividad de ElPlacerDC: un círculo privado de gala con credencial VIP por suscripción anual ($199.000 COP) que otorga acceso a convocatorias privadas, encuentros de ticket alto, descuentos permanentes y beneficios exclusivos.\n\n` +
       `Conoce los detalles de la membresía y activa tu credencial en nuestra página oficial:\n` +
-      `👉 https://elplacerdecompartir.com/corset-vip\n\n` +
+      `👉 https://elplacerdecompartir.com/corset-vip?ref=segisw\n\n` +
       `Tu perfil se encuentra en evaluación confidencial por el comité de admisión.\n\n` +
       `_«El acceso se concede, no se anuncia.»_\n\n` +
       `🏛️ *Dirección & Comité de Admisión • The Corset Society*`;
@@ -190,7 +190,7 @@ export async function notifyNewLead(
 
             <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
             <div style="text-align: center; margin: 30px 0 10px 0;">
-              <a href="https://elplacerdecompartir.com/corset-vip" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
+              <a href="https://elplacerdecompartir.com/corset-vip?ref=segisw" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
             </div>
 
           </div>
@@ -241,7 +241,7 @@ export async function notifyNewLead(
 
             <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
             <div style="text-align: center; margin: 30px 0 10px 0;">
-              <a href="https://elplacerdecompartir.com/galeria-centro-cultural" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Explorar Centro Cultural & Galería 🏛️ →</a>
+              <a href="https://elplacerdecompartir.com/galeria-centro-cultural?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Explorar Centro Cultural & Galería 🏛️ →</a>
             </div>
 
           </div>
@@ -326,7 +326,7 @@ export async function notifyNewTicket(
   const ticketUrl = `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticket.ticket_hash}`;
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
-  const affCode = options?.affiliateCode || "embajador";
+  const affCode = options?.affiliateCode || "segisw";
   const eventShareUrl = `https://elplacerdecompartir.com/the-corset-society/luna-llena?ref=${encodeURIComponent(affCode)}`;
 
   // 1. WhatsApp Directo al Comprador
@@ -485,7 +485,7 @@ export async function notifyEventReservation(
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
   const isNew = Boolean(options?.isNewLead);
-  const affCode = options?.affiliateCode || "embajador";
+  const affCode = options?.affiliateCode || "segisw";
 
   // URL del evento específico para el enlace de embajador
   const eventPageUrl = isLuna
@@ -710,7 +710,7 @@ export async function notifyNewAlliance(
 
           <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
           <div style="text-align: center; margin: 30px 0 10px 0;">
-            <a href="https://elplacerdecompartir.com/galeria-centro-cultural" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería de Espacios del Centro Cultural 🏛️ →</a>
+            <a href="https://elplacerdecompartir.com/galeria-centro-cultural?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería de Espacios del Centro Cultural 🏛️ →</a>
           </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
@@ -777,7 +777,8 @@ export async function notifyAmbassadorNewReferral(
       `✨ *¡NUEVO REGISTRO CON TU ENLACE!* ✨\n\n` +
       `Hola *${ambassador.nombre || ambassador.alias}*,\n\n` +
       `Un nuevo usuario se ha registrado en El Placer de Compartir a través de tu enlace de embajador.\n\n` +
-      `Sigue sumando registros y ventas para obtener tus entradas 100% gratuitas.\n\n` +
+      `📌 *Regla de Acreditación (Último Clic):* La venta se acreditará a tu favor una vez que tu referido complete el pago del 100% o asista al evento. Recuerda que el sistema premia la actividad constante acreditando al último enlace visitado antes de comprar o asistir.\n\n` +
+      `¡Sigue compartiendo activamente tu enlace en tus grupos de WhatsApp y redes sociales!\n\n` +
       `📊 *Revisa tu progreso en tu panel:*\n👉 ${dashUrl}\n\n` +
       `🍷 *El Placer de Compartir*`;
     sendEvolutionWhatsApp(ambassador.whatsapp, waText).catch((e) =>
@@ -799,9 +800,14 @@ export async function notifyAmbassadorNewReferral(
           <p style="margin: 8px 0; font-size: 13px; line-height: 1.6;">
             ¡Excelente noticia! Una nueva persona se ha registrado en nuestra comunidad utilizando tu enlace exclusivo de embajador (<span style="color: #ead397; font-family: monospace;">${ambassador.alias}</span>).
           </p>
-          <p style="margin: 8px 0; font-size: 13px; color: rgba(247, 244, 238, 0.7);">
-            Cuando tus referidos adquieran entradas para nuestros eventos oficiales o veladas privadas, acumularás ventas. ¡Por cada 3 compras generadas, ganas 1 entrada 100% gratuita!
-          </p>
+          <div style="background-color: #140816; border-left: 3px solid #c5a059; padding: 12px; margin: 12px 0; border-radius: 4px;">
+            <p style="margin: 0 0 6px 0; font-size: 12px; color: #ead397; font-weight: bold;">
+              📌 Regla de Acreditación (Último Clic):
+            </p>
+            <p style="margin: 0; font-size: 12px; color: rgba(247, 244, 238, 0.85); line-height: 1.5;">
+              Las compras se acreditan a tu favor una vez que tu referido complete el pago total (100%) o asista al evento. Nuestro sistema premia la actividad constante: la comisión se adjudica al último enlace que el usuario visitó antes de confirmar su asistencia. ¡Mantén tu enlace en constante movimiento compartiéndolo activamente en tus grupos de WhatsApp y redes sociales! Por cada 3 compras generadas, ganas 1 entrada 100% gratuita.
+            </p>
+          </div>
         </div>
 
         <div style="text-align: center; margin: 25px 0;">

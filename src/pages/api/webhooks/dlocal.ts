@@ -52,28 +52,67 @@ export const POST: APIRoute = async ({ request }) => {
             [paymentId, ticket.id]
           );
 
-          // Acreditar venta al embajador si existe afiliado_ref
+          const isTotalPayment = ticket.tipo_pago === "total" || ticket.tipo_pago === "total_100";
+
+          // Acreditar venta al embajador SOLO con pago total (no solo con reserva)
           if (ticket.afiliado_ref) {
-            try {
-              const { recordAffiliatePayment } = await import("../../../db");
-              await recordAffiliatePayment(ticket.afiliado_ref, ticket.lead_id);
-            } catch (affErr) {
-              console.error("[Affiliate Credit Err]:", affErr);
+            if (isTotalPayment) {
+              try {
+                const { recordAffiliatePayment } = await import("../../../db");
+                await recordAffiliatePayment(ticket.afiliado_ref, ticket.lead_id);
+              } catch (affErr) {
+                console.error("[Affiliate Credit Err]:", affErr);
+              }
+            } else {
+              // Notificar reserva aclarando que se acredita tras pago total o asistencia
+              import("../../../services/notifications").then(({ notifyAmbassadorNewReferral }) => {
+                client.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [ticket.afiliado_ref])
+                  .then((ambRes) => {
+                    if (ambRes.rows.length > 0) {
+                      notifyAmbassadorNewReferral(ambRes.rows[0], {
+                        alias_nombre: ticket.alias_nombre,
+                        email: ticket.email,
+                      }).catch(() => {});
+                    }
+                  })
+                  .catch(() => {});
+              });
             }
           }
 
-          // Si compra entrada para Luna Llena, tiene automáticamente su primer año de credencial VIP activada sin costo adicional
-          if (ticket.evento === "luna_llena" && ticket.lead_id) {
+          // Promoción exclusiva Luna Llena: SOLO se activa si hay pago completo (100%).
+          // Si es reserva, se activará en puerta cuando se liquide el saldo y se marque como asistido.
+          if (ticket.evento === "luna_llena" && ticket.lead_id && isTotalPayment) {
             try {
               await client.query(
-                `UPDATE leads SET corset_vip = true, vip_until = NOW() + INTERVAL '1 year', updated_at = NOW() WHERE id = $1`,
+                `UPDATE leads 
+                 SET corset_vip = true, 
+                     vip_until = NOW() + INTERVAL '1 year', 
+                     metadata = jsonb_set(
+                       jsonb_set(
+                         COALESCE(metadata, '{}'::jsonb),
+                         '{vip_until}',
+                         to_jsonb((NOW() + INTERVAL '1 year')::text)
+                       ),
+                       '{tags}',
+                       COALESCE(metadata->'tags', '[]'::jsonb) || '["vip_activo", "corset_vip"]'::jsonb
+                     ),
+                     updated_at = NOW() 
+                 WHERE id = $1`,
                 [ticket.lead_id]
               );
-              console.log(`[Gateway Webhook] 1 año de Membresía VIP Corset activada gratis para lead ${ticket.lead_id} por compra Luna Llena`);
+              console.log(`[Gateway Webhook] 1 año de Membresía VIP Corset activada gratis para lead ${ticket.lead_id} por pago total Luna Llena`);
             } catch (vipAutoErr) {
               console.error("[Auto VIP Luna Llena Err]:", vipAutoErr);
             }
           }
+
+          // Resolver código de embajador PROPIO del comprador para su credencial
+          let userOwnAffCode: string | undefined = undefined;
+          try {
+            const { ensureAffiliateCode } = await import("../../../db");
+            userOwnAffCode = await ensureAffiliateCode(ticket.alias_nombre || "Embajador", ticket.whatsapp, ticket.email);
+          } catch (_) {}
 
           // Disparar multi-mensajería transaccional confirmada
           try {
@@ -90,6 +129,9 @@ export const POST: APIRoute = async ({ request }) => {
                 alias_nombre: ticket.alias_nombre,
                 whatsapp: ticket.whatsapp,
                 email: ticket.email,
+              },
+              {
+                affiliateCode: userOwnAffCode,
               }
             );
           } catch (notifErr) {

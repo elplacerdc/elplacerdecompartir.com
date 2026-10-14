@@ -14,18 +14,17 @@ describe("BAI-248: Luna Llena — Link Segmentation, Payment Anchor & Mobile Res
     expect(content.includes("Beneficio de Embajador")).toBe(true);
   });
 
-  it("should position #reservas directly above the role-filter-banner", () => {
+  it("should have removed role-filter-banner and have role-switch-container directly below tier cards", () => {
     const content = readFileSync(lunaLlenaPath, "utf-8");
-    const reservasIndex = content.indexOf('id="reservas"');
-    const roleBannerIndex = content.indexOf('id="role-filter-banner"');
-    expect(reservasIndex).toBeGreaterThan(-1);
-    expect(roleBannerIndex).toBeGreaterThan(-1);
-    expect(reservasIndex).toBeLessThan(roleBannerIndex);
+    expect(content.includes('id="role-filter-banner"')).toBe(false);
+    expect(content.includes('id="role-switch-container"')).toBe(true);
+    expect(content.includes('¿Deseas asistir en otra modalidad?')).toBe(true);
   });
 
-  it("should add responsive mobile line break to 'Cambiar en Panel →'", () => {
+  it("should link to dashboard profile settings anchor in '¿Tu configuración de perfil cambió?'", () => {
     const content = readFileSync(lunaLlenaPath, "utf-8");
-    expect(content).toMatch(/<span class="sm:hidden"><br\s*\/><\/span>\s*Cambiar en (Panel|Dashboard) →/);
+    expect(content).toContain('href="/dashboard#section-profile-settings"');
+    expect(content).toContain('Cambiar rol en mi Perfil →');
   });
 
   it("should provide clean luna-llena URL without anchor in bot knowledge", () => {
@@ -43,10 +42,10 @@ describe("BAI-248: Luna Llena — Link Segmentation, Payment Anchor & Mobile Res
     expect(dashboardContent).not.toContain('href="/the-corset-society/luna-llena#reservas"');
   });
 
-  it("should include dashboard button in corset headers", () => {
+  it("should include dashboard button in corset headers and profile settings link in luna-llena", () => {
     const headerContent = readFileSync(resolve(process.cwd(), "src/components/CorsetHeader.astro"), "utf-8");
     expect(headerContent).toContain('href="/dashboard"');
     const lunaContent = readFileSync(lunaLlenaPath, "utf-8");
-    expect(lunaContent).toContain('href="/dashboard"');
+    expect(lunaContent).toContain('href="/dashboard#section-profile-settings"');
   });
 });

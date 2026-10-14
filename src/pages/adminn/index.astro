@@ -364,10 +364,11 @@ const isAuthenticated = verifyAdminSessionToken(token);
               <table class="w-full text-left text-xs">
                 <thead class="sticky top-0 bg-[#1c081e] border-b border-[#c5a059]/20 text-[#f7f4ee]/60 uppercase tracking-wider font-semibold">
                   <tr>
-                    <th class="py-2.5 px-3">Usuario / Nombre</th>
+                    <th class="py-2.5 px-3 min-w-[220px]">Usuario / Nombre</th>
                     <th class="py-2.5 px-3">Contacto</th>
                     <th class="py-2.5 px-3">Código Embajador</th>
                     <th class="py-2.5 px-3">Modalidad / Origen</th>
+                    <th class="py-2.5 px-2 text-center">Eventos</th>
                     <th class="py-2.5 px-2 text-center">Clics</th>
                     <th class="py-2.5 px-2 text-center">Referidos</th>
                     <th class="py-2.5 px-2 text-center">Ventas</th>
@@ -376,7 +377,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   </tr>
                 </thead>
                 <tbody id="unified-table-body" class="divide-y divide-[#c5a059]/10 text-[#f7f4ee]/90">
-                  <tr><td colspan="9" class="py-6 text-center text-[#f7f4ee]/40">Cargando directorio unificado...</td></tr>
+                  <tr><td colspan="10" class="py-6 text-center text-[#f7f4ee]/40">Cargando directorio unificado...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -515,6 +516,98 @@ const isAuthenticated = verifyAdminSessionToken(token);
           Guardar Registro
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDICIÓN MANUAL DE PERFIL DE USUARIO / LEAD -->
+  <div id="modal-edit-lead" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-lg p-6 sm:p-8 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <h3 class="text-lg font-serif font-bold text-[#ead397]">Editar Perfil de Usuario</h3>
+        <button id="modal-edit-lead-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
+      </div>
+      <form id="form-edit-lead" class="space-y-4">
+        <input type="hidden" id="edit-lead-id" />
+        <div>
+          <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Nombre o Alias *</label>
+          <input type="text" id="edit-lead-alias" required class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">WhatsApp</label>
+            <input type="tel" id="edit-lead-wa" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Email</label>
+            <input type="email" id="edit-lead-email" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Rol / Modalidad</label>
+            <select id="edit-lead-rol" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]">
+              <option value="pareja">Pareja</option>
+              <option value="single">Single (Hombre Solo)</option>
+              <option value="unicornio">Unicornio (Mujer Sola)</option>
+              <option value="general">General</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Ciudad</label>
+            <input type="text" id="edit-lead-ciudad" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Origen</label>
+            <input type="text" id="edit-lead-origen" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-[#c5a059] font-bold mb-1">Afiliado Referidor</label>
+            <input type="text" id="edit-lead-afiliado" placeholder="alias del embajador o segisw" class="w-full px-3 py-2 rounded-xl bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          </div>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#140816] border border-[#c5a059]/30 space-y-2.5">
+          <label class="block text-xs uppercase text-[#c5a059] font-bold">Estado VIP & Membresía</label>
+          <div class="flex items-center gap-4 text-xs text-[#f7f4ee]">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="edit-lead-is-vip" class="accent-[#c5a059]" />
+              <span>👑 VIP Activo (Credencial Pagada)</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="edit-lead-corset-vip" class="accent-[#c5a059]" />
+              <span>Postulación VIP Corset</span>
+            </label>
+          </div>
+          <div class="pt-1">
+            <label class="block text-[11px] text-[#ead397] mb-1">Vigencia VIP hasta:</label>
+            <input type="date" id="edit-lead-vip-until" class="px-3 py-1.5 rounded-lg bg-[#0a050c] border border-[#c5a059]/30 text-xs text-[#ead397]" />
+          </div>
+          <div class="pt-1">
+            <label class="flex items-center gap-2 cursor-pointer text-xs text-[#f7f4ee]">
+              <input type="checkbox" id="edit-lead-primer-pago" class="accent-[#c5a059]" />
+              <span>Primer Pago Ya Acreditado (deshabilita descuento primerizo)</span>
+            </label>
+          </div>
+        </div>
+        <div id="edit-lead-status" class="hidden p-3 rounded-lg text-xs"></div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a050c] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+          Guardar Cambios de Perfil
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DETALLES DE EVENTOS ASISTIDOS -->
+  <div id="modal-user-events" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="w-full max-w-md p-6 rounded-3xl bg-[#250e29] border border-[#c5a059]/40 shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-3">
+        <h3 id="modal-user-events-title" class="text-base font-serif font-bold text-[#ead397]">Eventos del Usuario</h3>
+        <button id="modal-user-events-close" class="text-sm text-[#f7f4ee]/70 hover:text-white">✕</button>
+      </div>
+      <div id="modal-user-events-list" class="space-y-2 text-xs">
+        <!-- Rendered by JS -->
+      </div>
     </div>
   </div>
 
@@ -817,7 +910,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
   function renderUnifiedTable(leads: any[]) {
     if (!unifiedTableBody) return;
     if (!leads || leads.length === 0) {
-      unifiedTableBody.innerHTML = '<tr><td colspan="9" class="py-6 text-center text-[#f7f4ee]/40">No hay registros con este filtro.</td></tr>';
+      unifiedTableBody.innerHTML = '<tr><td colspan="10" class="py-6 text-center text-[#f7f4ee]/40">No hay registros con este filtro.</td></tr>';
       return;
     }
 
@@ -836,15 +929,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
       }
 
       const nameVipEmoji = isPaidVip 
-        ? '<span class="text-xs select-none" title="VIP Activo con credencial">👑</span>' 
-        : (isPossibleVip ? '<span class="text-xs select-none" title="Posible VIP">🤴</span>' : '');
+        ? '<span class="text-xs select-none mr-1.5" title="VIP Activo con credencial">👑</span>' 
+        : (isPossibleVip ? '<span class="text-xs select-none mr-1.5" title="Posible VIP">🤴</span>' : '');
 
       return `
         <tr class="hover:bg-[#250e29]/70 cursor-pointer transition-colors group" data-lead-id="${l.id}">
-          <td class="py-3 px-3 font-medium text-[#f7f4ee]">
-            <div class="font-serif font-bold text-sm text-[#ead397] group-hover:text-white transition-colors flex items-center gap-1.5 flex-wrap">
-              <span>${l.alias_nombre || "Invitado"}</span>
-              ${nameVipEmoji}
+          <td class="py-3 px-3 font-medium text-[#f7f4ee] min-w-[220px]">
+            <div class="font-serif font-bold text-sm text-[#ead397] group-hover:text-white transition-colors flex items-center flex-nowrap whitespace-nowrap">
+              ${nameVipEmoji}<span>${l.alias_nombre || "Invitado"}</span>
             </div>
             <div class="text-[10px] text-[#f7f4ee]/40 font-mono">ID: ${l.id.substring(0, 8)}...</div>
           </td>
@@ -859,6 +951,16 @@ const isAuthenticated = verifyAdminSessionToken(token);
             <span class="capitalize text-[#f7f4ee]/80">${roleDisplay}</span>
             <span class="block text-[10px] text-[#c5a059]/70">${l.origen || "web"}</span>
           </td>
+          <td class="py-3 px-2 text-center">
+            <button 
+              type="button" 
+              class="btn-row-events px-2.5 py-1 rounded-lg bg-[#c5a059]/15 text-[#ead397] hover:bg-[#c5a059]/30 border border-[#c5a059]/30 font-mono text-xs font-semibold cursor-pointer"
+              data-lead-id="${l.id}"
+              title="Ver historial de eventos asistidos"
+            >
+              ✓ ${l.attended_events_count || 0}
+            </button>
+          </td>
           <td class="py-3 px-2 text-center font-mono text-xs">${clicks}</td>
           <td class="py-3 px-2 text-center font-mono text-xs text-[#ead397] font-semibold">${refCount}</td>
           <td class="py-3 px-2 text-center font-mono text-xs text-[#81c784] font-bold">${salesCount}</td>
@@ -867,6 +969,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
           </td>
           <td class="py-3 px-3 text-right">
             <div class="flex items-center justify-end gap-1.5">
+              <button 
+                type="button" 
+                class="btn-row-edit-lead px-2.5 py-1 rounded-lg bg-[#250e29] text-[#ead397] hover:bg-[#c5a059]/20 border border-[#c5a059]/40 text-[10px] font-semibold whitespace-nowrap"
+                data-lead-id="${l.id}"
+                title="Editar perfil completo de este usuario"
+              >
+                ✏️ Editar
+              </button>
               <button 
                 type="button" 
                 class="btn-row-add-ticket px-2.5 py-1 rounded-lg bg-[#c5a059]/20 text-[#ead397] hover:bg-[#c5a059]/30 border border-[#c5a059]/40 text-[10px] font-semibold whitespace-nowrap"
@@ -997,6 +1107,24 @@ const isAuthenticated = verifyAdminSessionToken(token);
   unifiedTableBody?.addEventListener("click", async (e) => {
     const target = e.target as HTMLElement;
 
+    // ✏️ Edit Lead button
+    const editLeadBtn = target.closest(".btn-row-edit-lead") as HTMLElement;
+    if (editLeadBtn) {
+      e.stopPropagation();
+      const leadId = editLeadBtn.getAttribute("data-lead-id");
+      if (leadId) openEditLeadModal(leadId);
+      return;
+    }
+
+    // 🎟️ Events History button
+    const eventsBtn = target.closest(".btn-row-events") as HTMLElement;
+    if (eventsBtn) {
+      e.stopPropagation();
+      const leadId = eventsBtn.getAttribute("data-lead-id");
+      if (leadId) openUserEventsModal(leadId);
+      return;
+    }
+
     // + Pase button
     const addTicketBtn = target.closest(".btn-row-add-ticket") as HTMLElement;
     if (addTicketBtn) {
@@ -1057,6 +1185,146 @@ const isAuthenticated = verifyAdminSessionToken(token);
       if (leadId) openDrawerWithLead(leadId);
     }
   });
+
+  // Modal Edit Lead Elements
+  const modalEditLead = document.getElementById("modal-edit-lead");
+  const modalEditLeadClose = document.getElementById("modal-edit-lead-close");
+  const formEditLead = document.getElementById("form-edit-lead") as HTMLFormElement;
+  const editLeadId = document.getElementById("edit-lead-id") as HTMLInputElement;
+  const editLeadAlias = document.getElementById("edit-lead-alias") as HTMLInputElement;
+  const editLeadWa = document.getElementById("edit-lead-wa") as HTMLInputElement;
+  const editLeadEmail = document.getElementById("edit-lead-email") as HTMLInputElement;
+  const editLeadRol = document.getElementById("edit-lead-rol") as HTMLSelectElement;
+  const editLeadCiudad = document.getElementById("edit-lead-ciudad") as HTMLInputElement;
+  const editLeadOrigen = document.getElementById("edit-lead-origen") as HTMLInputElement;
+  const editLeadAfiliado = document.getElementById("edit-lead-afiliado") as HTMLInputElement;
+  const editLeadIsVip = document.getElementById("edit-lead-is-vip") as HTMLInputElement;
+  const editLeadCorsetVip = document.getElementById("edit-lead-corset-vip") as HTMLInputElement;
+  const editLeadVipUntil = document.getElementById("edit-lead-vip-until") as HTMLInputElement;
+  const editLeadPrimerPago = document.getElementById("edit-lead-primer-pago") as HTMLInputElement;
+  const editLeadStatus = document.getElementById("edit-lead-status");
+
+  modalEditLeadClose?.addEventListener("click", () => modalEditLead?.classList.add("hidden"));
+
+  function openEditLeadModal(leadId: string) {
+    if (!cachedMetrics?.leads) return;
+    const lead = cachedMetrics.leads.find((l: any) => l.id === leadId);
+    if (!lead) return;
+
+    if (editLeadId) editLeadId.value = lead.id;
+    if (editLeadAlias) editLeadAlias.value = lead.alias_nombre || "";
+    if (editLeadWa) editLeadWa.value = lead.whatsapp || "";
+    if (editLeadEmail) editLeadEmail.value = lead.email || "";
+    if (editLeadRol) editLeadRol.value = lead.rol || "pareja";
+    if (editLeadCiudad) editLeadCiudad.value = lead.ciudad || "bogota";
+    if (editLeadOrigen) editLeadOrigen.value = lead.origen || "web";
+    if (editLeadAfiliado) editLeadAfiliado.value = lead.afiliado_id || "";
+
+    const isVip = Boolean(lead.is_active_vip || (lead.vip_until && new Date(lead.vip_until) > new Date()));
+    if (editLeadIsVip) editLeadIsVip.checked = isVip;
+    if (editLeadCorsetVip) editLeadCorsetVip.checked = Boolean(lead.corset_vip || lead.is_possible_vip);
+    if (editLeadVipUntil) {
+      editLeadVipUntil.value = lead.vip_until ? new Date(lead.vip_until).toISOString().split("T")[0] : "";
+    }
+    if (editLeadPrimerPago) editLeadPrimerPago.checked = Boolean(lead.primer_pago_acreditado);
+    if (editLeadStatus) editLeadStatus.classList.add("hidden");
+
+    modalEditLead?.classList.remove("hidden");
+  }
+
+  formEditLead?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!editLeadId?.value) return;
+
+    const updates = {
+      alias_nombre: editLeadAlias.value.trim(),
+      whatsapp: editLeadWa.value.trim() || null,
+      email: editLeadEmail.value.trim() || null,
+      rol: editLeadRol.value,
+      ciudad: editLeadCiudad.value.trim() || null,
+      origen: editLeadOrigen.value.trim() || null,
+      afiliado_id: editLeadAfiliado.value.trim().toLowerCase() || null,
+      corset_vip: editLeadCorsetVip.checked,
+      vip_status: editLeadIsVip.checked ? "vip_activo" : (editLeadCorsetVip.checked ? "posible_vip" : "no_vip"),
+      vip_until: editLeadVipUntil.value ? new Date(editLeadVipUntil.value).toISOString() : (editLeadIsVip.checked ? new Date(Date.now() + 365*24*3600*1000).toISOString() : null),
+      primer_pago_acreditado: editLeadPrimerPago.checked,
+    };
+
+    try {
+      const res = await fetch("/api/admin/records", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entity: "lead", id: editLeadId.value, updates }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (editLeadStatus) {
+          editLeadStatus.className = "p-3 rounded-lg text-xs bg-[#2e7d32]/25 text-[#81c784] block";
+          editLeadStatus.textContent = "✓ Perfil actualizado exitosamente";
+        }
+        setTimeout(() => {
+          modalEditLead?.classList.add("hidden");
+          loadMetrics();
+        }, 800);
+      } else {
+        if (editLeadStatus) {
+          editLeadStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+          editLeadStatus.textContent = data.error || "Error al actualizar perfil";
+        }
+      }
+    } catch (err: any) {
+      if (editLeadStatus) {
+        editLeadStatus.className = "p-3 rounded-lg text-xs bg-[#b71c1c]/25 text-[#ef5350] block";
+        editLeadStatus.textContent = "Error de conexión al guardar cambios";
+      }
+    }
+  });
+
+  // Modal User Events Elements
+  const modalUserEvents = document.getElementById("modal-user-events");
+  const modalUserEventsClose = document.getElementById("modal-user-events-close");
+  const modalUserEventsTitle = document.getElementById("modal-user-events-title");
+  const modalUserEventsList = document.getElementById("modal-user-events-list");
+
+  modalUserEventsClose?.addEventListener("click", () => modalUserEvents?.classList.add("hidden"));
+
+  function openUserEventsModal(leadId: string) {
+    if (!cachedMetrics?.leads) return;
+    const lead = cachedMetrics.leads.find((l: any) => l.id === leadId);
+    if (!lead) return;
+
+    if (modalUserEventsTitle) {
+      modalUserEventsTitle.textContent = `Eventos de ${lead.alias_nombre || "Usuario"}`;
+    }
+
+    const events = Array.isArray(lead.events_list) ? lead.events_list : [];
+    if (!modalUserEventsList) return;
+
+    if (events.length === 0) {
+      modalUserEventsList.innerHTML = `<p class="text-[#f7f4ee]/40 text-center py-6">No registra historial de pases o asistencias aún.</p>`;
+    } else {
+      modalUserEventsList.innerHTML = events.map((ev: any) => `
+        <div class="p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/20 flex items-center justify-between gap-3 shadow-sm">
+          <div>
+            <div class="font-bold text-[#ead397] font-serif text-xs capitalize">${(ev.evento || "Evento").replace(/_/g, " ")}</div>
+            <div class="text-[10px] text-[#f7f4ee]/60 font-mono mt-0.5">
+              ${ev.tipo_entrada || "General"} • ${ev.created_at ? new Date(ev.created_at).toLocaleDateString("es-CO", { timeZone: "America/Bogota" }) : "—"}
+            </div>
+            ${ev.monto_pagado ? `<div class="text-[10px] text-[#81c784] font-mono">$${Number(ev.monto_pagado).toLocaleString("es-CO")} COP</div>` : ''}
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 ${
+            ev.estado === "asistido"
+              ? "bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40"
+              : "bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/30"
+          }">
+            ${ev.estado === "asistido" ? "✓ Asistido" : (ev.estado || "Confirmado")}
+          </span>
+        </div>
+      `).join("");
+    }
+
+    modalUserEvents?.classList.remove("hidden");
+  }
 
   function bindDeleteButtons() {
     document.querySelectorAll(".btn-delete-record").forEach((btn) => {
@@ -1753,38 +2021,113 @@ const isAuthenticated = verifyAdminSessionToken(token);
         ? "Asignar Pase o Cortesía a Usuario Seleccionado" 
         : "Crear Pase o Cortesía (Asignado Obligatoriamente)";
 
-      const EVENT_CATALOG: Record<string, {
-        name: string;
-        isFree: boolean;
-        options: { id: string; label: string; price: number; tipoPago: string; categoria: string }[];
-      }> = {
+      function getSelectedTargetLead() {
+        const leadIdInput = document.getElementById("crud-lead-id") as HTMLSelectElement | HTMLInputElement | null;
+        const targetId = optionalLeadId || leadIdInput?.value;
+        return (cachedMetrics?.leads || []).find((l: any) => l.id === targetId) || null;
+      }
+
+      function getDynamicTicketOptions(targetLead: any, eventKey: string) {
+        const rawRole = (targetLead?.rol || "").toLowerCase();
+        let role = "general";
+        if (rawRole.includes("pareja")) role = "pareja";
+        else if (rawRole.includes("hombre") || rawRole.includes("single")) role = "single";
+        else if (rawRole.includes("mujer") || rawRole.includes("unicornio")) role = "unicornio";
+
+        const hasAlreadyPaid = Boolean(targetLead?.primer_pago_acreditado);
+        const refAlias = (targetLead?.afiliado_id || "").toLowerCase();
+        const isVipRef = Boolean(targetLead?.referrer_is_vip || refAlias === "segisw");
+        const hasRef = Boolean(refAlias);
+
+        // Descuento sólo en primera compra / evento si tiene embajador
+        const discountType = (!hasAlreadyPaid && hasRef) ? (isVipRef ? "vip_20" : "std_10") : "none";
+
+        if (eventKey === "luna_llena") {
+          const opts: any[] = [];
+          if (role === "pareja" || role === "general") {
+            if (discountType === "vip_20") {
+              opts.push(
+                { id: "pareja_total", label: "👫 Pareja — Pago Total con Embajador VIP -20% ($80.000 COP) [Promo 1 Año VIP]", price: 80000, tipoPago: "total_100", categoria: "pago" },
+                { id: "pareja_reserva", label: "👫 Pareja — Separación 40% con Embajador VIP ($32.000 COP)", price: 32000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            } else if (discountType === "std_10") {
+              opts.push(
+                { id: "pareja_total", label: "👫 Pareja — Pago Total con Embajador -10% ($90.000 COP) [Promo 1 Año VIP]", price: 90000, tipoPago: "total_100", categoria: "pago" },
+                { id: "pareja_reserva", label: "👫 Pareja — Separación 40% con Embajador ($36.000 COP)", price: 36000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            } else {
+              opts.push(
+                { id: "pareja_total", label: "👫 Pareja — Pago Total 100% ($100.000 COP) [Promo 1 Año VIP]", price: 100000, tipoPago: "total_100", categoria: "pago" },
+                { id: "pareja_reserva", label: "👫 Pareja — Separación 40% ($40.000 COP, saldo $60k en puerta)", price: 40000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            }
+          }
+          if (role === "single" || role === "general") {
+            if (discountType === "vip_20") {
+              opts.push(
+                { id: "single_total", label: "🙋‍♂️ Single — Pago Total con Embajador VIP -20% ($96.000 COP) [Promo 1 Año VIP]", price: 96000, tipoPago: "total_100", categoria: "pago" },
+                { id: "single_reserva", label: "🙋‍♂️ Single — Separación 40% con Embajador VIP ($40.000 COP)", price: 40000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            } else if (discountType === "std_10") {
+              opts.push(
+                { id: "single_total", label: "🙋‍♂️ Single — Pago Total con Embajador -10% ($108.000 COP) [Promo 1 Año VIP]", price: 108000, tipoPago: "total_100", categoria: "pago" },
+                { id: "single_reserva", label: "🙋‍♂️ Single — Separación 40% con Embajador ($45.000 COP)", price: 45000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            } else {
+              opts.push(
+                { id: "single_total", label: "🙋‍♂️ Single (Hombre Solo) — Pago Total 100% ($120.000 COP) [Promo 1 Año VIP]", price: 120000, tipoPago: "total_100", categoria: "pago" },
+                { id: "single_reserva", label: "🙋‍♂️ Single — Separación 40% ($50.000 COP, saldo $70k en puerta)", price: 50000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            }
+          }
+          if (role === "unicornio" || role === "general") {
+            if (discountType === "vip_20") {
+              opts.push(
+                { id: "unicornio_total", label: "🦄 Unicornio — Pago Total con Embajador VIP -20% ($24.000 COP) [Promo 1 Año VIP]", price: 24000, tipoPago: "total_100", categoria: "pago" },
+                { id: "unicornio_reserva", label: "🦄 Unicornio — Separación 40% con Embajador VIP ($8.000 COP)", price: 8000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            } else if (discountType === "std_10") {
+              opts.push(
+                { id: "unicornio_total", label: "🦄 Unicornio — Pago Total con Embajador -10% ($27.000 COP) [Promo 1 Año VIP]", price: 27000, tipoPago: "total_100", categoria: "pago" },
+                { id: "unicornio_reserva", label: "🦄 Unicornio — Separación 40% con Embajador ($9.000 COP)", price: 9000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            } else {
+              opts.push(
+                { id: "unicornio_total", label: "🦄 Unicornio (Mujer Sola) — Pago Total 100% ($30.000 COP) [Promo 1 Año VIP]", price: 30000, tipoPago: "total_100", categoria: "pago" },
+                { id: "unicornio_reserva", label: "🦄 Unicornio — Separación 40% ($10.000 COP, saldo $20k en puerta)", price: 10000, tipoPago: "reserva_40", categoria: "pago" }
+              );
+            }
+          }
+          opts.push({ id: "cortesia_embajador", label: "🎟️ Cortesía de Honor / Pase Libre ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" });
+          return opts;
+        }
+
+        if (eventKey === "corset_vip") {
+          const opts: any[] = [];
+          if (discountType === "vip_20") {
+            opts.push({ id: "vip_anual", label: "💎 Membresía Anual VIP con Embajador VIP -20% ($159.000 COP / año)", price: 159000, tipoPago: "total_100", categoria: "pago" });
+          } else if (discountType === "std_10") {
+            opts.push({ id: "vip_anual", label: "💎 Membresía Anual VIP con Embajador -10% ($179.000 COP / año)", price: 179000, tipoPago: "total_100", categoria: "pago" });
+          } else {
+            opts.push({ id: "vip_anual", label: "💎 Membresía Anual VIP ($199.000 COP / año)", price: 199000, tipoPago: "total_100", categoria: "pago" });
+          }
+          opts.push({ id: "vip_cortesia", label: "👑 Credencial VIP Cortesía de Honor ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" });
+          return opts;
+        }
+
+        return [
+          { id: "general_libre", label: "🎟️ Entrada General Libre ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" }
+        ];
+      }
+
+      const EVENT_CATALOG: Record<string, { name: string; isFree: boolean }> = {
         luna_llena: {
           name: "The Corset Society — Noche de Luna Llena (Halloween - 31 Oct)",
-          isFree: false,
-          options: [
-            { id: "pareja_total", label: "👫 Pareja — Pago Total 100% ($100.000 COP)", price: 100000, tipoPago: "total_100", categoria: "pago" },
-            { id: "pareja_reserva", label: "👫 Pareja — Separación 40% ($40.000 COP, saldo $60k en puerta)", price: 40000, tipoPago: "reserva_40", categoria: "pago" },
-            { id: "pareja_total_embajador", label: "👫 Pareja — Pago Total con Descuento Embajador ($90.000 COP)", price: 90000, tipoPago: "total_100", categoria: "pago" },
-            { id: "pareja_reserva_embajador", label: "👫 Pareja — Separación 40% con Descuento Embajador ($36.000 COP)", price: 36000, tipoPago: "reserva_40", categoria: "pago" },
-            { id: "single_total", label: "🙋‍♂️ Single (Hombre Solo) — Pago Total 100% ($120.000 COP)", price: 120000, tipoPago: "total_100", categoria: "pago" },
-            { id: "single_reserva", label: "🙋‍♂️ Single — Separación 40% ($50.000 COP, saldo $70k en puerta)", price: 50000, tipoPago: "reserva_40", categoria: "pago" },
-            { id: "single_total_embajador", label: "🙋‍♂️ Single — Pago Total con Descuento Embajador ($108.000 COP)", price: 108000, tipoPago: "total_100", categoria: "pago" },
-            { id: "single_reserva_embajador", label: "🙋‍♂️ Single — Separación 40% con Descuento Embajador ($45.000 COP)", price: 45000, tipoPago: "reserva_40", categoria: "pago" },
-            { id: "unicornio_total", label: "🦄 Unicornio (Mujer Sola) — Pago Total 100% ($30.000 COP)", price: 30000, tipoPago: "total_100", categoria: "pago" },
-            { id: "unicornio_reserva", label: "🦄 Unicornio — Separación 40% ($10.000 COP, saldo $20k en puerta)", price: 10000, tipoPago: "reserva_40", categoria: "pago" },
-            { id: "unicornio_total_embajador", label: "🦄 Unicornio — Pago Total con Descuento Embajador ($27.000 COP)", price: 27000, tipoPago: "total_100", categoria: "pago" },
-            { id: "unicornio_reserva_embajador", label: "🦄 Unicornio — Separación 40% con Descuento Embajador ($9.000 COP)", price: 9000, tipoPago: "reserva_40", categoria: "pago" },
-            { id: "cortesia_embajador", label: "🎟️ Cortesía de Honor / Pase Libre Embajador ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" }
-          ]
+          isFree: false
         },
         corset_vip: {
           name: "The Corset Society — Membresía Anual VIP",
-          isFree: false,
-          options: [
-            { id: "vip_anual", label: "💎 Membresía Anual VIP ($199.000 COP / año)", price: 199000, tipoPago: "total_100", categoria: "pago" },
-            { id: "vip_anual_embajador", label: "💎 Membresía Anual VIP con Descuento Embajador ($159.000 COP / año)", price: 159000, tipoPago: "total_100", categoria: "pago" },
-            { id: "vip_cortesia", label: "👑 Credencial VIP Cortesía de Honor ($0 COP)", price: 0, tipoPago: "cortesia_100", categoria: "cortesia" }
-          ]
+          isFree: false
         }
       };
 
@@ -1890,21 +2233,27 @@ const isAuthenticated = verifyAdminSessionToken(token);
           leadSelect.innerHTML = '<option value="">-- Seleccionar Usuario Obligatorio --</option>' + filtered.map((l: any) => `
             <option value="${l.id}">${l.alias_nombre || 'Invitado'} (${l.whatsapp || l.email || 'Sin contacto'})${l.affiliate_alias ? ' • Embajador: @' + l.affiliate_alias : ''}</option>
           `).join("");
+          updatePricingState();
+        });
+
+        leadSelect?.addEventListener("change", () => {
+          updatePricingState();
         });
       }
 
       function updatePricingState() {
+        const targetLead = getSelectedTargetLead();
         const currentEventKey = eventoSelect?.value || "luna_llena";
-        const currentEvent = EVENT_CATALOG[currentEventKey] || EVENT_CATALOG.luna_llena;
+        const options = getDynamicTicketOptions(targetLead, currentEventKey);
 
         if (tipoEntradaSelect) {
           const prevVal = tipoEntradaSelect.value;
-          tipoEntradaSelect.innerHTML = currentEvent.options.map((opt) => `
+          tipoEntradaSelect.innerHTML = options.map((opt: any) => `
             <option value="${opt.id}" ${opt.id === prevVal ? 'selected' : ''}>${opt.label}</option>
           `).join("");
         }
 
-        const selectedOpt = currentEvent.options.find(o => o.id === tipoEntradaSelect?.value) || currentEvent.options[0];
+        const selectedOpt = options.find((o: any) => o.id === tipoEntradaSelect?.value) || options[0];
         const catInput = document.getElementById("crud-categoria") as HTMLInputElement;
         const tipoPagoInput = document.getElementById("crud-tipo-pago") as HTMLInputElement;
 
@@ -1917,9 +2266,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
             montoInput.disabled = true;
           }
           if (metodoSelect) {
-            metodoSelect.innerHTML = currentEvent.isFree
-              ? '<option value="reserva_gratuita">🎟️ Reserva Gratuita ($0 COP)</option>'
-              : '<option value="cortesia_manual">🎁 Cortesía de Honor ($0 COP)</option>';
+            metodoSelect.innerHTML = '<option value="cortesia_manual">🎁 Cortesía de Honor ($0 COP)</option>';
           }
         } else {
           if (montoInput) {

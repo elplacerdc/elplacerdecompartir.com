@@ -156,7 +156,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await base.goto("/corset-vip");
     await expect(page.locator("h1").first()).toContainText("Tu Credencial VIP");
     await expect(page.getByText(/\$199\.000\s*COP/i).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /Adquirir Membresía Anual VIP/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Adquirir Membresía Anual VIP/i }).first()).toBeVisible();
     await expect(page.getByText("Solicitud de Admisión VIP").first()).toBeVisible();
   });
 

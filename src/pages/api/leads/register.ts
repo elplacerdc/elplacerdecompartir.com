@@ -35,8 +35,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       .toString()
       .trim()
       .toLowerCase() || undefined;
-    const isCorsetVip = corset_vip === true || corset_vip === "true";
-    const targetChannel = isCorsetVip ? "corset" : (origen === "alianza_centro_cultural" ? "centro_cultural" : "elplacerdc");
+    const isCorsetVip = Boolean(corset_vip === true || corset_vip === "true");
+    const targetChannel = body.channel || body.targetChannel || (isCorsetVip ? "corset" : (origen === "alianza_centro_cultural" ? "centro_cultural" : "elplacerdc"));
 
     const result = await upsertLead(
       {

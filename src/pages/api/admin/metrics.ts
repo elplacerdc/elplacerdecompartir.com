@@ -120,17 +120,20 @@ export const GET: APIRoute = async ({ cookies }) => {
     // 2. Enriched Leads (Unified Directory up to 200)
     const recentLeadsRes = await client.query(`
       SELECT 
-        l.id, l.alias_nombre, l.email, l.whatsapp, l.rol, l.ciudad, l.origen, l.corset_vip, 
-        (l.metadata->>'vip_until') AS vip_until, l.metadata, l.created_at,
+        l.id, l.alias_nombre, l.email, l.whatsapp, l.rol, l.ciudad, l.origen, l.corset_vip, l.afiliado_id,
+        COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) AS vip_until, l.metadata, l.created_at,
         COALESCE(l.primer_pago_acreditado, false) AS primer_pago_acreditado,
         COALESCE(a.alias, '') AS affiliate_alias,
         COALESCE(a.clicks, 0) AS affiliate_clicks,
         COALESCE((SELECT COUNT(*)::int FROM leads ref WHERE LOWER(ref.afiliado_id) = LOWER(a.alias)), 0) AS affiliate_leads_count,
         COALESCE(a.referidos_pagados, 0) AS affiliate_sales_count,
         COALESCE(a.entradas_ganadas, 0) AS affiliate_tickets_won,
-        (CASE WHEN ((l.metadata->>'vip_until') IS NOT NULL AND (l.metadata->>'vip_until')::timestamptz > NOW()) OR (l.metadata->'tags' ? 'vip_activo') THEN true ELSE false END) AS is_active_vip,
-        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset' OR l.metadata->'tags' ? 'corset_vip') AND ((l.metadata->>'vip_until') IS NULL OR (l.metadata->>'vip_until')::timestamptz <= NOW()) THEN true ELSE false END) AS is_possible_vip,
-        (SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id) AS tickets_count
+        (CASE WHEN (COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) > NOW()) OR (l.metadata->'tags' ? 'vip_activo') THEN true ELSE false END) AS is_active_vip,
+        (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset') AND (COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) IS NULL OR COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) <= NOW()) THEN true ELSE false END) AS is_possible_vip,
+        (SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id) AS tickets_count,
+        COALESCE((SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id AND et.estado = 'asistido'), 0) AS attended_events_count,
+        COALESCE((SELECT json_agg(json_build_object('evento', et.evento, 'created_at', et.created_at, 'estado', et.estado, 'tipo_entrada', et.tipo_entrada, 'monto_pagado', et.monto_pagado)) FROM event_tickets et WHERE et.lead_id = l.id), '[]'::json) AS events_list,
+        (CASE WHEN LOWER(l.afiliado_id) = 'segisw' OR (SELECT 1 FROM afiliados a_ref JOIN leads l_ref ON (LOWER(l_ref.email) = LOWER(a_ref.email) OR l_ref.whatsapp = a_ref.whatsapp OR LOWER(l_ref.alias_nombre) = LOWER(a_ref.alias)) WHERE LOWER(a_ref.alias) = LOWER(l.afiliado_id) AND (COALESCE(l_ref.vip_until, (l_ref.metadata->>'vip_until')::timestamptz) > NOW() OR l_ref.metadata->'tags' ? 'vip_activo' OR l_ref.metadata->'tags' ? 'corset_vip') LIMIT 1) IS NOT NULL THEN true ELSE false END) AS referrer_is_vip
       FROM leads l
       LEFT JOIN afiliados a ON (
         (a.email IS NOT NULL AND LOWER(a.email) = LOWER(l.email)) OR 

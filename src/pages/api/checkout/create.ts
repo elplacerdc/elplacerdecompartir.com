@@ -271,7 +271,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
     const waUrl = `https://wa.me/573194194785?text=${waText}`;
     // Despacho de notificación multi-canal (QR email + WhatsApp) para la reserva directa
-    import("../../../services/notifications").then(({ notifyEventReservation }) => {
+    let userAffCode: string | undefined = undefined;
+    try {
+      const { ensureAffiliateCode } = await import("../../../db");
+      userAffCode = await ensureAffiliateCode(alias_nombre || "embajador", whatsapp, email);
+    } catch (_) {}
+
+    import("../../../services/notifications").then(({ notifyEventReservation, notifyAmbassadorNewReferral }) => {
       notifyEventReservation(
         {
           evento: "luna_llena",
@@ -284,9 +290,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         },
         {
           isNewLead: leadResult.status === "created",
-          affiliateCode: affiliateRef || undefined,
+          affiliateCode: userAffCode || undefined,
         }
       ).catch((nErr) => console.error("[Checkout Direct Reservation Notify Err]:", nErr));
+
+      if (affiliateRef) {
+        import("../../../db").then(({ pool }) => {
+          pool.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [affiliateRef])
+            .then((ambRes) => {
+              if (ambRes.rows.length > 0) {
+                notifyAmbassadorNewReferral(ambRes.rows[0], { alias_nombre, email }).catch(() => {});
+              }
+            })
+            .catch(() => {});
+        });
+      }
     });
 
     return new Response(JSON.stringify({ success: true, redirect_url: waUrl, ticketHash }), {
