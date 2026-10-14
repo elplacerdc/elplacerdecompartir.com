@@ -35,7 +35,12 @@ const defaultDescription = isCorset
 
 const description = Astro.props.description || defaultDescription;
 
-const siteUrl = "https://elplacerdecompartir.com";
+const reqHeaders = Astro.request?.headers;
+const forwardedHost = reqHeaders?.get("x-forwarded-host") || reqHeaders?.get("host");
+const siteUrl = (forwardedHost && forwardedHost.includes("zerops.app"))
+  ? `https://${forwardedHost}`
+  : "https://elplacerdecompartir.com";
+
 const resolvedOgImage = ogImage.startsWith("http")
   ? ogImage
   : `${siteUrl}${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
@@ -44,7 +49,7 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es" prefix="og: http://ogp.me/ns#">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -76,6 +81,10 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
     <meta property="og:image:height" content={String(ogImageHeight)} />
     <meta property="og:image:alt" content={title} />
     <meta property="og:locale" content="es_CO" />
+
+    <!-- WhatsApp and Schema Microdata Link Directives -->
+    <meta itemprop="image" content={resolvedOgImage} />
+    <link rel="image_src" href={resolvedOgImage} />
 
     <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image" />
