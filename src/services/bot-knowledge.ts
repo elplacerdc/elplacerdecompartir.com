@@ -255,6 +255,7 @@ const ROUTE_ALIASES: Record<string, string> = {
   "/corset/luna-llena": "/the-corset-society/luna-llena",
   "/reservar-luna-llena": "/the-corset-society/luna-llena",
   "/corset": "/the-corset-society",
+  "/corset/checkout": "/corset-vip",
   "/eventos": "/galeria-centro-cultural",
   "/eventos/": "/galeria-centro-cultural",
   "/galeria": "/galeria-centro-cultural",

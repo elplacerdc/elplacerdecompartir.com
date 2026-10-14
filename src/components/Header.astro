@@ -3,7 +3,7 @@
 import { pool } from "../db/index";
 
 let nextCorsetEvent = {
-  title: "🌕 Luna Llena",
+  title: "🌕 Luna Llena Halloween",
   url_path: "/the-corset-society/luna-llena",
 };
 
@@ -17,7 +17,7 @@ try {
   );
   if (rows.length > 0) {
     nextCorsetEvent = {
-      title: rows[0].title.includes("Luna Llena") ? "🌕 Luna Llena" : `✨ ${rows[0].title}`,
+      title: rows[0].title.includes("Luna Llena") ? "🌕 Luna Llena Halloween" : `✨ ${rows[0].title}`,
       url_path: rows[0].url_path || "/the-corset-society/luna-llena",
     };
   }

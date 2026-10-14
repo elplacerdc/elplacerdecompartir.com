@@ -44,7 +44,9 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
     affiliateRef,
   });
   const discountRate = discountResult.discountRate;
-  const finalAmount = discountRate > 0 ? 179000.00 : 199000.00;
+  const finalAmount = discountRate >= 0.20 
+    ? 159000.00 
+    : (discountRate >= 0.10 ? 179000.00 : 199000.00);
 
   const orderId = `CORSET_VIP_${userId}_${Date.now()}`;
   const baseUrl = `${url.protocol}//${url.host}`;
@@ -52,12 +54,16 @@ export const POST: APIRoute = async ({ request, url, cookies }) => {
   const cancelUrl = `${baseUrl}/corset-vip?payment=cancelled`;
   const notificationUrl = `${baseUrl}/api/webhooks/dlocal`;
 
+  const descDiscount = discountRate >= 0.20 
+    ? " (Descuento VIP 20%)" 
+    : (discountRate >= 0.10 ? " (Descuento Embajador 10%)" : "");
+
   try {
     const redirectUrl = await createPaymentLink({
       amount: finalAmount,
       currency: "COP",
       country: "CO",
-      description: "Membresía Anual The Corset Society" + (affiliateRef ? " (Descuento de Cortesía 10%)" : ""),
+      description: "Membresía Anual The Corset Society" + (affiliateRef ? descDiscount : ""),
       payer: {
         name: userName,
         email: userEmail

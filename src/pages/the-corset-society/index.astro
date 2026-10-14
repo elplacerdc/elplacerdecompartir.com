@@ -33,19 +33,20 @@ import CorsetHeader from "../../components/CorsetHeader.astro";
           The Corset Society representa la cúspide de exclusividad y discreción de ElPlacerDC: una congregación selecta de gala noir, antifaces y etiqueta rigurosa, donde la privacidad absoluta y la sofisticación protegen la experiencia de cada velada.
         </p>
 
-        <!-- Botón inmediato al ancla del formulario de admisión -->
+        <!-- Botón inmediato al ancla de la solicitud de admisión -->
         <div class="pt-4">
           <a 
-            href="#postulacion-vip" 
+            id="hero-vip-action-btn"
+            href="#solicitud-admision-vip" 
             class="inline-block px-8 py-3.5 rounded-full font-serif font-bold uppercase tracking-[0.15em] text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] hover:brightness-110 shadow-[0_0_25px_rgba(197,160,89,0.4)] transition-all"
           >
-            Postularme para Admisión VIP →
+            Solicitud de Admisión VIP →
           </a>
         </div>
       </div>
 
-      <!-- Membresía Anual $199.000 COP & Flyer Limpio Clickeable hacia el formulario -->
-      <a href="#postulacion-vip" class="block max-w-xl mx-auto rounded-2xl overflow-hidden border border-[#c5a059]/50 shadow-[0_0_50px_rgba(197,160,89,0.2)] bg-[#0a0608] hover:border-[#ead397] transition-all group">
+      <!-- Membresía Anual $199.000 COP & Flyer Limpio Clickeable hacia la solicitud -->
+      <a id="corset-vip-flyer-card" href="#solicitud-admision-vip" class="block max-w-xl mx-auto rounded-2xl overflow-hidden border border-[#c5a059]/50 shadow-[0_0_50px_rgba(197,160,89,0.2)] bg-[#0a0608] hover:border-[#ead397] transition-all group">
         <img 
           src="/media/corset-society/flyer_membresia_corset.jpg" 
           alt="Credencial y Membresía The Corset Society" 
@@ -59,8 +60,8 @@ import CorsetHeader from "../../components/CorsetHeader.astro";
           <p class="text-xs font-sans text-[#f7f4ee]/75 leading-relaxed font-light">
             La activación de la credencial oficial incluye descuentos permanentes en todas las veladas, invitaciones prioritarias a convocatorias reservadas, acceso a fantasías privadas y pertenencia formal a nuestra comunidad prémium.
           </p>
-          <p class="text-xs font-serif text-[#c5a059] group-hover:text-[#ead397] font-semibold">
-            Haz clic aquí para iniciar tu postulación de admisión →
+          <p id="corset-vip-card-cta" class="text-xs font-serif text-[#c5a059] group-hover:text-[#ead397] font-semibold">
+            Haz clic aquí para iniciar tu solicitud de admisión VIP →
           </p>
         </div>
       </a>
@@ -101,16 +102,9 @@ import CorsetHeader from "../../components/CorsetHeader.astro";
         </div>
       </div>
 
-      <!-- Formulario Prioritario y Admisión VIP -->
-      <div class="max-w-xl mx-auto pt-4 text-left">
-        <div id="postulacion-vip" class="scroll-mt-24 mb-6 text-center">
-          <h2 class="text-2xl font-serif font-bold text-[#ead397]">
-            <a href="#postulacion-vip" class="hover:text-[#c5a059] transition-colors">Postulación Prioritaria de Admisión</a>
-          </h2>
-          <p class="text-xs text-[#f7f4ee]/70 mt-1 max-w-md mx-auto">
-            La admisión a The Corset Society se evalúa rigurosamente. Requerimos verificación en tiempo real de tu canal de contacto.
-          </p>
-        </div>
+      <!-- Solicitud de Admisión VIP -->
+      <div id="solicitud-admision-vip" class="max-w-xl mx-auto pt-4 text-left scroll-mt-24">
+        <div id="postulacion-vip" class="scroll-mt-24"></div>
         <LeadForm 
           isVip={true}
           title="Solicitud de Admisión VIP"
@@ -127,6 +121,44 @@ import CorsetHeader from "../../components/CorsetHeader.astro";
   </div>
 
   <script is:inline>
+    function checkCorsetSocietyVip() {
+      const heroBtn = document.getElementById("hero-vip-action-btn");
+      const flyerCard = document.getElementById("corset-vip-flyer-card");
+      const flyerCta = document.getElementById("corset-vip-card-cta");
+
+      function applyVipMode() {
+        if (heroBtn) {
+          heroBtn.href = "/corset-vip";
+          heroBtn.textContent = "Ver Beneficios VIP 💎 →";
+        }
+        if (flyerCard) {
+          flyerCard.href = "/corset-vip";
+        }
+        if (flyerCta) {
+          flyerCta.innerHTML = '💎 Eres miembro VIP activo. Haz clic aquí para ver tus beneficios de honor →';
+        }
+      }
+
+      const cachedVip = localStorage.getItem("user_vip_status") || localStorage.getItem("vip_status");
+      if (cachedVip === "vip_activo") {
+        applyVipMode();
+        return;
+      }
+
+      const ident = localStorage.getItem("user_phone") || localStorage.getItem("user_alias") || localStorage.getItem("user_email");
+      if (ident) {
+        fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(ident)}`)
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (data && data.stats && data.stats.vipStatus === "vip_activo") {
+              localStorage.setItem("user_vip_status", "vip_activo");
+              applyVipMode();
+            }
+          })
+          .catch(function() {});
+      }
+    }
+
     function checkCorsetAffiliateDiscount() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -146,8 +178,12 @@ import CorsetHeader from "../../components/CorsetHeader.astro";
     }
 
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", checkCorsetAffiliateDiscount);
+      document.addEventListener("DOMContentLoaded", function() {
+        checkCorsetSocietyVip();
+        checkCorsetAffiliateDiscount();
+      });
     } else {
+      checkCorsetSocietyVip();
       checkCorsetAffiliateDiscount();
     }
   </script>

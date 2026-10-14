@@ -427,6 +427,9 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         if (stats.rol) {
           localStorage.setItem("user_role", stats.rol);
         }
+        if (stats.vipStatus) {
+          localStorage.setItem("user_vip_status", stats.vipStatus);
+        }
         if (stats.referredBy) {
           try {
             localStorage.setItem("affiliate_ref", stats.referredBy);
@@ -491,7 +494,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
             const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
             const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Descuento Embajador)</span>' : '';
             vipActionContainer.innerHTML = `
-              <a href="/corset/checkout" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-block text-center shadow-md">
+              <a href="/corset-vip#vip-checkout-box" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-block text-center shadow-md">
                 Hazte VIP (${vipPriceDisplay})${vipDiscountTag} →
               </a>
             `;

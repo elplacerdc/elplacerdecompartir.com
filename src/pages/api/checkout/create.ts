@@ -118,7 +118,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             JSON.stringify({
               error: `El último cupo disponible en esta fase está reservado exclusivamente para miembros con Credencial VIP activa. Para desbloquear tu reserva inmediata, activa tu credencial VIP.`,
               vipRequired: true,
-              checkoutUrl: `/corset/checkout`,
+              checkoutUrl: `/corset-vip#vip-checkout-box`,
               whatsappUrl,
               waitlist: true,
             }),

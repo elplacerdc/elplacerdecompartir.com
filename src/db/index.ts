@@ -669,7 +669,6 @@ export async function getAffiliateStats(identifier: string): Promise<{
       const hasActiveVip = Boolean(
         (ambLead.vip_until && new Date(ambLead.vip_until) > new Date()) ||
         (ambLead.metadata?.vip_until && new Date(ambLead.metadata.vip_until) > new Date()) ||
-        (ambLead.corset_vip && ambLead.primer_pago_acreditado) ||
         (ambLead.metadata?.tags && ambLead.metadata.tags.includes("vip_activo"))
       );
       if (hasActiveVip) {

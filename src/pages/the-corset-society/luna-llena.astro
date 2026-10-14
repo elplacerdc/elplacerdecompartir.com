@@ -2,8 +2,45 @@
 // the-corset-society/luna-llena.astro - Landing Oficial Evento Noche de Luna Llena
 import Layout from "../../layouts/Layout.astro";
 import CorsetHeader from "../../components/CorsetHeader.astro";
+import { pool } from "../../db/index";
 
 const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchParams.get("ref") || Astro.url.searchParams.get("r") || null;
+
+let isVipRefSsr = false;
+if (cookieRef) {
+  const cleanRef = cookieRef.trim().toLowerCase();
+  if (cleanRef === "segisw") {
+    isVipRefSsr = true;
+  } else {
+    try {
+      const { rows } = await pool.query(
+        `SELECT l.vip_until, l.metadata 
+         FROM leads l 
+         LEFT JOIN affiliates a ON (a.lead_id = l.id OR LOWER(a.custom_slug) = LOWER($1))
+         WHERE LOWER(l.alias_nombre) = LOWER($1) OR LOWER(a.custom_slug) = LOWER($1)
+         LIMIT 1`,
+        [cleanRef]
+      );
+      if (rows.length > 0) {
+        const row = rows[0];
+        const hasVipUntil = row.vip_until && new Date(row.vip_until) > new Date();
+        const hasVipTag = Array.isArray(row.metadata?.tags) && row.metadata.tags.includes("vip_activo");
+        if (hasVipUntil || hasVipTag) {
+          isVipRefSsr = true;
+        }
+      }
+    } catch (_) {}
+  }
+}
+
+const discPercentSsr = isVipRefSsr ? 0.20 : (cookieRef ? 0.10 : 0);
+const discLabelSsr = isVipRefSsr ? "-20% OFF" : "-10% OFF";
+const precioParejaSsr = Math.round(100000 * (1 - discPercentSsr));
+const separaParejaSsr = Math.round(40000 * (1 - discPercentSsr));
+const precioSingleSsr = Math.round(120000 * (1 - discPercentSsr));
+const separaSingleSsr = Math.round(50000 * (1 - discPercentSsr));
+const precioUnicornioSsr = Math.round(30000 * (1 - discPercentSsr));
+const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
 ---
 
 <Layout 
@@ -99,6 +136,19 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
         </div>
       </div>
 
+      <!-- Promoción Exclusiva Gala Halloween: 1 Año de Membresía VIP Incluido -->
+      <div class="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#2a0e28] via-[#140816] to-[#2a0e28] border-2 border-[#c5a059] shadow-[0_0_35px_rgba(197,160,89,0.3)] text-center space-y-4">
+        <div class="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-[#c5a059]/50 bg-[#c5a059]/15 text-xs tracking-[0.2em] uppercase text-[#ead397] font-bold">
+          <span>🎃</span> Promoción Exclusiva Gala Halloween <span>💎</span>
+        </div>
+        <h3 class="text-2xl sm:text-3xl font-bold font-serif text-[#f7f4ee]">
+          ¡Tu Entrada a Luna Llena Activa <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">1 Año de Membresía VIP</span> de Regalo!
+        </h3>
+        <p class="max-w-2xl mx-auto text-xs sm:text-sm font-sans text-[#f7f4ee]/90 leading-relaxed">
+          Quienes adquieran su pase y asistan a la <strong>Mascarada de Halloween Noir</strong> reciben la activación formal de su <strong>Credencial VIP Anual de The Corset Society ($199.000 COP) totalmente sin costo</strong>. Acceso a convocatorias secretas, 20% de descuento permanente en eventos y tu enlace exclusivo de embajador.
+        </p>
+      </div>
+
       <!-- Pricing & Interactive Checkout Section -->
       <section class="pt-8 space-y-8">
         <div class="text-center space-y-3">
@@ -114,12 +164,12 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
           <div class="flex items-center gap-3">
             <span class="text-2xl">🎉</span>
             <div>
-              <strong class="text-white block text-sm font-serif">Beneficio de Embajador</strong>
-              <span class="text-xs text-[#f7f4ee]/90">10% de descuento de cortesía aplicado por invitación exclusiva de <strong id="affiliateAliasDisplay" class="text-[#c5a059]">@{cookieRef || 'embajador'}</strong></span>
+              <strong class="text-white block text-sm font-serif">{isVipRefSsr ? 'Beneficio de Embajador VIP' : 'Beneficio de Embajador'}</strong>
+              <span class="text-xs text-[#f7f4ee]/90">{isVipRefSsr ? '20%' : '10%'} de descuento de cortesía aplicado por invitación exclusiva de <strong id="affiliateAliasDisplay" class="text-[#c5a059]">@{cookieRef || 'embajador'}</strong></span>
             </div>
           </div>
           <span class="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-bold text-xs uppercase tracking-wider shadow-md shrink-0">
-            -10% OFF
+            {discLabelSsr}
           </span>
         </div>
 
@@ -134,20 +184,9 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
           </div>
           <div class="block sm:inline">
             <a href="/dashboard#section-profile-settings" class="underline text-xs text-[#ead397] hover:text-white transition-colors shrink-0">
-              <span class="sm:hidden"><br /></span>Cambiar en Panel →
+              <span class="sm:hidden"><br /></span>Cambiar rol en Perfil →
             </a>
           </div>
-        </div>
-
-        <!-- Dynamic Role Alternate Link -->
-        <div id="role-alternate-container" class="hidden mb-6 text-center sm:text-left text-xs font-sans">
-          <button 
-            type="button" 
-            id="role-alternate-btn" 
-            onclick="toggleAlternateRole()" 
-            class="underline text-[#c5a059] hover:text-[#ead397] transition-colors cursor-pointer bg-transparent border-0 p-0 text-xs font-sans"
-          >
-          </button>
         </div>
 
         <!-- Cover Tier Cards -->
@@ -157,13 +196,13 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
             <div class="space-y-2">
               <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
                 <span class="flex items-center gap-1.5"><span>👫</span> <span>Pase Pareja</span></span>
-                <span id="badge-disc-pareja" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>-10%</span>
+                <span id="badge-disc-pareja" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>{discLabelSsr}</span>
               </div>
               <div id="tier-price-pareja" class="text-3xl font-bold text-[#f7f4ee]">
                 {cookieRef ? (
                   <>
                     <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$100.000</span>
-                    <span class="text-[#81c784]">$90.000</span>
+                    <span class="text-[#81c784]">${precioParejaSsr.toLocaleString('es-CO')}</span>
                     <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>
                   </>
                 ) : (
@@ -172,7 +211,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
               </div>
               <p id="tier-separa-pareja" class="text-xs font-sans text-[#ead397]">
                 {cookieRef ? (
-                  <>O separa con solo <strong class="text-[#81c784]">$36.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($40.000)</span></>
+                  <>O separa con solo <strong class="text-[#81c784]">${separaParejaSsr.toLocaleString('es-CO')} COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($40.000)</span></>
                 ) : (
                   <>O separa con solo <strong>$40.000 COP</strong></>
                 )}
@@ -198,13 +237,13 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
             <div class="space-y-2">
               <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
                 <span class="flex items-center gap-1.5"><span>🙋‍♂️</span> <span>Pase Single (Hombre Solo)</span></span>
-                <span id="badge-disc-single" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>-10%</span>
+                <span id="badge-disc-single" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>{discLabelSsr}</span>
               </div>
               <div id="tier-price-single" class="text-3xl font-bold text-[#f7f4ee]">
                 {cookieRef ? (
                   <>
                     <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$120.000</span>
-                    <span class="text-[#81c784]">$108.000</span>
+                    <span class="text-[#81c784]">${precioSingleSsr.toLocaleString('es-CO')}</span>
                     <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>
                   </>
                 ) : (
@@ -213,7 +252,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
               </div>
               <p id="tier-separa-single" class="text-xs font-sans text-[#ead397]">
                 {cookieRef ? (
-                  <>O separa con solo <strong class="text-[#81c784]">$45.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($50.000)</span></>
+                  <>O separa con solo <strong class="text-[#81c784]">${separaSingleSsr.toLocaleString('es-CO')} COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($50.000)</span></>
                 ) : (
                   <>O separa con solo <strong>$50.000 COP</strong></>
                 )}
@@ -242,13 +281,13 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
             <div class="space-y-2">
               <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold flex items-center justify-between">
                 <span class="flex items-center gap-1.5"><span>🦄</span> <span>Pase Unicornio (Mujer Sola)</span></span>
-                <span id="badge-disc-unicornio" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>-10%</span>
+                <span id="badge-disc-unicornio" class={`${cookieRef ? '' : 'hidden'} text-[10px] bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40 px-2 py-0.5 rounded-full font-mono`}>{discLabelSsr}</span>
               </div>
               <div id="tier-price-unicornio" class="text-3xl font-bold text-[#f7f4ee]">
                 {cookieRef ? (
                   <>
                     <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$30.000</span>
-                    <span class="text-[#81c784]">$27.000</span>
+                    <span class="text-[#81c784]">${precioUnicornioSsr.toLocaleString('es-CO')}</span>
                     <span class="text-xs font-normal text-[#f7f4ee]/50 ml-1">COP</span>
                   </>
                 ) : (
@@ -257,7 +296,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
               </div>
               <p id="tier-separa-unicornio" class="text-xs font-sans text-[#ead397]">
                 {cookieRef ? (
-                  <>O separa con solo <strong class="text-[#81c784]">$9.000 COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($10.000)</span></>
+                  <>O separa con solo <strong class="text-[#81c784]">${separaUnicornioSsr.toLocaleString('es-CO')} COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[11px]">($10.000)</span></>
                 ) : (
                   <>O separa con solo <strong>$10.000 COP</strong></>
                 )}
@@ -276,6 +315,63 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
             >
               Seleccionar Unicornio
             </button>
+          </div>
+        </div>
+
+        <!-- Controles de Gestión de Pase y Rol -->
+        <div id="role-controls-wrapper" class="hidden max-w-xl mx-auto space-y-3 mb-6">
+          <!-- Control 1: Cambiar tipo de pase para esta compra sin alterar rol de perfil -->
+          <div id="role-switch-container" class="p-4 rounded-2xl bg-[#0a0608] border border-[#c5a059]/40 text-xs font-sans text-center space-y-2.5 shadow-md">
+            <div class="text-[#ead397] font-serif font-bold text-xs flex items-center justify-center gap-1.5">
+              <span>💡</span> ¿Deseas asistir en otra modalidad para esta reserva?
+            </div>
+            <p class="text-[#f7f4ee]/70 text-[11px] leading-relaxed">
+              Puedes seleccionar temporalmente otro tipo de pase para esta velada sin modificar tu rol registrado en la comunidad:
+            </p>
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-1">
+              <button 
+                type="button" 
+                onclick="setTemporaryPassMode('pareja')" 
+                class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-sans text-xs cursor-pointer"
+              >
+                👫 Pase Pareja
+              </button>
+              <button 
+                type="button" 
+                onclick="setTemporaryPassMode('single')" 
+                class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-sans text-xs cursor-pointer"
+              >
+                🙋‍♂️ Pase Single (Hombre)
+              </button>
+              <button 
+                type="button" 
+                onclick="setTemporaryPassMode('unicornio')" 
+                class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 transition-all font-sans text-xs cursor-pointer"
+              >
+                🦄 Pase Unicornio (Mujer)
+              </button>
+              <button 
+                type="button" 
+                onclick="showAllPassModes()" 
+                class="px-3.5 py-1.5 rounded-full border border-[#f7f4ee]/30 text-[#f7f4ee]/60 hover:text-white hover:bg-[#f7f4ee]/10 transition-all font-sans text-xs cursor-pointer"
+              >
+                👁️ Ver todos
+              </button>
+            </div>
+          </div>
+
+          <!-- Control 2: Cambiar rol permanente en perfil de comunidad -->
+          <div id="role-profile-container" class="p-3.5 rounded-2xl bg-[#140816] border border-[#c5a059]/20 text-xs font-sans flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm text-center sm:text-left">
+            <div>
+              <span class="text-[#f7f4ee]/80 font-medium text-[11px]">¿Tu configuración de perfil cambió?</span>
+              <p class="text-[10px] text-[#c5a059]/70">Para modificar tu rol permanente de comunidad:</p>
+            </div>
+            <a 
+              href="/dashboard#section-profile-settings" 
+              class="px-4 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 inline-flex items-center gap-1"
+            >
+              <span>⚙️</span> Cambiar rol en mi Perfil →
+            </a>
           </div>
         </div>
 
@@ -311,9 +407,9 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
                 onchange="updateSummary()" 
                 class="w-full bg-[#140a18] border border-[#c5a059]/40 rounded-xl px-4 py-3 text-sm text-[#f7f4ee] focus:outline-none focus:border-[#c5a059]"
               >
-                <option value="pareja">👫 Pareja — {cookieRef ? "$90.000 (-10% OFF, separa con $36.000)" : "$100.000 (o separa con $40.000)"}</option>
-                <option value="single">🙋‍♂️ Single (Hombre Solo) — {cookieRef ? "$108.000 (-10% OFF, separa con $45.000)" : "$120.000 (o separa con $50.000)"}</option>
-                <option value="unicornio">🦄 Unicornio (Mujer Sola) — {cookieRef ? "$27.000 (-10% OFF, separa con $9.000)" : "$30.000 (o separa con $10.000)"}</option>
+                <option value="pareja">👫 Pareja — {cookieRef ? `$${precioParejaSsr.toLocaleString('es-CO')} (${discLabelSsr}, separa con $${separaParejaSsr.toLocaleString('es-CO')})` : "$100.000 (o separa con $40.000)"}</option>
+                <option value="single">🙋‍♂️ Single (Hombre Solo) — {cookieRef ? `$${precioSingleSsr.toLocaleString('es-CO')} (${discLabelSsr}, separa con $${separaSingleSsr.toLocaleString('es-CO')})` : "$120.000 (o separa con $50.000)"}</option>
+                <option value="unicornio">🦄 Unicornio (Mujer Sola) — {cookieRef ? `$${precioUnicornioSsr.toLocaleString('es-CO')} (${discLabelSsr}, separa con $${separaUnicornioSsr.toLocaleString('es-CO')})` : "$30.000 (o separa con $10.000)"}</option>
               </select>
             </div>
 
@@ -469,7 +565,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
                 <span class="text-xs text-[#f7f4ee]/90">${isVipRef ? '20%' : '10%'} de descuento de cortesía aplicado por invitación exclusiva de <strong class="text-[#c5a059]">@${activeRef}</strong></span>
                 <p class="text-[11px] text-[#ead397] mt-1.5 border-t border-[#c5a059]/20 pt-1">
                   ${isVipRef 
-                    ? '✨ <em>Nota Elegante: Al reservar tu entrada, puedes <a href="/corset/checkout" class="underline font-bold text-white hover:text-[#c5a059]">activar tu Credencial VIP</a> para disfrutar de tarifas preferenciales todo el año y compartir este mismo 20% a tu círculo.</em>' 
+                    ? '✨ <em>Nota Elegante: Al reservar tu entrada, puedes <a href="/corset-vip#vip-checkout-box" class="underline font-bold text-white hover:text-[#c5a059]">activar tu Credencial VIP</a> para disfrutar de tarifas preferenciales todo el año y compartir este mismo 20% a tu círculo.</em>' 
                     : '✨ <em>Nota Elegante: Al confirmar tu asistencia o reserva, tu propio enlace quedará listo para que también puedas compartirlo con tu círculo.</em>'}
                 </p>
               </div>
@@ -625,7 +721,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
                 </div>
                 <p class="leading-relaxed text-[#f7f4ee]/90">${data.error}</p>
                 <div class="pt-1">
-                  <a href="/corset/checkout" class="inline-block px-5 py-2.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                  <a href="/corset-vip#vip-checkout-box" class="inline-block px-5 py-2.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
                     Activar Credencial VIP 💎 →
                   </a>
                 </div>
@@ -667,119 +763,98 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
     let originalUserRole = null;
     let currentTicketRole = null;
 
-    function toggleAlternateRole() {
-      if (currentTicketRole === "single" || currentTicketRole === "hombre_solo") {
-        currentTicketRole = "pareja";
-      } else if (currentTicketRole === "unicornio" || currentTicketRole === "mujer_sola") {
-        currentTicketRole = "pareja";
-      } else if (currentTicketRole === "pareja") {
-        currentTicketRole = (originalUserRole && originalUserRole !== "pareja") ? originalUserRole : "single";
-      }
-      applyRoleTicketFilter(currentTicketRole, true);
-    }
-
     function applyRoleTicketFilter(userRole, isTemporarySwitch = false) {
       if (!isTemporarySwitch) {
         originalUserRole = userRole;
-        currentTicketRole = userRole;
-      } else {
-        currentTicketRole = userRole;
       }
+      currentTicketRole = userRole;
 
       const cardPareja = document.getElementById("tier-card-pareja");
       const cardSingle = document.getElementById("tier-card-single");
       const cardUnicornio = document.getElementById("tier-card-unicornio");
+      const container = document.getElementById("tier-cards-container");
       const banner = document.getElementById("role-filter-banner");
       const label = document.getElementById("role-filter-label");
       const select = document.getElementById("tipo_entrada");
-      const altContainer = document.getElementById("role-alternate-container");
-      const altBtn = document.getElementById("role-alternate-btn");
+      const controlsWrapper = document.getElementById("role-controls-wrapper");
 
       if (!cardPareja || !cardSingle || !cardUnicornio) return;
+
+      if (controlsWrapper) controlsWrapper.classList.remove("hidden");
 
       if (userRole === "hombre_solo" || userRole === "single") {
         cardPareja.classList.add("hidden");
         cardUnicornio.classList.add("hidden");
         cardSingle.classList.remove("hidden");
+        if (container) container.className = "max-w-md mx-auto";
         if (banner && label) {
           label.textContent = isTemporarySwitch ? "Hombre Solo (Single - Elección Temporal)" : "Hombre Solo (Single)";
           banner.classList.remove("hidden");
         }
         if (select) {
           Array.from(select.options).forEach((opt) => {
-            if (opt.value !== "single") opt.hidden = true;
-            else {
-              opt.hidden = false;
-              opt.selected = true;
-            }
+            opt.hidden = opt.value !== "single";
+            if (opt.value === "single") opt.selected = true;
           });
           select.value = "single";
         }
         selectTier("single", false);
-
-        if (altContainer && altBtn) {
-          altContainer.classList.remove("hidden");
-          altBtn.textContent = isTemporarySwitch 
-            ? "← Volver a mi modalidad original de Pareja" 
-            : "Soy Hombre Solo pero iré en Pareja →";
-        }
       } else if (userRole === "mujer_sola" || userRole === "unicornio") {
         cardPareja.classList.add("hidden");
         cardSingle.classList.add("hidden");
         cardUnicornio.classList.remove("hidden");
+        if (container) container.className = "max-w-md mx-auto";
         if (banner && label) {
           label.textContent = isTemporarySwitch ? "Mujer Sola (Unicornio - Elección Temporal)" : "Mujer Sola (Unicornio)";
           banner.classList.remove("hidden");
         }
         if (select) {
           Array.from(select.options).forEach((opt) => {
-            if (opt.value !== "unicornio") opt.hidden = true;
-            else {
-              opt.hidden = false;
-              opt.selected = true;
-            }
+            opt.hidden = opt.value !== "unicornio";
+            if (opt.value === "unicornio") opt.selected = true;
           });
           select.value = "unicornio";
         }
         selectTier("unicornio", false);
-
-        if (altContainer && altBtn) {
-          altContainer.classList.remove("hidden");
-          altBtn.textContent = isTemporarySwitch 
-            ? "← Volver a mi modalidad original de Pareja" 
-            : "Soy Mujer Sola pero iré en Pareja →";
-        }
       } else if (userRole === "pareja") {
         cardSingle.classList.add("hidden");
         cardUnicornio.classList.add("hidden");
         cardPareja.classList.remove("hidden");
+        if (container) container.className = "max-w-md mx-auto";
         if (banner && label) {
-          label.textContent = isTemporarySwitch ? "Pareja (Modalidad de asistencia elegida)" : "Pareja";
+          label.textContent = isTemporarySwitch ? "Pareja (Modalidad Temporal)" : "Pareja";
           banner.classList.remove("hidden");
         }
         if (select) {
           Array.from(select.options).forEach((opt) => {
-            if (opt.value !== "pareja") opt.hidden = true;
-            else {
-              opt.hidden = false;
-              opt.selected = true;
-            }
+            opt.hidden = opt.value !== "pareja";
+            if (opt.value === "pareja") opt.selected = true;
           });
           select.value = "pareja";
         }
         selectTier("pareja", false);
-
-        if (altContainer && altBtn) {
-          altContainer.classList.remove("hidden");
-          altBtn.textContent = isTemporarySwitch && originalUserRole !== "pareja"
-            ? (originalUserRole === "hombre_solo" ? "← Volver a modalidad Hombre Solo" : "← Volver a modalidad Mujer Sola")
-            : "Soy Pareja pero asistiré en modalidad individual →";
-        }
       }
     }
-          select.value = "pareja";
-        }
-        selectTier("pareja", false);
+
+    function setTemporaryPassMode(mode) {
+      applyRoleTicketFilter(mode, true);
+    }
+
+    function showAllPassModes() {
+      const cardPareja = document.getElementById("tier-card-pareja");
+      const cardSingle = document.getElementById("tier-card-single");
+      const cardUnicornio = document.getElementById("tier-card-unicornio");
+      const container = document.getElementById("tier-cards-container");
+      const banner = document.getElementById("role-filter-banner");
+      const select = document.getElementById("tipo_entrada");
+
+      if (cardPareja) cardPareja.classList.remove("hidden");
+      if (cardSingle) cardSingle.classList.remove("hidden");
+      if (cardUnicornio) cardUnicornio.classList.remove("hidden");
+      if (container) container.className = "grid grid-cols-1 md:grid-cols-3 gap-6";
+      if (banner) banner.classList.add("hidden");
+      if (select) {
+        Array.from(select.options).forEach((opt) => { opt.hidden = false; });
       }
     }
 

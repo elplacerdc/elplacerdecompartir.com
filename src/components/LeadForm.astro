@@ -437,7 +437,7 @@ const {
                   Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> está radicada con éxito. Tus credenciales oficiales (WhatsApp <span class="font-mono text-[#ead397]">${whatsapp}</span> y correo <span class="font-mono text-[#ead397]">${existing.email || ""}</span>) se encuentran verificadas.
                 </p>
                 <div class="pt-2 flex flex-col gap-2">
-                  <a href="/corset/checkout" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                  <a href="/corset-vip#vip-checkout-box" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
                     ${vipPriceLabel}
                   </a>
                   <a href="/dashboard" class="w-full py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
@@ -602,7 +602,7 @@ const {
                         Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> ha sido radicada exitosamente y tus credenciales oficiales han quedado verificadas.
                       </p>
                       <div class="pt-2 flex flex-col gap-2">
-                        <a href="/corset/checkout" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                        <a href="/corset-vip#vip-checkout-box" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
                           ${vipPriceLabel}
                         </a>
                         <a href="/dashboard" class="w-full py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
@@ -892,7 +892,7 @@ const {
           vipNextAction = `
             <div class="mt-4 p-3 bg-[#0a0608] rounded border border-[#c5a059]/40 text-center">
               <p class="text-xs text-[#ead397] mb-2">Tu postulación VIP ha sido radicada. Puedes continuar a la activación de tu credencial oficial:</p>
-              <a href="/corset/checkout" class="inline-block px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+              <a href="/corset-vip#vip-checkout-box" class="inline-block px-6 py-2.5 rounded-full bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#050505] font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
                 Proceder a Credencial VIP Anual ${vipPriceLabel} →
               </a>
             </div>

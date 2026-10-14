@@ -9,7 +9,7 @@ interface Props {
 const { current } = Astro.props;
 
 let nextEvent = {
-  title: "🌕 Luna Llena",
+  title: "🌕 Luna Llena Halloween",
   url_path: "/the-corset-society/luna-llena",
 };
 
@@ -23,7 +23,7 @@ try {
   );
   if (rows.length > 0) {
     nextEvent = {
-      title: rows[0].title.includes("Luna Llena") ? "🌕 Luna Llena" : `✨ ${rows[0].title}`,
+      title: rows[0].title.includes("Luna Llena") ? "🌕 Luna Llena Halloween" : `✨ ${rows[0].title}`,
       url_path: rows[0].url_path || "/the-corset-society/luna-llena",
     };
   }
@@ -70,6 +70,16 @@ try {
     <!-- Menú Desktop -->
     <nav class="hidden md:flex items-center gap-3">
       <a 
+        href="/the-corset-society" 
+        class={`text-xs uppercase tracking-wider px-3 py-1.5 rounded-full transition-all ${
+          current === "inicio"
+            ? "border border-[#c5a059] bg-[#c5a059]/25 text-[#ead397] font-bold"
+            : "text-[#c5a059] hover:text-[#ead397] hover:bg-[#c5a059]/10"
+        }`}
+      >
+        The Corset Society
+      </a>
+      <a 
         href={nextEvent.url_path} 
         class={`text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-full border transition-all ${
           current === "luna-llena" 
@@ -80,14 +90,16 @@ try {
         {nextEvent.title}
       </a>
       <a 
-        href="/corset/checkout" 
-        class={`text-xs font-sans tracking-wider uppercase px-3.5 py-1.5 rounded-full border transition-all ${
-          current === "checkout" 
-            ? "border-[#c5a059] bg-[#c5a059]/30 text-white font-bold" 
-            : "text-[#ead397] hover:text-white border-[#c5a059]/50 bg-gradient-to-r from-[#c5a059]/20 to-[#ead397]/20 hover:brightness-110"
-        }`}
+        href="/corset-vip#vip-checkout-box" 
+        class="corset-vip-cta-item text-xs font-sans tracking-wider uppercase px-3.5 py-1.5 rounded-full border text-[#ead397] hover:text-white border-[#c5a059]/50 bg-gradient-to-r from-[#c5a059]/20 to-[#ead397]/20 hover:brightness-110 transition-all"
       >
         💎 Activar VIP
+      </a>
+      <a 
+        href="/corset-vip" 
+        class="corset-vip-benefits-item hidden text-xs font-sans tracking-wider uppercase px-3.5 py-1.5 rounded-full border text-[#c5a059] hover:text-[#ead397] border-[#c5a059]/40 bg-[#c5a059]/10 hover:bg-[#c5a059]/20 transition-all"
+      >
+        💎 Beneficios VIP
       </a>
       <a 
         href="/" 
@@ -119,14 +131,20 @@ try {
     class="hidden md:hidden absolute top-full left-0 right-0 bg-[#120516]/98 backdrop-blur-2xl border-b border-[#c5a059]/40 p-5 space-y-3 shadow-2xl z-50 text-center"
   >
     <a 
+      href="/the-corset-society" 
+      class="block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-serif font-bold text-[#ead397] border border-[#c5a059]/40 bg-[#1c0821]/90 hover:bg-[#c5a059]/20 transition-all"
+    >
+      The Corset Society
+    </a>
+    <a 
       href={nextEvent.url_path} 
       class="block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-serif font-bold text-[#050505] bg-gradient-to-r from-[#c5a059] to-[#ead397] shadow-md"
     >
       {nextEvent.title}
     </a>
     <a 
-      href="/corset/checkout" 
-      class="block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold text-[#ead397] border border-[#c5a059]/40 bg-[#250e29]/70 hover:bg-[#c5a059]/20 transition-all"
+      href="/corset-vip#vip-checkout-box" 
+      class="corset-vip-cta-item block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold text-[#ead397] border border-[#c5a059]/40 bg-[#250e29]/70 hover:bg-[#c5a059]/20 transition-all"
     >
       💎 Activar Membresía VIP ($199k)
     </a>
@@ -172,4 +190,32 @@ try {
       iconClose?.classList.add("hidden");
     }
   });
+
+  // Client check: si el usuario es VIP activo, ocultar "Activar VIP" y mostrar "Beneficios VIP"
+  function checkCorsetHeaderVip() {
+    const cachedVip = localStorage.getItem("user_vip_status") || localStorage.getItem("vip_status");
+    if (cachedVip === "vip_activo") {
+      document.querySelectorAll(".corset-vip-cta-item").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".corset-vip-benefits-item").forEach(el => el.classList.remove("hidden"));
+      return;
+    }
+    const ident = localStorage.getItem("user_phone") || localStorage.getItem("user_alias") || localStorage.getItem("user_email");
+    if (!ident) return;
+    fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(ident)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data?.stats?.vipStatus === "vip_activo") {
+          localStorage.setItem("user_vip_status", "vip_activo");
+          document.querySelectorAll(".corset-vip-cta-item").forEach(el => el.classList.add("hidden"));
+          document.querySelectorAll(".corset-vip-benefits-item").forEach(el => el.classList.remove("hidden"));
+        }
+      })
+      .catch(() => {});
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", checkCorsetHeaderVip);
+  } else {
+    checkCorsetHeaderVip();
+  }
 </script>

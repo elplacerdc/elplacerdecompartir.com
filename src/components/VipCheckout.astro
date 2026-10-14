@@ -1,5 +1,7 @@
 ---
-// VipCheckout.astro - Botón de Activación de Credencial VIP Anual con Soporte de Descuento 10% por Embajador
+// VipCheckout.astro - Botón de Activación de Credencial VIP Anual con Soporte de Descuento 20% (VIP) / 10% (Estándar)
+import { pool } from "../db/index";
+
 export interface Props {
   userId?: string;
   userEmail?: string;
@@ -8,6 +10,32 @@ export interface Props {
 
 const { userId, userEmail, userName } = Astro.props;
 const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchParams.get("ref") || Astro.url.searchParams.get("r") || null;
+
+let isVipRefSsr = false;
+if (cookieRef) {
+  try {
+    const ambCheck = await pool.query(
+      `SELECT l.vip_until, l.metadata 
+       FROM afiliados a 
+       LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
+       WHERE LOWER(a.alias) = LOWER($1)
+       LIMIT 1`,
+      [cookieRef.trim()]
+    );
+    if (ambCheck.rows.length > 0) {
+      const amb = ambCheck.rows[0];
+      isVipRefSsr = Boolean(
+        (amb.vip_until && new Date(amb.vip_until) > new Date()) ||
+        (amb.metadata?.vip_until && new Date(amb.metadata.vip_until) > new Date()) ||
+        (amb.metadata?.tags && amb.metadata.tags.includes("vip_activo"))
+      );
+    }
+  } catch (_) {}
+}
+
+const initialPrice = isVipRefSsr ? "$159.000" : (cookieRef ? "$179.000" : "$199.000");
+const initialTag = isVipRefSsr ? "-20% Embajador VIP" : "-10% Embajador";
+const initialPct = isVipRefSsr ? "20%" : "10%";
 ---
 
 <div class="vip-checkout-container bg-gradient-to-b from-[#180a22]/90 via-[#0f0714] to-[#050505] p-8 rounded-2xl border border-[#c5a059] shadow-[0_0_30px_rgba(197,160,89,0.25)] text-center space-y-4">
@@ -16,7 +44,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
       Línea de Alta Exclusividad
     </span>
     <span id="vip-discount-tag" class={`${cookieRef ? '' : 'hidden'} px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#81c784]/20 text-[#81c784] border border-[#81c784]/40`}>
-      -10% Embajador
+      {initialTag}
     </span>
   </div>
 
@@ -26,7 +54,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
     {cookieRef ? (
       <>
         <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$199.000</span>
-        <span class="text-[#81c784]">$179.000</span>
+        <span class="text-[#81c784]">{initialPrice}</span>
         <span class="text-sm font-sans font-normal text-[#c5a059] ml-1">COP / año</span>
       </>
     ) : (
@@ -38,7 +66,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
 
   <!-- Banner de Embajador -->
   <div id="vip-affiliate-banner" class={`${cookieRef ? '' : 'hidden'} p-3 rounded-xl bg-[#c5a059]/15 border border-[#c5a059]/40 text-xs text-[#ead397] max-w-md mx-auto`}>
-    🎉 <strong>Beneficio de Embajador:</strong> 10% de descuento de cortesía aplicado por invitación exclusiva de <strong id="vip-affiliate-name" class="text-[#c5a059]">@{cookieRef || 'embajador'}</strong>.
+    🎉 <strong>Beneficio de Embajador:</strong> <span id="vip-affiliate-pct">{initialPct}</span> de descuento de cortesía aplicado por invitación exclusiva de <strong id="vip-affiliate-name" class="text-[#c5a059]">@{cookieRef || 'embajador'}</strong>.
   </div>
 
   <p class="text-xs sm:text-sm font-sans font-light text-[#f7f4ee]/80 max-w-md mx-auto leading-relaxed">
@@ -56,7 +84,7 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
       id="vip-submit-btn"
       class="w-full sm:w-auto px-8 py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
     >
-      Adquirir Membresía Anual VIP {cookieRef ? "($179.000 COP)" : "($199.000 COP)"}
+      Adquirir Membresía Anual VIP ({initialPrice} COP)
     </button>
   </form>
   <p class="text-[10px] text-[#f7f4ee]/40 font-sans">Pago cifrado y seguro en pesos colombianos (COP). Activación inmediata.</p>
@@ -104,27 +132,47 @@ const cookieRef = Astro.cookies.get("affiliate_ref")?.value || Astro.url.searchP
         const inputRef = document.getElementById("vip-input-ref");
         if (inputRef) inputRef.value = cleanRef;
 
-        const discountTag = document.getElementById("vip-discount-tag");
-        if (discountTag) discountTag.classList.remove("hidden");
+        let isVipRefClient = cleanRef === 'segisw';
+        fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(cleanRef)}`)
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.stats?.vipStatus === 'vip_activo') isVipRefClient = true;
+            applyVipRefUI();
+          })
+          .catch(() => {
+            applyVipRefUI();
+          });
 
-        const banner = document.getElementById("vip-affiliate-banner");
-        const bannerName = document.getElementById("vip-affiliate-name");
-        if (banner) banner.classList.remove("hidden");
-        if (bannerName) bannerName.textContent = `@${cleanRef}`;
+        function applyVipRefUI() {
+          const discountTag = document.getElementById("vip-discount-tag");
+          if (discountTag) {
+            discountTag.textContent = isVipRefClient ? "-20% Embajador VIP" : "-10% Embajador";
+            discountTag.classList.remove("hidden");
+          }
 
-        const priceDisplay = document.getElementById("vip-price-display");
-        if (priceDisplay) {
-          priceDisplay.innerHTML = `
-            <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$199.000</span>
-            <span class="text-[#81c784] font-bold">$179.000</span>
-            <span class="text-sm font-sans font-normal text-[#c5a059] ml-1">COP / año</span>
-          `;
+          const banner = document.getElementById("vip-affiliate-banner");
+          const bannerName = document.getElementById("vip-affiliate-name");
+          const bannerPct = document.getElementById("vip-affiliate-pct");
+          if (banner) banner.classList.remove("hidden");
+          if (bannerName) bannerName.textContent = `@${cleanRef}`;
+          if (bannerPct) bannerPct.textContent = isVipRefClient ? "20%" : "10%";
+
+          const finalPriceStr = isVipRefClient ? "$159.000" : "$179.000";
+          const priceDisplay = document.getElementById("vip-price-display");
+          if (priceDisplay) {
+            priceDisplay.innerHTML = `
+              <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$199.000</span>
+              <span class="text-[#81c784] font-bold">${finalPriceStr}</span>
+              <span class="text-sm font-sans font-normal text-[#c5a059] ml-1">COP / año</span>
+            `;
+          }
+
+          const submitBtn = document.getElementById("vip-submit-btn");
+          if (submitBtn) {
+            submitBtn.textContent = `Adquirir Membresía Anual VIP (${finalPriceStr} COP)`;
+          }
         }
-
-        const submitBtn = document.getElementById("vip-submit-btn");
-        if (submitBtn) {
-          submitBtn.textContent = "Adquirir Membresía Anual VIP ($179.000 COP)";
-        }
+        applyVipRefUI();
       }
     } catch (e) {}
   }

@@ -69,7 +69,7 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
       if (affiliateRef) {
         try {
           const ambRes = await client.query(
-            `SELECT l.corset_vip, l.primer_pago_acreditado, l.vip_until 
+            `SELECT l.vip_until, l.metadata 
              FROM afiliados a 
              LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
              WHERE LOWER(a.alias) = LOWER($1)
@@ -79,9 +79,9 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
           if (ambRes.rows.length > 0) {
             const amb = ambRes.rows[0];
             isReferringAmbassadorVip = Boolean(
-              amb.corset_vip ||
-              amb.primer_pago_acreditado ||
-              (amb.vip_until && new Date(amb.vip_until) > new Date())
+              (amb.vip_until && new Date(amb.vip_until) > new Date()) ||
+              (amb.metadata?.vip_until && new Date(amb.metadata.vip_until) > new Date()) ||
+              (amb.metadata?.tags && amb.metadata.tags.includes("vip_activo"))
             );
           }
         } catch (e) {

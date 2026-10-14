@@ -124,7 +124,7 @@ export async function notifyNewLead(
       `Te contactamos directo por WhatsApp al ser nuestro canal preferencial y confidencial de atención oficial.\n\n` +
       `Hemos recibido tu postulación de admisión. The Corset Society es la línea de alta exclusividad de ElPlacerDC: un círculo privado de gala con credencial VIP por suscripción anual ($199.000 COP) que otorga acceso a convocatorias privadas, encuentros de ticket alto, descuentos permanentes y beneficios exclusivos.\n\n` +
       `Conoce los detalles de la membresía y activa tu credencial en nuestra página oficial:\n` +
-      `👉 https://elplacerdecompartir.com/corset/checkout\n\n` +
+      `👉 https://elplacerdecompartir.com/corset-vip\n\n` +
       `Tu perfil se encuentra en evaluación confidencial por el comité de admisión.\n\n` +
       `_«El acceso se concede, no se anuncia.»_\n\n` +
       `🏛️ *Dirección & Comité de Admisión • The Corset Society*`;
@@ -190,7 +190,7 @@ export async function notifyNewLead(
 
             <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
             <div style="text-align: center; margin: 30px 0 10px 0;">
-              <a href="https://elplacerdecompartir.com/corset/checkout" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
+              <a href="https://elplacerdecompartir.com/corset-vip" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
             </div>
 
           </div>
