@@ -93,7 +93,7 @@ try {
         href="/corset-vip#vip-checkout-box" 
         class="corset-vip-cta-item text-xs font-sans tracking-wider uppercase px-3.5 py-1.5 rounded-full border text-[#ead397] hover:text-white border-[#c5a059]/50 bg-[#0a0608] hover:bg-[#c5a059]/20 hover:brightness-110 transition-all"
       >
-        💎 Activar VIP
+        💎 Activar VIP <span class="corset-vip-price-tag font-sans font-bold">($199k)</span>
       </a>
       <a 
         href="/corset-vip" 
@@ -146,7 +146,7 @@ try {
       href="/corset-vip#vip-checkout-box" 
       class="corset-vip-cta-item block py-2.5 px-4 rounded-xl text-xs uppercase tracking-wider font-semibold text-[#ead397] border border-[#c5a059]/40 bg-[#0a0608] hover:bg-[#c5a059]/20 transition-all"
     >
-      💎 Activar Membresía VIP ($199k)
+      💎 Activar Membresía VIP <span class="corset-vip-price-tag font-sans font-bold">($199k)</span>
     </a>
     <a 
       href="/corset-vip" 
@@ -191,7 +191,7 @@ try {
     }
   });
 
-  // Client check: si el usuario es VIP activo, ocultar "Activar VIP" y mostrar "Beneficios VIP"
+  // Client check: si el usuario es VIP activo, ocultar "Activar VIP" y mostrar "Beneficios VIP", y actualizar precio dinámico
   function checkCorsetHeaderVip() {
     const cachedVip = localStorage.getItem("user_vip_status") || localStorage.getItem("vip_status");
     if (cachedVip === "vip_activo") {
@@ -199,7 +199,41 @@ try {
       document.querySelectorAll(".corset-vip-benefits-item").forEach(el => el.classList.remove("hidden"));
       return;
     }
-    const ident = localStorage.getItem("user_phone") || localStorage.getItem("user_alias") || localStorage.getItem("user_email");
+
+    // Resolver descuento por referido activo
+    const urlParams = new URLSearchParams(window.location.search);
+    let ref = urlParams.get("ref") || urlParams.get("r") || localStorage.getItem("affiliate_ref");
+    if (!ref) {
+      const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
+      if (match) ref = decodeURIComponent(match[1]).trim().toLowerCase();
+    }
+
+    function applyHeaderPrice(priceK: string) {
+      document.querySelectorAll(".corset-vip-price-tag").forEach(el => {
+        el.textContent = `(${priceK})`;
+      });
+    }
+
+    if (ref) {
+      const cleanRef = ref.trim().toLowerCase();
+      let isVipRef = cleanRef === "segisw";
+      applyHeaderPrice(isVipRef ? "$159k" : "$179k");
+
+      fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(cleanRef)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data?.stats?.vipStatus === "vip_activo") {
+            applyHeaderPrice("$159k");
+          } else {
+            applyHeaderPrice("$179k");
+          }
+        })
+        .catch(() => {});
+    } else {
+      applyHeaderPrice("$199k");
+    }
+
+    const ident = localStorage.getItem("user_phone") || localStorage.getItem("user_alias") || localStorage.getItem("user_email") || localStorage.getItem("ambassador_session_phone");
     if (!ident) return;
     fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(ident)}`)
       .then(res => res.json())
@@ -208,6 +242,9 @@ try {
           localStorage.setItem("user_vip_status", "vip_activo");
           document.querySelectorAll(".corset-vip-cta-item").forEach(el => el.classList.add("hidden"));
           document.querySelectorAll(".corset-vip-benefits-item").forEach(el => el.classList.remove("hidden"));
+        } else if (data?.stats?.referredBy) {
+          const isVipRef = data.stats.isReferrerVip || data.stats.referredBy.toLowerCase() === "segisw";
+          applyHeaderPrice(isVipRef ? "$159k" : "$179k");
         }
       })
       .catch(() => {});

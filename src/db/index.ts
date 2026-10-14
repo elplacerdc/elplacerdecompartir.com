@@ -267,12 +267,15 @@ export async function upsertLead(
       if (resolvedChannel === "elplacerdc" || data.origen === "web_comunidad" || (!existingTags.includes("general") && !existingTags.includes("corset") && !existingTags.includes("alianzas"))) {
         newTagsToAdd.push("general");
       }
-      if (resolvedChannel === "corset" || (data.corset_vip && data.origen === "web_corset")) {
+      const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen !== "web_comunidad" && data.origen !== "evento_luna_llena" && data.origen !== "alianza_centro_cultural";
+      if (isExplicitCorsetVipSubmission) {
         newTagsToAdd.push("corset");
         newTagsToAdd.push("corset_vip");
         if (!existingTags.includes("vip_activo")) {
           newTagsToAdd.push("posible vip");
         }
+      } else if (resolvedChannel === "corset") {
+        newTagsToAdd.push("corset");
       }
       if (targetChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
         newTagsToAdd.push("alianzas");
@@ -323,7 +326,7 @@ export async function upsertLead(
           canonicalPhone || existingLead.whatsapp,
           normalizedRol,
           data.ciudad || null,
-          Boolean(resolvedChannel === "corset" || (data.corset_vip && data.origen === "web_corset") || (existingLead.corset_vip && (existingChannels.includes("corset") || existingLead.origen === "web_corset"))),
+          Boolean(isExplicitCorsetVipSubmission || existingLead.corset_vip),
           data.afiliado_id || null,
           JSON.stringify(mergedMeta),
           existingLead.id,
@@ -358,10 +361,13 @@ export async function upsertLead(
 
     // 3. New Lead Insertion Path (Ensure canonical tags array is initialized monotonically)
     const initialTags: string[] = [];
-    if (resolvedChannel === "corset" || Boolean(data.corset_vip)) {
+    const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen !== "web_comunidad" && data.origen !== "evento_luna_llena" && data.origen !== "alianza_centro_cultural";
+    if (isExplicitCorsetVipSubmission) {
       initialTags.push("corset");
       initialTags.push("corset_vip");
       initialTags.push("posible vip");
+    } else if (resolvedChannel === "corset") {
+      initialTags.push("corset");
     } else if (resolvedChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
       initialTags.push("alianzas");
     } else {
@@ -397,7 +403,7 @@ export async function upsertLead(
           data.ciudad || "Bogotá",
           data.origen || (resolvedChannel === "corset" ? "web_corset" : resolvedChannel === "centro_cultural" ? "alianza_centro_cultural" : "web_comunidad"),
           data.afiliado_id || null,
-          Boolean(resolvedChannel === "corset" || data.corset_vip),
+          Boolean(isExplicitCorsetVipSubmission),
           JSON.stringify(initialMeta),
           isWhatsappVerified,
           isEmailVerified,
@@ -583,6 +589,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
   ciudad?: string | null;
   alias_nombre?: string | null;
   referredBy?: string | null;
+  isReferrerVip?: boolean;
   clicks: number;
   leadsCount: number;
   purchasesCount: number;
@@ -678,6 +685,34 @@ export async function getAffiliateStats(identifier: string): Promise<{
       }
     }
 
+    // Resolver si el referidor de este lead es un VIP activo (para otorgar 20% en lugar de 10%)
+    let isReferrerVip = false;
+    if (ambLead?.afiliado_id) {
+      const refCode = ambLead.afiliado_id.trim().toLowerCase();
+      if (refCode === "segisw") {
+        isReferrerVip = true;
+      } else {
+        const refLeadRes = await client.query(
+          `SELECT l.vip_until, l.metadata FROM afiliados a
+           LEFT JOIN leads l ON (
+             (a.email IS NOT NULL AND LOWER(l.email) = LOWER(a.email)) OR
+             (a.whatsapp IS NOT NULL AND RIGHT(regexp_replace(l.whatsapp, '\\D', '', 'g'), 10) = RIGHT(regexp_replace(a.whatsapp, '\\D', '', 'g'), 10))
+           )
+           WHERE LOWER(a.alias) = LOWER($1)
+           LIMIT 1`,
+          [refCode]
+        );
+        if (refLeadRes.rows.length > 0) {
+          const rl = refLeadRes.rows[0];
+          isReferrerVip = Boolean(
+            (rl.vip_until && new Date(rl.vip_until) > new Date()) ||
+            (rl.metadata?.vip_until && new Date(rl.metadata.vip_until) > new Date()) ||
+            (rl.metadata?.tags && rl.metadata.tags.includes("vip_activo"))
+          );
+        }
+      }
+    }
+
     const purchases = row.referidos_pagados || 0;
     const freeTicketsEarned = Math.min(3, Math.floor(purchases / 3));
     const subsequentDiscounts = Math.max(0, purchases - 9);
@@ -691,6 +726,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
       ciudad: ambLead?.ciudad || null,
       alias_nombre: ambLead?.alias_nombre || row.nombre || row.alias,
       referredBy: ambLead?.afiliado_id || null,
+      isReferrerVip,
       clicks: row.clicks || 0,
       leadsCount,
       purchasesCount: purchases,

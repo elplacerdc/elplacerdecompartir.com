@@ -258,7 +258,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
         </div>
 
         <!-- Section: Ajustes de Perfil / Modificar Datos Oficiales -->
-        <div id="section-profile-settings" class="p-6 sm:p-8 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-6">
+        <div id="section-profile-settings" class="scroll-mt-24 p-6 sm:p-8 rounded-2xl bg-[#140816] border border-[#c5a059]/30 space-y-6">
           <div class="flex items-center justify-between border-b border-[#c5a059]/20 pb-4">
             <div>
               <h3 class="text-lg font-serif font-bold text-[#ead397]">Ajustes de Perfil</h3>
@@ -484,14 +484,26 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           }
           if (vipDesc) vipDesc.textContent = "Tu solicitud a The Corset Society está registrada. Activa tu credencial oficial para gozar de descuentos y accesos de honor.";
           if (vipActionContainer) {
-            const isReferredUser = Boolean(
-              stats.referredBy ||
+            const effectiveRef = stats.referredBy ||
               localStorage.getItem("affiliate_ref") ||
-              document.cookie.includes("affiliate_ref") ||
-              new URLSearchParams(window.location.search).get("ref")
+              (document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/)?.[1]) ||
+              new URLSearchParams(window.location.search).get("ref");
+            const isReferredUser = Boolean(effectiveRef);
+            const isVipDiscount = Boolean(
+              stats.isReferrerVip ||
+              (effectiveRef && effectiveRef.toLowerCase() === "segisw")
             );
-            const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
-            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Descuento Embajador)</span>' : '';
+
+            const vipPriceDisplay = isReferredUser 
+              ? (isVipDiscount ? "$159.200 COP" : "$179.100 COP")
+              : "$199.000 COP";
+
+            const vipDiscountTag = isReferredUser
+              ? (isVipDiscount 
+                  ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-20% Embajador VIP)</span>'
+                  : ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Embajador)</span>')
+              : '';
+
             vipActionContainer.innerHTML = `
               <a href="/corset-vip#vip-checkout-box" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-block text-center shadow-md">
                 Hazte VIP (${vipPriceDisplay})${vipDiscountTag} →
@@ -505,14 +517,26 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           }
           if (vipDesc) vipDesc.textContent = "Accede a las veladas secretas de The Corset Society solicitando tu admisión al círculo exclusivo.";
           if (vipActionContainer) {
-            const isReferredUser = Boolean(
-              stats.referredBy ||
+            const effectiveRef = stats.referredBy ||
               localStorage.getItem("affiliate_ref") ||
-              document.cookie.includes("affiliate_ref") ||
-              new URLSearchParams(window.location.search).get("ref")
+              (document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/)?.[1]) ||
+              new URLSearchParams(window.location.search).get("ref");
+            const isReferredUser = Boolean(effectiveRef);
+            const isVipDiscount = Boolean(
+              stats.isReferrerVip ||
+              (effectiveRef && effectiveRef.toLowerCase() === "segisw")
             );
-            const vipPriceDisplay = isReferredUser ? "$179.000 COP" : "$199.000 COP";
-            const vipDiscountTag = isReferredUser ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Descuento Embajador)</span>' : '';
+
+            const vipPriceDisplay = isReferredUser 
+              ? (isVipDiscount ? "$159.200 COP" : "$179.100 COP")
+              : "$199.000 COP";
+
+            const vipDiscountTag = isReferredUser
+              ? (isVipDiscount 
+                  ? ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-20% Descuento Embajador VIP)</span>'
+                  : ' <span class="text-[10px] bg-[#0a0608] text-[#81c784] px-2 py-0.5 rounded-full font-bold font-sans ml-1.5 shadow-sm inline-block">(-10% Descuento Embajador)</span>')
+              : '';
+
             vipActionContainer.innerHTML = `
               <a href="/the-corset-society" class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-[#c5a059]/60 text-[#ead397] hover:bg-[#c5a059]/20 text-xs font-bold uppercase tracking-wider transition-all inline-block text-center">
                 Solicita VIP (${vipPriceDisplay})${vipDiscountTag} →
@@ -607,6 +631,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
       console.error("Error loading ambassador stats:", e);
     } finally {
       if (refreshIcon) refreshIcon.classList.remove("animate-spin");
+      scrollToHashIfPresent();
     }
   }
 
@@ -768,6 +793,24 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
   btnLogout?.addEventListener("click", () => {
     localStorage.removeItem("ambassador_session_phone");
     window.location.reload();
+  });
+
+  function scrollToHashIfPresent() {
+    if (window.location.hash) {
+      const hash = window.location.hash;
+      setTimeout(() => {
+        try {
+          const target = document.querySelector(hash);
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        } catch (_) {}
+      }, 150);
+    }
+  }
+
+  window.addEventListener("hashchange", () => {
+    scrollToHashIfPresent();
   });
 
   // Escuchar inicio de sesión inmediato

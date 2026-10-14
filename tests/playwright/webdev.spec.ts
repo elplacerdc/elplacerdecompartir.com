@@ -200,4 +200,29 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
       expect(count, `Found 'concierge' on route ${route}`).toBe(0);
     }
   });
+
+  test("Refactor 360: Dynamic VIP Header, Manual Checkout Button & Profile Anchor", async ({ page }) => {
+    const base = new BasePage(page);
+
+    // 1. Luna Llena checkout button & Profile Settings Link (with active community role)
+    await page.addInitScript(() => {
+      localStorage.setItem("user_role", "pareja");
+    });
+    await base.goto("/the-corset-society/luna-llena");
+    await expect(page.locator("#btnNequi")).toBeVisible();
+    await expect(page.locator("#btnNequi")).toContainText("Coordinar por WhatsApp (BreB, nequí, trasnferencia)");
+    
+    const profileLink = page.locator('a[href="/dashboard#section-profile-settings"]');
+    await expect(profileLink).toBeVisible();
+
+    // 2. Dashboard Profile Settings Section
+    await base.goto("/dashboard");
+    const sectionProfile = page.locator("#section-profile-settings");
+    await expect(sectionProfile).toBeAttached();
+
+    // 3. Corset Header VIP Dynamic Pricing Tag
+    await base.goto("/the-corset-society");
+    const vipPriceTag = page.locator(".corset-vip-price-tag").first();
+    await expect(vipPriceTag).toBeAttached();
+  });
 });

@@ -56,12 +56,35 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
       const phoneEnd = cleanPhone ? cleanPhone.replace(/\D/g, "").slice(-10) : "";
       const affAlias = affRow?.alias;
 
-      // Eliminar tickets asociados al lead
-      if (leadId) {
-        await client.query("DELETE FROM event_tickets WHERE lead_id::text = $1", [leadId]);
+      // 1. Eliminar tickets asociados al lead o a su contacto
+      await client.query(
+        `DELETE FROM event_tickets 
+         WHERE lead_id::text = $1 
+            OR lead_id IN (
+              SELECT id FROM leads 
+              WHERE ($2 != '' AND LOWER(email) = $2)
+                 OR ($3 != '' AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $3)
+            )`,
+        [leadId || id, cleanEmail, phoneEnd]
+      );
+
+      // 2. Desvincular referidos y comisiones que apuntaban a este usuario
+      if (affAlias) {
+        try {
+          await client.query(
+            `UPDATE leads SET afiliado_id = NULL 
+             WHERE LOWER(afiliado_id) = LOWER($1) OR afiliado_id = $2`,
+            [affAlias, leadId || id]
+          );
+          await client.query(
+            `UPDATE event_tickets SET afiliado_ref = NULL 
+             WHERE LOWER(afiliado_ref) = LOWER($1)`,
+            [affAlias]
+          );
+        } catch (_) {}
       }
 
-      // Eliminar de leads
+      // 3. Eliminar de leads
       if (leadId || cleanEmail || phoneEnd) {
         await client.query(
           `DELETE FROM leads 
@@ -72,7 +95,7 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
         );
       }
 
-      // Eliminar de afiliados
+      // 4. Eliminar de afiliados
       if (affAlias || cleanEmail || phoneEnd) {
         await client.query(
           `DELETE FROM afiliados 
@@ -84,7 +107,7 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
         );
       }
 
-      // Eliminar de ambassadors
+      // 5. Eliminar de ambassadors
       if (leadId || cleanEmail || phoneEnd) {
         try {
           await client.query(
@@ -97,7 +120,7 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
         } catch (_) {}
       }
 
-      // Eliminar de tablas auth (user, verification, session)
+      // 6. Eliminar de tablas auth (user, verification, session)
       if (leadId || cleanEmail || phoneEnd) {
         try {
           await client.query(
@@ -126,15 +149,40 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
         } catch (_) {}
       }
 
-      // Desbloqueo y purga total de Valkey (OTP, human takeover, sesiones y flags)
+      // 7. Desbloqueo y purga total de Valkey (OTP, human takeover, sesiones, descuentos y flags)
       if (process.env.VALKEY_URL) {
         try {
           const Redis = (await import("ioredis")).default;
           const redis = new Redis(process.env.VALKEY_URL, { lazyConnect: true });
           await redis.connect();
-          const keysToPurge: string[] = [];
+          
+          const matchedKeys = new Set<string>();
+
+          // Patrones por escaneo
+          const patterns: string[] = [];
+          if (phoneEnd && phoneEnd.length >= 7) {
+            patterns.push(`*${phoneEnd}*`);
+          }
+          if (cleanEmail && cleanEmail.includes("@")) {
+            patterns.push(`*${cleanEmail}*`);
+          }
+          if (affAlias && affAlias.length >= 3) {
+            patterns.push(`*${affAlias.toLowerCase()}*`);
+          }
+          if (leadId) {
+            patterns.push(`*${leadId}*`);
+          }
+
+          for (const pat of patterns) {
+            try {
+              const found = await redis.keys(pat);
+              found.forEach((k) => matchedKeys.add(k));
+            } catch (_) {}
+          }
+
+          // Llaves explícitas
           if (phoneEnd) {
-            keysToPurge.push(
+            [
               `otp:wa:${phoneEnd}`,
               `otp:wa:57${phoneEnd}`,
               `wa:human_takeover:${phoneEnd}`,
@@ -142,14 +190,23 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
               `wa:affiliate_pitched:${phoneEnd}`,
               `wa:affiliate_pitched:57${phoneEnd}`,
               `chat:sessions:${phoneEnd}`,
-              `chat:sessions:57${phoneEnd}`
-            );
+              `chat:sessions:57${phoneEnd}`,
+              `bot:status:${phoneEnd}`,
+              `bot:status:57${phoneEnd}`,
+              `lid:${phoneEnd}`,
+              `lid:57${phoneEnd}`,
+              `lead:session:${phoneEnd}`,
+              `lead:discount:${phoneEnd}`,
+            ].forEach((k) => matchedKeys.add(k));
           }
           if (cleanEmail) {
-            keysToPurge.push(`otp:email:${cleanEmail}`);
+            matchedKeys.add(`otp:email:${cleanEmail}`);
+            matchedKeys.add(`lead:discount:${cleanEmail}`);
           }
-          if (keysToPurge.length > 0) {
-            await redis.del(...keysToPurge);
+
+          const keysArray = Array.from(matchedKeys);
+          if (keysArray.length > 0) {
+            await redis.del(...keysArray);
           }
           redis.disconnect();
         } catch (vErr: any) {

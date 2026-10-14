@@ -22,7 +22,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     const baseMonto = modalidad_pago === "reserva_40" ? priceInfo.reserva_40 : priceInfo.total;
-    const affiliateRef = (body.ref || body.afiliado_id || cookies.get("affiliate_ref")?.value || "")
+    const affiliateRef = (body.ref || body.afiliado_id || cookies?.get("affiliate_ref")?.value || "")
       .toString()
       .trim()
       .toLowerCase() || null;
@@ -156,6 +156,27 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const isDigitalGateway = metodo_pago === "pasarela_digital" || metodo_pago === "dlocal_go";
 
+    if (!isDigitalGateway) {
+      // Manual coordination via WhatsApp (Bre-B, Nequi, Transferencia)
+      // Zero DB ticket creation, zero automatic reservation, zero QR/notifications until manually approved in /adminn.
+      const waText = encodeURIComponent(
+        `🌕 *COORDINACIÓN DE PAGO MANUAL — NOCHE DE LUNA LLENA — THE CORSET SOCIETY*\n\n` +
+        `👤 *Alias/Nombre:* ${alias_nombre}\n` +
+        `📱 *WhatsApp:* ${whatsapp}\n` +
+        `📧 *Email:* ${email}\n` +
+        `🎟️ *Entrada:* ${priceInfo.label}\n` +
+        `💵 *Modalidad:* ${modalidad_pago === "reserva_40" ? "Separación 40% ($" + monto.toLocaleString("es-CO") + ")" : "Pago Total ($" + monto.toLocaleString("es-CO") + ")"}\n` +
+        (affiliateRef ? `🤝 *Referido por:* ${affiliateRef}\n` : "") +
+        `\nHola Segisw, deseo coordinar mi pago manual vía Bre-B, Nequi o transferencia bancaria para el evento.`
+      );
+      const waUrl = `https://wa.me/573194194785?text=${waText}`;
+
+      return new Response(JSON.stringify({ success: true, redirect_url: waUrl }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // 2. Insert or Reuse pending ticket (Idempotency lock: avoid multi-click duplication within 60s)
     const client = await pool.connect();
     let ticketId = "";
@@ -185,7 +206,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
             modalidad_pago,
             monto,
             metodo_pago || "pasarela_digital",
-            isDigitalGateway ? "pendiente" : "pendiente_verificacion",
+            "pendiente",
             affiliateRef,
             ticketHash,
           ]
@@ -196,121 +217,67 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       client.release();
     }
 
-    // 3. Handle Payment Method
-    if (isDigitalGateway) {
-      const apiKey = process.env.DLOCAL_GO_API_KEY;
-      const secretKey = process.env.DLOCAL_GO_SECRET_KEY;
-      const isSandbox = (process.env.DLOCAL_GO_ENV || "").toLowerCase() === "sandbox";
-      const dlocalUrl = isSandbox 
-        ? "https://api-sbx.dlocalgo.com/v1/payments" 
-        : "https://api.dlocalgo.com/v1/payments";
+    // 3. Handle Digital Payment Method
+    const apiKey = process.env.DLOCAL_GO_API_KEY;
+    const secretKey = process.env.DLOCAL_GO_SECRET_KEY;
+    const isSandbox = (process.env.DLOCAL_GO_ENV || "").toLowerCase() === "sandbox";
+    const dlocalUrl = isSandbox 
+      ? "https://api-sbx.dlocalgo.com/v1/payments" 
+      : "https://api.dlocalgo.com/v1/payments";
 
-      if (apiKey && secretKey) {
-        try {
-          const dlRes = await fetch(dlocalUrl, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-              "Authorization": `Bearer ${apiKey}:${secretKey}`,
-            },
-            body: JSON.stringify({
-              amount: monto,
-              currency: "COP",
-              country: "CO",
-              order_id: ticketId,
-              description: `Cover Luna Llena: ${priceInfo.label} (${modalidad_pago === "reserva_40" ? "Separación 40%" : "Pago Total"})`.slice(0, 95),
-              success_url: `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticketHash}`,
-              back_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena",
-              notification_url: "https://elplacerdecompartir.com/api/webhooks/dlocal",
-            }),
+    if (apiKey && secretKey) {
+      try {
+        const dlRes = await fetch(dlocalUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Authorization": `Bearer ${apiKey}:${secretKey}`,
+          },
+          body: JSON.stringify({
+            amount: monto,
+            currency: "COP",
+            country: "CO",
+            order_id: ticketId,
+            description: `Cover Luna Llena: ${priceInfo.label} (${modalidad_pago === "reserva_40" ? "Separación 40%" : "Pago Total"})`.slice(0, 95),
+            success_url: `https://elplacerdecompartir.com/the-corset-society/ticket?hash=${ticketHash}`,
+            back_url: "https://elplacerdecompartir.com/the-corset-society/luna-llena",
+            notification_url: "https://elplacerdecompartir.com/api/webhooks/dlocal",
+          }),
+        });
+
+        const dlData = await dlRes.json();
+        if (dlData.redirect_url) {
+          return new Response(JSON.stringify({ success: true, redirect_url: dlData.redirect_url, ticketHash }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
           });
-
-          const dlData = await dlRes.json();
-          if (dlData.redirect_url) {
-            return new Response(JSON.stringify({ success: true, redirect_url: dlData.redirect_url, ticketHash }), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          } else {
-            console.error("[Digital Gateway Error Response]:", dlData);
-            return new Response(JSON.stringify({ 
-              error: dlData.message || "No se pudo generar la sesión de pago digital. Por favor intenta de nuevo." 
-            }), {
-              status: 502,
-              headers: { "Content-Type": "application/json" },
-            });
-          }
-        } catch (e: any) {
-          console.error("[Digital Gateway Fetch Error]:", e.message);
+        } else {
+          console.error("[Digital Gateway Error Response]:", dlData);
           return new Response(JSON.stringify({ 
-            error: "Error de comunicación con la pasarela de pagos. Por favor intenta de nuevo." 
+            error: dlData.message || "No se pudo generar la sesión de pago digital. Por favor intenta de nuevo." 
           }), {
             status: 502,
             headers: { "Content-Type": "application/json" },
           });
         }
-      } else {
+      } catch (e: any) {
+        console.error("[Digital Gateway Fetch Error]:", e.message);
         return new Response(JSON.stringify({ 
-          error: "Pasarela digital de pagos no configurada en este entorno." 
+          error: "Error de comunicación con la pasarela de pagos. Por favor intenta de nuevo." 
         }), {
-          status: 500,
+          status: 502,
           headers: { "Content-Type": "application/json" },
         });
       }
+    } else {
+      return new Response(JSON.stringify({ 
+        error: "Pasarela digital de pagos no configurada en este entorno." 
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
-
-    // Direct WhatsApp / Nequi / Bre-B Flow (Solo cuando el usuario selecciona explícitamente nequi_breb)
-    const waText = encodeURIComponent(
-      `🌕 *RESERVA NOCHE DE LUNA LLENA — THE CORSET SOCIETY*\n\n` +
-      `👤 *Alias/Nombre:* ${alias_nombre}\n` +
-      `🎟️ *Entrada:* ${priceInfo.label}\n` +
-      `💵 *Modalidad:* ${modalidad_pago === "reserva_40" ? "Separación 40% ($" + monto.toLocaleString("es-CO") + ")" : "Pago Total ($" + monto.toLocaleString("es-CO") + ")"}\n` +
-      `🔐 *Ticket Hash:* ${ticketHash}\n\n` +
-      `Deseo coordinar el pago directo vía Nequi / Bre-B con la atención oficial.`
-    );
-    const waUrl = `https://wa.me/573194194785?text=${waText}`;
-    // Despacho de notificación multi-canal (QR email + WhatsApp) para la reserva directa
-    let userAffCode: string | undefined = undefined;
-    try {
-      const { ensureAffiliateCode } = await import("../../../db");
-      userAffCode = await ensureAffiliateCode(alias_nombre || "embajador", whatsapp, email);
-    } catch (_) {}
-
-    import("../../../services/notifications").then(({ notifyEventReservation, notifyAmbassadorNewReferral }) => {
-      notifyEventReservation(
-        {
-          evento: "luna_llena",
-          ticket_hash: ticketHash,
-        },
-        {
-          alias_nombre,
-          whatsapp,
-          email,
-        },
-        {
-          isNewLead: leadResult.status === "created",
-          affiliateCode: userAffCode || undefined,
-        }
-      ).catch((nErr) => console.error("[Checkout Direct Reservation Notify Err]:", nErr));
-
-      if (affiliateRef) {
-        import("../../../db").then(({ pool }) => {
-          pool.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [affiliateRef])
-            .then((ambRes) => {
-              if (ambRes.rows.length > 0) {
-                notifyAmbassadorNewReferral(ambRes.rows[0], { alias_nombre, email }).catch(() => {});
-              }
-            })
-            .catch(() => {});
-        });
-      }
-    });
-
-    return new Response(JSON.stringify({ success: true, redirect_url: waUrl, ticketHash }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
   } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,

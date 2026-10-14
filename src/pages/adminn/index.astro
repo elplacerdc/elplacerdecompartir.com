@@ -1156,11 +1156,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
         const data = await res.json();
         if (data.success) {
           if (row) row.remove();
-          if (cachedMetrics?.leads) {
-            cachedMetrics.leads = cachedMetrics.leads.filter((l: any) => l.id !== id);
-            cachedMetrics.counts.totalLeads = Math.max(0, (cachedMetrics.counts.totalLeads || 1) - 1);
-            if (kpiLeads) kpiLeads.textContent = cachedMetrics.counts.totalLeads.toString();
-          }
+          await loadMetrics();
         } else {
           alert(data.error || "No se pudo eliminar el registro");
           if (row) {

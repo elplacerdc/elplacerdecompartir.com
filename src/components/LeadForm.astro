@@ -405,50 +405,85 @@ const {
           const isMailVerified = Boolean(existing.email_verified || (existing as any).metadata?.email_verified);
 
           if (isWaVerified && isMailVerified) {
-            if (!existing.corset_vip) {
-              fetch("/api/leads/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  alias_nombre: existing.alias_nombre,
-                  whatsapp: whatsapp,
-                  email: existing.email,
-                  rol: existing.rol || "pareja",
-                  ciudad: existing.ciudad || "Bogotá",
-                  origen: "web_corset",
-                  corset_vip: true,
-                  verified: true,
-                  whatsapp_verified: true,
-                  email_verified: true,
-                  ref: localStorage.getItem("affiliate_ref") || undefined,
-                }),
-              }).catch(() => {});
+            if (existing.corset_vip) {
+              const hasAffiliateRef = Boolean(localStorage.getItem("affiliate_ref") || document.cookie.includes("affiliate_ref"));
+              const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($159.000 COP) (-20% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
+
+              leadExistingBox.innerHTML = `
+                <div class="p-5 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
+                  <div class="text-[#81c784] font-serif font-bold text-sm flex items-center gap-1.5">
+                    <span>✓</span> Postulación Radicada con Éxito
+                  </div>
+                  <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
+                    Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> está radicada con éxito. Tus credenciales oficiales (WhatsApp <span class="font-mono text-[#ead397]">${whatsapp}</span> y correo <span class="font-mono text-[#ead397]">${existing.email || ""}</span>) se encuentran verificadas.
+                  </p>
+                  <div class="pt-2 flex flex-col gap-2">
+                    <a href="/corset-vip#vip-checkout-box" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
+                      ${vipPriceLabel}
+                    </a>
+                    <a href="/dashboard" class="w-full py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
+                      Ir al Panel de Embajador →
+                    </a>
+                  </div>
+                </div>
+              `;
+              leadExistingBox.classList.remove("hidden");
+              leadRemainingFields.classList.add("hidden");
+              return;
+            } else {
+              // Lead verificado en la comunidad pero que aún NO ha solicitado admisión a The Corset Society
+              leadExistingBox.innerHTML = `
+                <div class="p-5 bg-[#140816] rounded-2xl border border-[#c5a059]/50 text-xs space-y-4">
+                  <div class="text-[#ead397] font-serif font-bold text-sm flex items-center gap-1.5">
+                    <span>💎</span> Solicitud de Admisión — The Corset Society
+                  </div>
+                  <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
+                    Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tus canales oficiales ya se encuentran verificados. Para radicar tu postulación formal a <strong>The Corset Society</strong>:
+                  </p>
+                  <button 
+                    type="button" 
+                    id="btn-apply-corset-vip-verified"
+                    class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md cursor-pointer transition-all"
+                  >
+                    Radicar Postulación a The Corset Society →
+                  </button>
+                </div>
+              `;
+              leadExistingBox.classList.remove("hidden");
+              leadRemainingFields.classList.add("hidden");
+
+              document.getElementById("btn-apply-corset-vip-verified")?.addEventListener("click", async () => {
+                const btn = document.getElementById("btn-apply-corset-vip-verified") as HTMLButtonElement | null;
+                if (btn) {
+                  btn.disabled = true;
+                  btn.textContent = "Radicando postulación...";
+                }
+                try {
+                  const regRes = await fetch("/api/leads/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      alias_nombre: existing.alias_nombre,
+                      whatsapp: whatsapp,
+                      email: existing.email,
+                      rol: existing.rol || "pareja",
+                      ciudad: existing.ciudad || "Bogotá",
+                      origen: "web_corset",
+                      corset_vip: true,
+                      verified: true,
+                      whatsapp_verified: true,
+                      email_verified: true,
+                      ref: localStorage.getItem("affiliate_ref") || undefined,
+                    }),
+                  });
+                  const regData = await regRes.json();
+                  if (regData.success) {
+                    window.location.reload();
+                  }
+                } catch (_) {}
+              });
+              return;
             }
-
-            const hasAffiliateRef = Boolean(localStorage.getItem("affiliate_ref") || document.cookie.includes("affiliate_ref"));
-            const vipPriceLabel = hasAffiliateRef ? "Adquirir Membresía Anual VIP ($159.000 COP) (-20% Embajador) →" : "Adquirir Membresía Anual VIP ($199.000 COP) →";
-
-            leadExistingBox.innerHTML = `
-              <div class="p-5 bg-[#2e7d32]/20 border border-[#81c784]/40 rounded-2xl text-xs space-y-3">
-                <div class="text-[#81c784] font-serif font-bold text-sm flex items-center gap-1.5">
-                  <span>✓</span> Postulación Radicada con Éxito
-                </div>
-                <p class="text-[#f7f4ee]/90 text-xs leading-relaxed">
-                  Hola <strong class="text-[#ead397]">${existing.alias_nombre || "Miembro"}</strong>, tu postulación a <strong>The Corset Society</strong> está radicada con éxito. Tus credenciales oficiales (WhatsApp <span class="font-mono text-[#ead397]">${whatsapp}</span> y correo <span class="font-mono text-[#ead397]">${existing.email || ""}</span>) se encuentran verificadas.
-                </p>
-                <div class="pt-2 flex flex-col gap-2">
-                  <a href="/corset-vip#vip-checkout-box" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-center font-serif font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md">
-                    ${vipPriceLabel}
-                  </a>
-                  <a href="/dashboard" class="w-full py-2.5 px-4 rounded-xl border border-[#c5a059]/40 text-[#ead397] text-center font-bold text-xs uppercase tracking-wider hover:bg-[#c5a059]/10">
-                    Ir al Panel de Embajador →
-                  </a>
-                </div>
-              </div>
-            `;
-            leadExistingBox.classList.remove("hidden");
-            leadRemainingFields.classList.add("hidden");
-            return;
           }
 
           // Lead existente que tiene WhatsApp verificado pero falta verificar correo electrónico (Paso 2 secuencial obligatorio):
