@@ -160,11 +160,6 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
           cleanRef = myReferredBy || 'segisw';
         }
 
-        // Si el usuario ya está registrado bajo un embajador en la comunidad, preservar su referidor sellado
-        if (myReferredBy && myAlias && cleanRef && cleanRef !== myReferredBy) {
-          cleanRef = myReferredBy;
-        }
-
         if (!cleanRef) {
           const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
           if (match) cleanRef = decodeURIComponent(match[1]).trim().toLowerCase();
@@ -172,13 +167,13 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
         if (!cleanRef) {
           cleanRef = localStorage.getItem('affiliate_ref');
         }
+        // Fallback orgánico al Embajador Padre si entra directo a la web
+        if (!cleanRef && myReferredBy) {
+          cleanRef = myReferredBy;
+        }
 
         if (cleanRef && myAlias && cleanRef === myAlias) {
           cleanRef = myReferredBy || 'segisw';
-        }
-
-        if (myReferredBy && myAlias && cleanRef && cleanRef !== myReferredBy) {
-          cleanRef = myReferredBy;
         }
 
         if (cleanRef) {

@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
           const cleanEmail = (email || "").toString().trim().toLowerCase();
           const cleanAlias = (alias_nombre || "").toString().trim().toLowerCase();
 
-          // 1. Si el usuario ya existe en leads y tiene un afiliado_id registrado, ese referidor está sellado
+          // 1. Resolver Embajador Padre para fallback orgánico si no viene enlace en la compra
           const existingLeadRes = await clientRef.query(
             `SELECT afiliado_id FROM leads 
              WHERE (email IS NOT NULL AND LOWER(email) = $1)
@@ -66,23 +66,26 @@ export const POST: APIRoute = async ({ request, cookies }) => {
              LIMIT 1`,
             [cleanEmail, last10]
           );
-          if (existingLeadRes.rows.length > 0 && existingLeadRes.rows[0].afiliado_id) {
-            affiliateRef = existingLeadRes.rows[0].afiliado_id.toLowerCase();
-          } else {
-            // 2. Si no tiene referidor sellado, verificar que no sea auto-referido contra la tabla de afiliados
-            if (affiliateRef) {
-              const selfAff = await clientRef.query(
-                `SELECT alias FROM afiliados 
-                 WHERE LOWER(alias) = LOWER($1)
-                   AND ((email IS NOT NULL AND LOWER(email) = $2)
-                        OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $3)
-                        OR (nombre IS NOT NULL AND LOWER(nombre) = $4))
-                 LIMIT 1`,
-                [affiliateRef, cleanEmail, last10, cleanAlias]
-              );
-              if (selfAff.rows.length > 0 || (cleanAlias && affiliateRef === cleanAlias)) {
-                affiliateRef = null;
-              }
+          const parentAffiliate = (existingLeadRes.rows[0]?.afiliado_id || "").toString().trim().toLowerCase() || null;
+
+          // Si la compra no trae enlace de último clic, fallback al Embajador Padre (LTV)
+          if (!affiliateRef && parentAffiliate) {
+            affiliateRef = parentAffiliate;
+          }
+
+          // 2. Anti auto-referido estricto contra la tabla de afiliados
+          if (affiliateRef) {
+            const selfAff = await clientRef.query(
+              `SELECT alias FROM afiliados 
+               WHERE LOWER(alias) = LOWER($1)
+                 AND ((email IS NOT NULL AND LOWER(email) = $2)
+                      OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $3)
+                      OR (nombre IS NOT NULL AND LOWER(nombre) = $4))
+               LIMIT 1`,
+              [affiliateRef, cleanEmail, last10, cleanAlias]
+            );
+            if (selfAff.rows.length > 0 || (cleanAlias && affiliateRef === cleanAlias)) {
+              affiliateRef = (parentAffiliate && parentAffiliate !== affiliateRef) ? parentAffiliate : null;
             }
           }
         } finally {

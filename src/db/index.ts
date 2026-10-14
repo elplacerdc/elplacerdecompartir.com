@@ -455,30 +455,54 @@ export function maskEmail(email: string | null): string {
   return `${user[0]}****${user[user.length - 1]}@${domain}`;
 }
 
-export async function recordAffiliatePayment(affiliateAlias: string, leadId?: string): Promise<{ success: boolean; credited: boolean }> {
+export async function recordAffiliatePayment(
+  affiliateAlias?: string | null,
+  leadId?: string | null,
+  eventTicketId?: string | null
+): Promise<{ success: boolean; credited: boolean; creditedAlias?: string | null; isDebut?: boolean }> {
   const client = await pool.connect();
   try {
-    const cleanAlias = affiliateAlias.trim().toLowerCase();
+    const cleanAlias = (affiliateAlias || "").trim().toLowerCase();
+    let isDebut = false;
+    let targetAlias = cleanAlias;
 
-    // 1. Antifraude / Regla de acreditación única: sólo la primera compra real del lead suma al embajador
     if (leadId) {
-      const leadCheck = await client.query("SELECT primer_pago_acreditado FROM leads WHERE id::text = $1", [leadId]);
-      if (leadCheck.rows[0]?.primer_pago_acreditado) {
-        // Ya fue acreditado por una compra previa. Ignorar compras subsecuentes de forma silenciosa
-        return { success: true, credited: false };
+      const leadRes = await client.query(
+        "SELECT id, afiliado_id, primer_pago_acreditado FROM leads WHERE id::text = $1",
+        [leadId]
+      );
+      if (leadRes.rows.length > 0) {
+        const lead = leadRes.rows[0];
+        const parentAlias = (lead.afiliado_id || "").trim().toLowerCase();
+
+        if (!lead.primer_pago_acreditado) {
+          // 1. Debut (Primera compra histórica): Acredita SIEMPRE al Embajador Padre
+          isDebut = true;
+          targetAlias = parentAlias || cleanAlias;
+          await client.query(
+            "UPDATE leads SET primer_pago_acreditado = true, updated_at = NOW() WHERE id::text = $1",
+            [leadId]
+          );
+        } else {
+          // 2. Recompra (Compras subsecuentes): Acredita al Último Clic, con fallback al Padre si entra orgánico
+          isDebut = false;
+          targetAlias = cleanAlias || parentAlias;
+        }
       }
-      // Marcar primer pago acreditado de forma atómica
-      await client.query("UPDATE leads SET primer_pago_acreditado = true, updated_at = NOW() WHERE id::text = $1", [leadId]);
     }
 
-    // 2. Acreditar venta al embajador con tope de 3 entradas gratuitas
+    if (!targetAlias) {
+      return { success: true, credited: false, creditedAlias: null, isDebut };
+    }
+
+    // 3. Acreditar venta al embajador objetivo con tope de 3 entradas gratuitas
     const res = await client.query(
       `UPDATE afiliados 
        SET referidos_pagados = referidos_pagados + 1,
            entradas_ganadas = LEAST(3, FLOOR((referidos_pagados + 1) / 3))
        WHERE LOWER(alias) = $1
        RETURNING *`,
-      [cleanAlias]
+      [targetAlias]
     );
 
     if (res.rowCount && res.rowCount > 0) {
@@ -486,7 +510,15 @@ export async function recordAffiliatePayment(affiliateAlias: string, leadId?: st
       const purchases = updatedRow.referidos_pagados || 0;
       const tickets = updatedRow.entradas_ganadas || 0;
 
-      // 3. Disparo de multi-mensajería al embajador (WhatsApp + Email)
+      // Si se suministra eventTicketId, persistir en el ticket el embajador acreditado final
+      if (eventTicketId) {
+        await client.query(
+          "UPDATE event_tickets SET afiliado_ref = $1 WHERE id::text = $2",
+          [targetAlias, eventTicketId]
+        );
+      }
+
+      // 4. Disparo de multi-mensajería al embajador (WhatsApp + Email)
       import("../services/notifications").then(({ notifyAmbassadorSaleAcredited, notifyAmbassadorFreeTicketWon }) => {
         notifyAmbassadorSaleAcredited(
           { alias: updatedRow.alias, nombre: updatedRow.nombre, whatsapp: updatedRow.whatsapp, email: updatedRow.email },
@@ -503,10 +535,10 @@ export async function recordAffiliatePayment(affiliateAlias: string, leadId?: st
         }
       }).catch((e) => console.error("[Import Notifications Err]:", e));
 
-      return { success: true, credited: true };
+      return { success: true, credited: true, creditedAlias: targetAlias, isDebut };
     }
 
-    return { success: false, credited: false };
+    return { success: false, credited: false, creditedAlias: targetAlias, isDebut };
   } finally {
     client.release();
   }

@@ -59,7 +59,7 @@ export const POST: APIRoute = async ({ request }) => {
             if (isTotalPayment) {
               try {
                 const { recordAffiliatePayment } = await import("../../../db");
-                await recordAffiliatePayment(ticket.afiliado_ref, ticket.lead_id);
+                await recordAffiliatePayment(ticket.afiliado_ref, ticket.lead_id, ticket.id);
               } catch (affErr) {
                 console.error("[Affiliate Credit Err]:", affErr);
               }

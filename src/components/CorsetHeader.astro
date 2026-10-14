@@ -172,7 +172,7 @@ try {
   </div>
 </header>
 
-<script>
+<script is:inline>
   const toggleBtn = document.getElementById("corset-menu-toggle");
   const mobilePanel = document.getElementById("corset-mobile-panel");
   const iconBurger = document.getElementById("corset-icon-burger");
@@ -208,7 +208,7 @@ try {
       if (match) ref = decodeURIComponent(match[1]).trim().toLowerCase();
     }
 
-    function applyHeaderPrice(priceK: string) {
+    function applyHeaderPrice(priceK) {
       document.querySelectorAll(".corset-vip-price-tag").forEach(el => {
         el.textContent = `(${priceK})`;
       });
