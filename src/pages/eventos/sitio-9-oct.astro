@@ -381,7 +381,15 @@ import Layout from "../../layouts/Layout.astro";
   });
 
   // Auto-verificar si el usuario ya tiene sesión con WhatsApp en el navegador
-  const activeSessionPhone = localStorage.getItem("ambassador_session_phone");
+  let storedProfile: any = null;
+  try {
+    const raw = localStorage.getItem("user_profile");
+    if (raw) storedProfile = JSON.parse(raw);
+  } catch (_) {}
+
+  const activeSessionPhone = localStorage.getItem("ambassador_session_phone") || 
+                             localStorage.getItem("user_phone") || 
+                             storedProfile?.whatsapp;
   if (activeSessionPhone) {
     inputWhatsapp.value = activeSessionPhone;
     waVerified = true;

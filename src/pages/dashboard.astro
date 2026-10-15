@@ -821,13 +821,32 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
       if (data.success) {
         if (profileFeedback) {
           profileFeedback.className = "text-xs p-3 rounded-lg bg-[#2e7d32]/20 border border-[#81c784]/40 text-[#81c784] block";
-          profileFeedback.textContent = "✓ Perfil actualizado exitosamente. Tus modalidades y entradas a eventos han sido sincronizadas.";
+          profileFeedback.textContent = "✓ Perfil actualizado exitosamente. Tus modalidades y datos han sido sincronizados.";
         }
-        if (data.lead?.rol) {
-          localStorage.setItem("user_role", data.lead.rol);
-        }
+        const updatedLead = data.lead || {};
+        const newAlias = updatedLead.alias_nombre || profileAliasInput?.value.trim() || currentAlias;
+        const newPhone = updatedLead.whatsapp || profileWaInput?.value.trim() || sessionIdentifier;
+        const newEmail = updatedLead.email || profileEmailInput?.value.trim() || "";
+        const newRol = updatedLead.rol || profileRolSelect?.value || "";
+        const newCiudad = updatedLead.ciudad || profileCiudadSelect?.value || "";
+
+        const updatedProfile = {
+          alias: currentAlias,
+          alias_nombre: newAlias,
+          whatsapp: newPhone,
+          email: newEmail,
+          rol: newRol,
+          ciudad: newCiudad,
+        };
+        localStorage.setItem("user_profile", JSON.stringify(updatedProfile));
+        localStorage.setItem("user_phone", newPhone);
+        localStorage.setItem("ambassador_session_phone", newPhone);
+        if (newAlias) localStorage.setItem("user_alias", newAlias);
+        if (newEmail) localStorage.setItem("user_email", newEmail);
+        if (newRol) localStorage.setItem("user_role", newRol);
+
         if (ambassadorName) {
-          ambassadorName.textContent = currentAlias ? `@${currentAlias}` : (data.lead?.alias_nombre ? `@${data.lead.alias_nombre}` : "");
+          ambassadorName.textContent = currentAlias ? `@${currentAlias}` : (newAlias ? `@${newAlias}` : "");
         }
       } else {
         if (profileFeedback) {
@@ -865,7 +884,7 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
 
   // 30s Polling only when document is visible
   setInterval(() => {
-    if (document.visibilityState === "visible" && localStorage.getItem("ambassador_session_phone")) {
+    if (document.visibilityState === "visible" && (localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone"))) {
       loadDashboard();
     }
   }, 30000);
@@ -873,6 +892,13 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
   // Logout
   btnLogout?.addEventListener("click", () => {
     localStorage.removeItem("ambassador_session_phone");
+    localStorage.removeItem("user_profile");
+    localStorage.removeItem("user_phone");
+    localStorage.removeItem("user_alias");
+    localStorage.removeItem("user_email");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("user_vip_status");
+    localStorage.removeItem("user_referred_by");
     window.location.reload();
   });
 

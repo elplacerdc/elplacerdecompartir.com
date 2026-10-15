@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { upsertLead } from "../../../db";
+import { upsertLead, ensureAffiliateCode } from "../../../db";
 import { notifyNewAlliance } from "../../../services/notifications";
 import { verifyOTP } from "../../../services/evolution";
 import { addSubscriber } from "../../../services/listmonk";

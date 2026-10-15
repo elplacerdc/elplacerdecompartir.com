@@ -740,30 +740,35 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
         if (raw) userProfile = JSON.parse(raw);
       } catch (_) {}
 
-      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
-      const aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
-      const emailVal = userProfile?.email || localStorage.getItem("user_email");
-      const phoneVal = userProfile?.whatsapp || sessionPhone;
+      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone") || userProfile?.whatsapp;
+      let aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
+      let emailVal = userProfile?.email || localStorage.getItem("user_email");
+      let phoneVal = sessionPhone;
 
-      const inputAlias = document.getElementById("alias_nombre");
-      const inputPhone = document.getElementById("whatsapp");
-      const inputEmail = document.getElementById("email");
+      const inputAlias = document.getElementById("alias_nombre") as HTMLInputElement | null;
+      const inputPhone = document.getElementById("whatsapp") as HTMLInputElement | null;
+      const inputEmail = document.getElementById("email") as HTMLInputElement | null;
       const noticeBanner = document.getElementById("prefilled-profile-notice");
 
-      function lockReadOnly(el) {
+      function lockReadOnly(el: HTMLInputElement | null) {
         if (!el || !el.value) return;
         el.readOnly = true;
         el.classList.add("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
         el.title = "Dato vinculado a tu cuenta oficial. Para modificarlo haz clic en 'Editar mi Perfil'.";
       }
 
-      if (inputAlias && aliasVal && !inputAlias.value) inputAlias.value = aliasVal;
-      if (inputPhone && phoneVal && !inputPhone.value) inputPhone.value = phoneVal;
-      if (inputEmail && emailVal && !inputEmail.value) inputEmail.value = emailVal;
-
-      if (aliasVal) lockReadOnly(inputAlias);
-      if (phoneVal) lockReadOnly(inputPhone);
-      if (emailVal) lockReadOnly(inputEmail);
+      if (inputAlias && aliasVal) {
+        inputAlias.value = aliasVal;
+        lockReadOnly(inputAlias);
+      }
+      if (inputPhone && phoneVal) {
+        inputPhone.value = phoneVal;
+        lockReadOnly(inputPhone);
+      }
+      if (inputEmail && emailVal) {
+        inputEmail.value = emailVal;
+        lockReadOnly(inputEmail);
+      }
 
       if (aliasVal || phoneVal || emailVal) {
         if (noticeBanner) noticeBanner.classList.remove("hidden");
@@ -780,25 +785,52 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
           if (data.exists && data.lead) {
             const lead = data.lead;
             if (lead.alias_nombre) {
+              aliasVal = lead.alias_nombre;
               localStorage.setItem("user_alias", lead.alias_nombre);
-              if (inputAlias && !inputAlias.value) inputAlias.value = lead.alias_nombre;
-              lockReadOnly(inputAlias);
+              if (inputAlias) {
+                inputAlias.value = lead.alias_nombre;
+                lockReadOnly(inputAlias);
+              }
             }
             if (lead.email) {
+              emailVal = lead.email;
               localStorage.setItem("user_email", lead.email);
-              if (inputEmail && !inputEmail.value) inputEmail.value = lead.email;
-              lockReadOnly(inputEmail);
+              if (inputEmail) {
+                inputEmail.value = lead.email;
+                lockReadOnly(inputEmail);
+              }
             }
             if (lead.whatsapp) {
+              phoneVal = lead.whatsapp;
               localStorage.setItem("user_phone", lead.whatsapp);
-              if (inputPhone && !inputPhone.value) inputPhone.value = lead.whatsapp;
-              lockReadOnly(inputPhone);
+              if (inputPhone) {
+                inputPhone.value = lead.whatsapp;
+                lockReadOnly(inputPhone);
+              }
             }
+            localStorage.setItem("user_profile", JSON.stringify({
+              alias: lead.affiliate_code || aliasVal,
+              alias_nombre: aliasVal,
+              whatsapp: phoneVal,
+              email: emailVal || "",
+              rol: lead.rol || "pareja",
+              ciudad: lead.ciudad || "Bogotá",
+              referredBy: lead.referred_by || null,
+            }));
             if (noticeBanner) noticeBanner.classList.remove("hidden");
           }
         } catch (_) {}
       }
     }
+
+    // Exponer funciones globales para onclick en HTML
+    (window as any).selectTierAndScroll = selectTierAndScroll;
+    (window as any).selectTier = selectTier;
+    (window as any).updateSummary = updateSummary;
+    (window as any).submitCheckout = submitCheckout;
+
+    document.getElementById("card-taller_solo")?.addEventListener("click", () => selectTierAndScroll("taller_solo"));
+    document.getElementById("card-taller_velada")?.addEventListener("click", () => selectTierAndScroll("taller_velada"));
 
     async function submitCheckout(metodo) {
       const msg = document.getElementById("checkoutMsg");

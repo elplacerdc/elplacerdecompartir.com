@@ -110,9 +110,9 @@ const initialPct = isVipRefSsr ? "20%" : "10%";
           const idInput = form.querySelector('input[name="userId"]');
 
           if (phone && phoneInput) phoneInput.value = phone;
-          if (email && emailInput && (!emailInput.value || emailInput.value.includes("contacto@"))) emailInput.value = email;
-          if (alias && nameInput && (!nameInput.value || nameInput.value.includes("Invitado VIP"))) nameInput.value = alias;
-          if (phone && idInput && (!idInput.value || idInput.value.startsWith("guest_"))) idInput.value = phone;
+          if (email && emailInput) emailInput.value = email;
+          if (alias && nameInput) nameInput.value = alias;
+          if (phone && idInput) idInput.value = phone;
         }
       } catch (_) {}
 

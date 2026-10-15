@@ -388,17 +388,36 @@ const {
         const xMsg = encodeURIComponent(`Te invito a conocer El Placer de Compartir y The Corset Society: ${shareUrl}`);
 
         // Pre-llenar campos existentes en memoria
-        if (inputAlias) inputAlias.value = existing.alias_nombre || "";
+        if (inputAlias && existing.alias_nombre) inputAlias.value = existing.alias_nombre;
         if (inputEmail && existing.email) {
           inputEmail.value = existing.email;
-          if (isVip && existing.metadata?.email_verified) {
+          if (isVip && (existing.email_verified || existing.metadata?.email_verified)) {
             emailVerified = true;
             emailVerifiedBadge?.classList.remove("hidden");
             btnSendEmailOtp?.classList.add("hidden");
           }
         }
-        if (inputRol && existing.rol) inputRol.value = existing.rol;
+        if (inputRol && existing.rol) {
+          inputRol.value = existing.rol;
+          updateLeadAliasPlaceholder(existing.rol);
+        }
         if (inputCiudad && existing.ciudad) inputCiudad.value = existing.ciudad;
+
+        // Persistir sesión de usuario de forma íntegra
+        localStorage.setItem("ambassador_session_phone", whatsapp);
+        localStorage.setItem("user_phone", whatsapp);
+        if (existing.alias_nombre) localStorage.setItem("user_alias", existing.alias_nombre);
+        if (existing.email) localStorage.setItem("user_email", existing.email);
+        if (existing.rol) localStorage.setItem("user_role", existing.rol);
+        localStorage.setItem("user_profile", JSON.stringify({
+          alias: existing.affiliate_code || existing.alias_nombre,
+          alias_nombre: existing.alias_nombre,
+          whatsapp: whatsapp,
+          email: existing.email || "",
+          rol: existing.rol || "pareja",
+          ciudad: existing.ciudad || "Bogotá",
+          referredBy: existing.referred_by || null,
+        }));
 
         if (isVip) {
           // Si ya es VIP con credencial anual activa
@@ -708,6 +727,9 @@ const {
             <a href="/dashboard" class="px-4 py-2 rounded-lg bg-[#c5a059] text-[#0a0608] text-xs font-bold uppercase tracking-wider hover:bg-[#ead397] transition-all">
               Ir a mi Panel de Embajador →
             </a>
+            <a href="/dashboard#section-profile-settings" class="px-4 py-2 rounded-lg border border-[#c5a059]/40 text-[#ead397] hover:bg-[#c5a059]/10 text-xs font-bold uppercase tracking-wider transition-all">
+              Editar mi Perfil ⚙️
+            </a>
             <a href="https://wa.me/?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="px-3.5 py-2 rounded-lg bg-[#2e7d32] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#388e3c] transition-all">
               Compartir por WhatsApp
             </a>
@@ -771,8 +793,29 @@ const {
     }
   });
 
-  // Auto-verificar si el usuario ya tiene sesión iniciada con WhatsApp
-  const activeSessionPhone = localStorage.getItem("ambassador_session_phone");
+  // Auto-verificar si el usuario ya tiene sesión iniciada con WhatsApp o perfil guardado
+  let storedProfile: any = null;
+  try {
+    const raw = localStorage.getItem("user_profile");
+    if (raw) storedProfile = JSON.parse(raw);
+  } catch (_) {}
+
+  const activeSessionPhone = localStorage.getItem("ambassador_session_phone") || 
+                             localStorage.getItem("user_phone") || 
+                             storedProfile?.whatsapp;
+  const activeSessionAlias = storedProfile?.alias_nombre || localStorage.getItem("user_alias");
+  const activeSessionEmail = storedProfile?.email || localStorage.getItem("user_email");
+  const activeSessionRol = storedProfile?.rol || localStorage.getItem("user_role");
+  const activeSessionCiudad = storedProfile?.ciudad;
+
+  if (activeSessionAlias && inputAlias) inputAlias.value = activeSessionAlias;
+  if (activeSessionEmail && inputEmail) inputEmail.value = activeSessionEmail;
+  if (activeSessionRol && inputRol) {
+    inputRol.value = activeSessionRol;
+    updateLeadAliasPlaceholder(activeSessionRol);
+  }
+  if (activeSessionCiudad && inputCiudad) inputCiudad.value = activeSessionCiudad;
+
   if (activeSessionPhone) {
     inputWhatsapp.value = activeSessionPhone;
     waVerified = true;

@@ -1690,11 +1690,16 @@ const isAuthenticated = verifyAdminSessionToken(token);
       if (drawerBadge) drawerBadge.textContent = "Solicitudes & Alianzas Culturales";
       const filteredLeads = (cachedMetrics.leads || []).filter((l: any) => {
         const org = (l.origen || "").toLowerCase();
-        return org.includes("aliado") || org.includes("alianza") || org.includes("centro_cultural");
+        const tags = Array.isArray(l.metadata?.tags) ? l.metadata.tags : [];
+        const channels = Array.isArray(l.metadata?.registered_channels) ? l.metadata.registered_channels : [];
+        return org.includes("aliado") || org.includes("alianza") || org.includes("centro_cultural") ||
+               tags.includes("alianzas") || tags.includes("alianza") || channels.includes("centro_cultural") ||
+               Boolean(l.metadata?.tipo_alianza);
       }).filter((l: any) => 
         (l.alias_nombre || "").toLowerCase().includes(filter) ||
         (l.whatsapp || "").toLowerCase().includes(filter) ||
-        (l.email || "").toLowerCase().includes(filter)
+        (l.email || "").toLowerCase().includes(filter) ||
+        (l.metadata?.tipo_alianza || "").toLowerCase().includes(filter)
       );
 
       if (drawerTitle) drawerTitle.textContent = `Solicitudes Aliados (${filteredLeads.length})`;
@@ -1704,9 +1709,13 @@ const isAuthenticated = verifyAdminSessionToken(token);
           ${filteredLeads.length === 0 ? '<p class="text-xs text-[#f7f4ee]/40 text-center py-4">No hay solicitudes de aliados registradas.</p>' : filteredLeads.map((l: any) => `
             <div class="p-4 rounded-2xl bg-[#250e29] border border-[#c5a059]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div class="space-y-1">
-                <div class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Aliado"}</div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-bold text-[#ead397] text-sm">${l.alias_nombre || "Aliado"}</span>
+                  ${l.metadata?.tipo_alianza ? `<span class="px-2 py-0.5 rounded-full bg-[#c5a059]/20 text-[#ead397] text-[10px] font-bold border border-[#c5a059]/40 uppercase">${l.metadata.tipo_alianza.replace(/_/g, ' ')}</span>` : ''}
+                </div>
                 <div class="text-xs text-[#f7f4ee]/80 font-mono">WA: ${l.whatsapp || "—"} | Email: ${l.email || "—"}</div>
                 <div class="text-[11px] text-[#f7f4ee]/60">Origen: <strong class="text-[#ead397]">${l.origen || "aliado"}</strong> • Ciudad: ${l.ciudad || "Bogotá"}</div>
+                ${l.metadata?.propuesta_detalle ? `<div class="text-xs text-[#f7f4ee]/90 bg-[#140816] p-2 rounded-lg border border-[#c5a059]/20 mt-1.5"><strong class="text-[#c5a059]">Propuesta:</strong> "${l.metadata.propuesta_detalle}"</div>` : ''}
               </div>
               <div class="flex items-center gap-2 self-end sm:self-center">
                 <button type="button" class="btn-edit-lead-from-drawer px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0a050c] text-xs font-bold hover:brightness-110 shadow-sm" data-lead-id="${l.id}">

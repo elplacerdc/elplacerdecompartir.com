@@ -19,7 +19,13 @@ export const GET: APIRoute = async ({ cookies }) => {
     const aliadosCountRes = await client.query(`
       SELECT COUNT(*)::int AS count 
       FROM leads 
-      WHERE origen ILIKE '%alianza%' OR origen ILIKE '%aliado%' OR origen ILIKE '%centro_cultural%'
+      WHERE origen ILIKE '%alianza%' 
+         OR origen ILIKE '%aliado%' 
+         OR origen ILIKE '%centro_cultural%'
+         OR metadata->'tags' ? 'alianzas'
+         OR metadata->'tags' ? 'alianza'
+         OR metadata->>'tipo_alianza' IS NOT NULL
+         OR metadata->'registered_channels' ? 'centro_cultural'
     `);
     // VIP Breakdown: Posibles VIP (postulados) vs VIP Activo Pagado (anualidad activa o luna llena)
     const possibleVipCountRes = await client.query(`

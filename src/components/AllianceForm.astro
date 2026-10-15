@@ -32,6 +32,23 @@ const {
   <form id="alliance-form" class="space-y-5">
     <input type="hidden" name="origen" value="alianza_centro_cultural" />
 
+    <!-- Aviso de Datos Vinculados a Cuenta Oficial + Botón Editar Perfil -->
+    <div id="alliance-prefilled-notice" class="hidden mb-5 p-3.5 rounded-xl bg-[#140816] border border-[#c5a059]/40 text-xs font-sans text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🔒</span>
+        <div>
+          <span class="text-[#ead397] font-semibold block text-[11px]">Datos vinculados a tu cuenta oficial (<span id="alliance-session-alias">Miembro</span>)</span>
+          <span class="text-[#f7f4ee]/70 text-[10px]">Tus datos de contacto oficiales fueron cargados y verificados automáticamente.</span>
+        </div>
+      </div>
+      <a 
+        href="/dashboard#section-profile-settings" 
+        class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 inline-flex items-center gap-1"
+      >
+        <span>⚙️</span> Editar mi Perfil →
+      </a>
+    </div>
+
     <!-- Nombre / Organización / Marca -->
     <div>
       <label for="input-alliance-alias" class="block text-xs font-semibold uppercase tracking-wider text-[#c5a059] mb-2">
@@ -324,14 +341,84 @@ const {
     }
   });
 
-  // Auto-verificar WhatsApp si el usuario ya tiene sesión activa
-  const activeSessionPhone = localStorage.getItem("ambassador_session_phone");
-  if (activeSessionPhone) {
-    inputWhatsapp.value = activeSessionPhone;
-    waVerified = true;
-    waOtpBox?.classList.add("hidden");
-    btnSendWaOtp?.classList.add("hidden");
-    inputWhatsapp.readOnly = true;
-    waVerifiedBadge?.classList.remove("hidden");
+  // Hidratación Automática Inmutable del Usuario Activo
+  async function hydrateSessionAllianceFields() {
+    let userProfile: any = null;
+    try {
+      const raw = localStorage.getItem("user_profile");
+      if (raw) userProfile = JSON.parse(raw);
+    } catch (_) {}
+
+    const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone") || userProfile?.whatsapp || "";
+    let aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias") || "";
+    let emailVal = userProfile?.email || localStorage.getItem("user_email") || "";
+    let phoneVal = sessionPhone;
+
+    const noticeBanner = document.getElementById("alliance-prefilled-notice");
+    const sessionAliasSpan = document.getElementById("alliance-session-alias");
+
+    function lockReadOnly(el: HTMLInputElement | null) {
+      if (!el || !el.value) return;
+      el.readOnly = true;
+      el.classList.add("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
+      el.title = "Dato oficial vinculado a tu cuenta. Para modificarlo haz clic en 'Editar mi Perfil'.";
+    }
+
+    // Si hay teléfono de sesión pero falta alias o email, consultar el perfil al backend
+    if ((!aliasVal || !emailVal) && sessionPhone) {
+      try {
+        const res = await fetch("/api/leads/check", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ whatsapp: sessionPhone }),
+        });
+        const data = await res.json();
+        if (data.exists && data.lead) {
+          const lead = data.lead;
+          if (lead.alias_nombre && !aliasVal) aliasVal = lead.alias_nombre;
+          if (lead.email && !emailVal) emailVal = lead.email;
+          if (lead.whatsapp && !phoneVal) phoneVal = lead.whatsapp;
+          const updatedProfile = {
+            alias_nombre: aliasVal,
+            whatsapp: phoneVal,
+            email: emailVal,
+            rol: lead.rol || "pareja",
+            ciudad: lead.ciudad || "Bogotá",
+          };
+          localStorage.setItem("user_profile", JSON.stringify(updatedProfile));
+          if (aliasVal) localStorage.setItem("user_alias", aliasVal);
+          if (emailVal) localStorage.setItem("user_email", emailVal);
+          if (phoneVal) localStorage.setItem("user_phone", phoneVal);
+        }
+      } catch (_) {}
+    }
+
+    if (aliasVal && inputAlias) {
+      inputAlias.value = aliasVal;
+      lockReadOnly(inputAlias);
+    }
+    if (phoneVal && inputWhatsapp) {
+      inputWhatsapp.value = phoneVal;
+      lockReadOnly(inputWhatsapp);
+      waVerified = true;
+      waOtpBox?.classList.add("hidden");
+      btnSendWaOtp?.classList.add("hidden");
+      waVerifiedBadge?.classList.remove("hidden");
+    }
+    if (emailVal && inputEmail) {
+      inputEmail.value = emailVal;
+      lockReadOnly(inputEmail);
+    }
+
+    if (phoneVal || aliasVal) {
+      if (noticeBanner) noticeBanner.classList.remove("hidden");
+      if (sessionAliasSpan) sessionAliasSpan.textContent = aliasVal || "Miembro";
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", hydrateSessionAllianceFields);
+  } else {
+    hydrateSessionAllianceFields();
   }
 </script>
