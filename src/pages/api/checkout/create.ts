@@ -17,7 +17,7 @@ const EVENT_PRICES: Record<string, Record<string, EventTier>> = {
   },
   taller_baile_erotico: {
     taller_solo: { total: 40000, label: "Pase Solo Taller (Individual o Pareja)" },
-    taller_velada: { total: 120000, reserva: 60000, label: "Pase Taller + Velada VIP Centro Cultural (hasta 4am)" },
+    taller_velada: { total: 120000, reserva: 60000, label: "Pase Taller + Velada VIP Centro Cultural" },
   },
 };
 
@@ -230,7 +230,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (!isDigitalGateway) {
       // Manual coordination via WhatsApp (Bre-B, Nequi, Transferencia)
       const waTitle = evento === "taller_baile_erotico"
-        ? `💃 *COORDINACIÓN DE PAGO MANUAL — TALLER DE BAILE ERÓTICO — EL PLACER DE COMPARTIR*`
+        ? `💃 *COORDINACIÓN DE PAGO MANUAL — TALLER DE BAILE — EL PLACER DE COMPARTIR*`
         : `🌕 *COORDINACIÓN DE PAGO MANUAL — NOCHE DE LUNA LLENA — THE CORSET SOCIETY*`;
 
       const modLabel = modalidad_pago === "reserva_50"
@@ -305,9 +305,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       ? "https://api-sbx.dlocalgo.com/v1/payments" 
       : "https://api.dlocalgo.com/v1/payments";
 
+    // Sanitización estricta de términos restringidos por pasarelas (Compliance dLocal Go)
+    const cleanTierLabel = (priceInfo.label || "")
+      .replace(/er[oó]tico/gi, "")
+      .replace(/(\(hasta 4am\)|hasta 4am)/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
     const eventDesc = evento === "taller_baile_erotico"
-      ? `Taller Baile Erótico: ${priceInfo.label} (${modalidad_pago === "reserva_50" ? "Separación 50%" : "Pago Total"})`.slice(0, 95)
-      : `Cover Luna Llena: ${priceInfo.label} (${modalidad_pago === "reserva_40" ? "Separación 40%" : "Pago Total"})`.slice(0, 95);
+      ? `Taller de Baile: ${cleanTierLabel} (${modalidad_pago === "reserva_50" ? "Separacion 50%" : "Pago Total"})`.slice(0, 95)
+      : `Cover Cultural: ${cleanTierLabel} (${modalidad_pago === "reserva_40" ? "Separacion 40%" : "Pago Total"})`.slice(0, 95);
 
     const backUrl = evento === "taller_baile_erotico"
       ? "https://elplacerdecompartir.com/taller-baile-erotico/"

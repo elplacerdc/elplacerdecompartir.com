@@ -347,7 +347,7 @@ export const ALL: APIRoute = async ({ request, cookies }) => {
         }
 
         // Activación de credencial VIP con promoción Luna Llena SOLO si es pago completo o asistido
-        const isFullPaidOrAttended = !isCortesia && (tipoPago === "total" || tipoPago === "total_100" || data.estado === "asistido");
+        const isFullPaidOrAttended = !isCortesia && (tipoPago === "total" || tipoPago === "total_100" || tipoPago === "pago_total" || data.estado === "asistido");
         if (data.evento === "luna_llena" && isFullPaidOrAttended) {
           try {
             await client.query(`

@@ -623,7 +623,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
   let cachedMetrics: any = null;
   let activeDrawerType: "leads" | "affiliates" | "tickets" | "pending_cash" | "checkins" | null = null;
   let activeTagFilter = "todos";
-  let ticketsCategoryFilter: "todos" | "pagos" | "gratuitos" = "todos";
+  let ticketsCategoryFilter: "todos" | "pagos" | "gratuitos" | "pendientes" = "todos";
   let videoStream: MediaStream | null = null;
   let qrScanActive = false;
   let scanCooldown = false;
@@ -1800,26 +1800,30 @@ const isAuthenticated = verifyAdminSessionToken(token);
         if (drawerTitle) drawerTitle.textContent = `Asistencias Validadas (${list.length})`;
       } else {
         if (drawerBadge) drawerBadge.textContent = "Boletería & Pases";
-        const countPagos = list.filter((t: any) => t.categoria_pago === "pago").length;
-        const countGratis = list.filter((t: any) => t.categoria_pago === "gratuito").length;
-        if (drawerTitle) drawerTitle.textContent = `Pases Emitidos (${list.length} Total: ${countPagos} Pagos, ${countGratis} Cortesías)`;
+        const confirmedList = list.filter((t: any) => t.estado === "pagado" || t.estado === "confirmado" || t.estado === "confirmada" || t.estado === "asistido");
+        const countPagos = confirmedList.filter((t: any) => t.categoria_pago === "pago").length;
+        const countGratis = confirmedList.filter((t: any) => t.categoria_pago === "gratuito").length;
+        const countPendientes = list.filter((t: any) => t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion").length;
+        if (drawerTitle) drawerTitle.textContent = `Pases Emitidos (${confirmedList.length} Confirmados${countPendientes > 0 ? ` + ${countPendientes} en Proceso` : ''})`;
       }
 
       let tabsHtml = "";
       let eventsBreakdownHtml = "";
       if (type === "tickets") {
-        const countAll = list.length;
-        const countPagos = list.filter((t: any) => t.categoria_pago === "pago").length;
-        const countGratis = list.filter((t: any) => t.categoria_pago === "gratuito").length;
+        const confirmedList = list.filter((t: any) => t.estado === "pagado" || t.estado === "confirmado" || t.estado === "confirmada" || t.estado === "asistido");
+        const countAll = confirmedList.length;
+        const countPagos = confirmedList.filter((t: any) => t.categoria_pago === "pago").length;
+        const countGratis = confirmedList.filter((t: any) => t.categoria_pago === "gratuito").length;
+        const countPendientes = list.filter((t: any) => t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion").length;
 
-        // Temporal breakdowns
+        // Temporal breakdowns (calculados SOLO sobre pases reales confirmados/emitidos)
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000);
 
-        const countWeek = list.filter((t: any) => t.created_at && new Date(t.created_at) >= sevenDaysAgo).length;
-        const countMonth = list.filter((t: any) => t.created_at && new Date(t.created_at) >= thirtyDaysAgo).length;
-        const countWeekend = list.filter((t: any) => {
+        const countWeek = confirmedList.filter((t: any) => t.created_at && new Date(t.created_at) >= sevenDaysAgo).length;
+        const countMonth = confirmedList.filter((t: any) => t.created_at && new Date(t.created_at) >= thirtyDaysAgo).length;
+        const countWeekend = confirmedList.filter((t: any) => {
           if (!t.created_at) return false;
           const d = new Date(t.created_at);
           const day = d.getDay(); // 0: Sun, 5: Fri, 6: Sat
@@ -1893,21 +1897,28 @@ const isAuthenticated = verifyAdminSessionToken(token);
         `;
 
         if (ticketsCategoryFilter === "pagos") {
-          list = list.filter((t: any) => t.categoria_pago === "pago");
+          list = confirmedList.filter((t: any) => t.categoria_pago === "pago");
         } else if (ticketsCategoryFilter === "gratuitos") {
-          list = list.filter((t: any) => t.categoria_pago === "gratuito");
+          list = confirmedList.filter((t: any) => t.categoria_pago === "gratuito");
+        } else if (ticketsCategoryFilter === "pendientes") {
+          list = list.filter((t: any) => t.estado === "pendiente" || t.estado === "pendiente_efectivo" || t.estado === "pendiente_verificacion");
+        } else {
+          list = confirmedList;
         }
 
         tabsHtml = `
-          <div class="flex items-center gap-2 p-1 bg-[#140816] rounded-xl border border-[#c5a059]/30 mb-3 text-xs">
-            <button type="button" class="btn-ticket-tab flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'todos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="todos">
-              Todos (${countAll})
+          <div class="flex items-center gap-2 p-1 bg-[#140816] rounded-xl border border-[#c5a059]/30 mb-3 text-xs flex-wrap">
+            <button type="button" class="btn-ticket-tab flex-1 min-w-[100px] py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'todos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="todos">
+              Confirmados (${countAll})
             </button>
-            <button type="button" class="btn-ticket-tab flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'pagos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="pagos">
-              💰 Eventos Pagos (${countPagos})
+            <button type="button" class="btn-ticket-tab flex-1 min-w-[100px] py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'pagos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="pagos">
+              💰 Pagos (${countPagos})
             </button>
-            <button type="button" class="btn-ticket-tab flex-1 py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'gratuitos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="gratuitos">
-              🎁 Gratuitos / Cortesías (${countGratis})
+            <button type="button" class="btn-ticket-tab flex-1 min-w-[100px] py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'gratuitos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="gratuitos">
+              🎁 Cortesías (${countGratis})
+            </button>
+            <button type="button" class="btn-ticket-tab flex-1 min-w-[100px] py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'pendientes' ? 'bg-[#f57c00] text-white font-bold shadow-sm' : 'text-[#ffb74d] hover:bg-[#f57c00]/20'}" data-tab="pendientes">
+              ⏳ En Proceso (${countPendientes})
             </button>
           </div>
         `;
@@ -1984,7 +1995,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
       // Bind tabs
       drawerContent.querySelectorAll(".btn-ticket-tab").forEach((tabBtn) => {
         tabBtn.addEventListener("click", () => {
-          const tab = tabBtn.getAttribute("data-tab") as "todos" | "pagos" | "gratuitos";
+          const tab = tabBtn.getAttribute("data-tab") as "todos" | "pagos" | "gratuitos" | "pendientes";
           if (tab) {
             ticketsCategoryFilter = tab;
             renderDrawer(type);

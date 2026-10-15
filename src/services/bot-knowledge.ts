@@ -38,7 +38,7 @@ const STATIC_EVENTS: EventItem[] = [
     time: "7:30 P.M. (Llegada) • 8:00 P.M. (Inicio Taller) • Velada hasta las 4:00 A.M.",
     venue: "Centro Cultural El Placer DC (Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá)",
     description: "Clase y taller de Sensualidad, Expresión Corporal y Heels Dance para todo público de mente abierta sin importar su inclinación. Entrada para solos y parejas al mismo costo.",
-    pricing: "Pase Solo Taller: $40.000 COP (pago completo únicamente) | Pase Taller + Velada VIP hasta 4am (con media de licor incluida): $120.000 COP (separa con $60.000 COP). Con embajador: $36.000 / $108.000 (separa con $54.000). Con VIP: $32.000 / $96.000 (separa con $48.000).",
+    pricing: "Pase Solo Taller: $40.000 COP (pago completo únicamente) | Pase Taller + Velada VIP Centro Cultural (con media de licor incluida): $120.000 COP (separa con $60.000 COP). Con embajador: $36.000 / $108.000 (separa con $54.000). Con VIP: $32.000 / $96.000 (separa con $48.000).",
     url: "https://elplacerdecompartir.com/taller-baile-erotico/",
     reserve_url: "https://elplacerdecompartir.com/taller-baile-erotico/",
   },

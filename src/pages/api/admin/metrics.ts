@@ -39,20 +39,20 @@ export const GET: APIRoute = async ({ cookies }) => {
       FROM leads 
       WHERE corset_vip = true OR (metadata->>'vip_until' IS NOT NULL AND (metadata->>'vip_until')::timestamptz > NOW())
     `);
-    const ticketsCountRes = await client.query("SELECT COUNT(*)::int AS count FROM event_tickets");
+    const ticketsCountRes = await client.query("SELECT COUNT(*)::int AS count FROM event_tickets WHERE estado IN ('pagado', 'confirmado', 'confirmada', 'asistido')");
     const checkinsCountRes = await client.query("SELECT COUNT(*)::int AS count FROM event_tickets WHERE estado = 'asistido'");
     const clicksSumRes = await client.query("SELECT COALESCE(SUM(clicks), 0)::int AS count FROM afiliados");
     
-    // Pending cash & Bre-B
+    // Pending cash & Bre-B (excluye carritos abandonados de pasarela digital)
     const pendingCashRes = await client.query(`
       SELECT 
-        COUNT(*)::int AS count,
-        COUNT(*) FILTER (WHERE metodo_pago ILIKE '%bre%' OR referencia_transaccion ILIKE '%bre%')::int AS bre_b_count
-      FROM event_tickets 
-      WHERE tipo_pago = 'reserva_40' OR estado IN ('pendiente', 'pendiente_efectivo', 'pendiente_verificacion')
+        COUNT(*) FILTER (WHERE (tipo_pago IN ('reserva_40', 'reserva_50') AND estado IN ('pagado', 'confirmado', 'confirmada')) OR estado IN ('pendiente_efectivo', 'pendiente_verificacion'))::int AS count,
+        COUNT(*) FILTER (WHERE (metodo_pago ILIKE '%bre%' OR referencia_transaccion ILIKE '%bre%') AND estado NOT IN ('cancelado', 'rechazado'))::int AS bre_b_count
+      FROM event_tickets
     `);
 
     // Financial calculations: Gross, Gateway Fees (1.99% + $800 COP + 19% IVA), Net Revenue & Fixed Expenses
+    // SOLO pagos reales y confirmados (nunca carritos abandonados ni pendientes de pasarela)
     const revenueStatsRes = await client.query(`
       SELECT 
         COALESCE(SUM(monto_pagado), 0)::numeric AS gross_revenue,
@@ -64,7 +64,7 @@ export const GET: APIRoute = async ({ cookies }) => {
           END
         ), 0)::numeric AS gateway_fees
       FROM event_tickets 
-      WHERE estado NOT IN ('cancelado', 'rechazado')
+      WHERE estado IN ('pagado', 'confirmado', 'confirmada', 'asistido')
     `);
 
     const grossRevenue = Number(revenueStatsRes.rows[0]?.gross_revenue || 0);
@@ -84,12 +84,12 @@ export const GET: APIRoute = async ({ cookies }) => {
         evento, 
         COALESCE(SUM(monto_pagado), 0)::numeric AS total, 
         COUNT(*)::int AS tickets_count,
-        COUNT(*) FILTER (WHERE tipo_pago = 'reserva_40' OR tipo_pago ILIKE '%reserva%')::int AS reservas_count,
-        COUNT(*) FILTER (WHERE (tipo_pago = 'total_100' OR tipo_pago = 'pago_real_efectivo') AND monto_pagado > 0)::int AS pagos_count,
+        COUNT(*) FILTER (WHERE tipo_pago = 'reserva_40' OR tipo_pago = 'reserva_50' OR tipo_pago ILIKE '%reserva%')::int AS reservas_count,
+        COUNT(*) FILTER (WHERE (tipo_pago = 'total_100' OR tipo_pago = 'pago_total' OR tipo_pago = 'pago_real_efectivo') AND monto_pagado > 0)::int AS pagos_count,
         COUNT(*) FILTER (WHERE monto_pagado = 0 OR tipo_pago ILIKE '%cortesia%' OR tipo_entrada ILIKE '%cortesia%' OR tipo_entrada ILIKE '%gratuita%')::int AS gratuitas_count,
         COUNT(*) FILTER (WHERE estado = 'asistido')::int AS asistidos_count
       FROM event_tickets
-      WHERE estado != 'cancelado'
+      WHERE estado IN ('pagado', 'confirmado', 'confirmada', 'asistido')
       GROUP BY evento
       ORDER BY total DESC
     `);
@@ -97,7 +97,7 @@ export const GET: APIRoute = async ({ cookies }) => {
     const perMonthRes = await client.query(`
       SELECT TO_CHAR(created_at, 'YYYY-MM') AS month, COALESCE(SUM(monto_pagado), 0)::numeric AS total, COUNT(*)::int AS tickets_count
       FROM event_tickets
-      WHERE estado != 'cancelado'
+      WHERE estado IN ('pagado', 'confirmado', 'confirmada', 'asistido')
       GROUP BY TO_CHAR(created_at, 'YYYY-MM')
       ORDER BY month DESC
       LIMIT 12
@@ -106,13 +106,13 @@ export const GET: APIRoute = async ({ cookies }) => {
     const currentWeekRes = await client.query(`
       SELECT COALESCE(SUM(monto_pagado), 0)::numeric AS sum
       FROM event_tickets
-      WHERE estado != 'cancelado' AND created_at >= DATE_TRUNC('week', NOW())
+      WHERE estado IN ('pagado', 'confirmado', 'confirmada', 'asistido') AND created_at >= DATE_TRUNC('week', NOW())
     `);
 
     const currentWeekendRes = await client.query(`
       SELECT COALESCE(SUM(monto_pagado), 0)::numeric AS sum
       FROM event_tickets
-      WHERE estado != 'cancelado'
+      WHERE estado IN ('pagado', 'confirmado', 'confirmada', 'asistido')
         AND EXTRACT(DOW FROM created_at) IN (0, 5, 6)
         AND created_at >= NOW() - INTERVAL '7 days'
     `);
@@ -130,7 +130,7 @@ export const GET: APIRoute = async ({ cookies }) => {
         COALESCE(a.entradas_ganadas, 0) AS affiliate_tickets_won,
         (CASE WHEN (COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) > NOW()) OR (l.metadata->'tags' ? 'vip_activo') THEN true ELSE false END) AS is_active_vip,
         (CASE WHEN (l.corset_vip = true OR l.metadata->'tags' ? 'posible vip' OR l.metadata->'tags' ? 'corset_vip') AND (COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) IS NULL OR COALESCE(l.vip_until, (l.metadata->>'vip_until')::timestamptz) <= NOW()) THEN true ELSE false END) AS is_possible_vip,
-        (SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id) AS tickets_count,
+        (SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id AND et.estado IN ('pagado', 'confirmado', 'confirmada', 'asistido')) AS tickets_count,
         COALESCE((SELECT COUNT(*)::int FROM event_tickets et WHERE et.lead_id = l.id AND et.estado = 'asistido'), 0) AS attended_events_count,
         COALESCE((SELECT json_agg(json_build_object('evento', et.evento, 'created_at', et.created_at, 'estado', et.estado, 'tipo_entrada', et.tipo_entrada, 'monto_pagado', et.monto_pagado)) FROM event_tickets et WHERE et.lead_id = l.id), '[]'::json) AS events_list,
         (CASE WHEN LOWER(l.afiliado_id) = 'segisw' OR (SELECT 1 FROM afiliados a_ref JOIN leads l_ref ON (LOWER(l_ref.email) = LOWER(a_ref.email) OR l_ref.whatsapp = a_ref.whatsapp OR LOWER(l_ref.alias_nombre) = LOWER(a_ref.alias)) WHERE LOWER(a_ref.alias) = LOWER(l.afiliado_id) AND (COALESCE(l_ref.vip_until, (l_ref.metadata->>'vip_until')::timestamptz) > NOW() OR l_ref.metadata->'tags' ? 'vip_activo' OR l_ref.metadata->'tags' ? 'corset_vip') LIMIT 1) IS NOT NULL THEN true ELSE false END) AS referrer_is_vip

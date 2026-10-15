@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
             [paymentId, ticket.id]
           );
 
-          const isTotalPayment = ticket.tipo_pago === "total" || ticket.tipo_pago === "total_100";
+          const isTotalPayment = ticket.tipo_pago === "total" || ticket.tipo_pago === "total_100" || ticket.tipo_pago === "pago_total";
 
           // Acreditar venta al embajador SOLO con pago total (no solo con reserva)
           if (ticket.afiliado_ref) {
