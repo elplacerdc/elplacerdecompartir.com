@@ -280,10 +280,17 @@ export async function upsertLead(
       if (targetChannel === "centro_cultural" || data.origen === "alianza_centro_cultural") {
         newTagsToAdd.push("alianzas");
       }
-      if (existingLead.vip_until && new Date(existingLead.vip_until) > new Date()) {
+      if (
+        (existingLead.vip_until && new Date(existingLead.vip_until) > new Date()) ||
+        (Boolean(existingLead.corset_vip) && Boolean(existingLead.primer_pago_acreditado)) ||
+        (Boolean(data.corset_vip) && Boolean(existingLead.primer_pago_acreditado))
+      ) {
         newTagsToAdd.push("vip_activo");
       }
-      const consolidatedTags = Array.from(new Set([...existingTags, ...newTagsToAdd]));
+      let consolidatedTags = Array.from(new Set([...existingTags, ...newTagsToAdd]));
+      if (consolidatedTags.includes("vip_activo")) {
+        consolidatedTags = consolidatedTags.filter((t) => t !== "posible vip" && t !== "posible_vip");
+      }
 
       // Consolidate journey log
       const journey = Array.isArray(existingMeta.journey) ? [...existingMeta.journey] : [];
@@ -712,7 +719,9 @@ export async function getAffiliateStats(identifier: string): Promise<{
       const hasActiveVip = Boolean(
         (ambLead.vip_until && new Date(ambLead.vip_until) > new Date()) ||
         (ambLead.metadata?.vip_until && new Date(ambLead.metadata.vip_until) > new Date()) ||
-        (ambLead.metadata?.tags && ambLead.metadata.tags.includes("vip_activo"))
+        (Array.isArray(ambLead.metadata?.tags) && ambLead.metadata.tags.includes("vip_activo")) ||
+        (Boolean(ambLead.corset_vip) && Boolean(ambLead.primer_pago_acreditado)) ||
+        (Boolean(ambLead.corset_vip) && (!Array.isArray(ambLead.metadata?.tags) || !ambLead.metadata.tags.includes("posible vip")))
       );
       if (hasActiveVip) {
         vipStatus = "vip_activo";
@@ -729,7 +738,7 @@ export async function getAffiliateStats(identifier: string): Promise<{
         isReferrerVip = true;
       } else {
         const refLeadRes = await client.query(
-          `SELECT l.vip_until, l.metadata FROM afiliados a
+          `SELECT l.vip_until, l.metadata, l.corset_vip, l.primer_pago_acreditado FROM afiliados a
            LEFT JOIN leads l ON (
              (a.email IS NOT NULL AND LOWER(l.email) = LOWER(a.email)) OR
              (a.whatsapp IS NOT NULL AND RIGHT(regexp_replace(l.whatsapp, '\\D', '', 'g'), 10) = RIGHT(regexp_replace(a.whatsapp, '\\D', '', 'g'), 10))
@@ -743,7 +752,8 @@ export async function getAffiliateStats(identifier: string): Promise<{
           isReferrerVip = Boolean(
             (rl.vip_until && new Date(rl.vip_until) > new Date()) ||
             (rl.metadata?.vip_until && new Date(rl.metadata.vip_until) > new Date()) ||
-            (rl.metadata?.tags && rl.metadata.tags.includes("vip_activo"))
+            (Array.isArray(rl.metadata?.tags) && rl.metadata.tags.includes("vip_activo")) ||
+            (Boolean(rl.corset_vip) && Boolean(rl.primer_pago_acreditado))
           );
         }
       }

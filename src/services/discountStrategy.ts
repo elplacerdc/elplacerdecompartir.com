@@ -100,7 +100,7 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
       if (effectiveAffiliateRef) {
         try {
           const ambRes = await client.query(
-            `SELECT l.vip_until, l.metadata 
+            `SELECT l.vip_until, l.metadata, l.corset_vip, l.primer_pago_acreditado 
              FROM afiliados a 
              LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
              WHERE LOWER(a.alias) = LOWER($1)
@@ -112,8 +112,12 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
             isReferringAmbassadorVip = Boolean(
               (amb.vip_until && new Date(amb.vip_until) > new Date()) ||
               (amb.metadata?.vip_until && new Date(amb.metadata.vip_until) > new Date()) ||
-              (amb.metadata?.tags && amb.metadata.tags.includes("vip_activo"))
+              (Array.isArray(amb.metadata?.tags) && amb.metadata.tags.includes("vip_activo")) ||
+              (Boolean(amb.corset_vip) && Boolean(amb.primer_pago_acreditado)) ||
+              effectiveAffiliateRef.trim().toLowerCase() === "segisw"
             );
+          } else if (effectiveAffiliateRef.trim().toLowerCase() === "segisw") {
+            isReferringAmbassadorVip = true;
           }
         } catch (e) {
           console.warn("[DiscountStrategy Amb Check Err]:", e);

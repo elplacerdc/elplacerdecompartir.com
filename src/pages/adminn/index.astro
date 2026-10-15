@@ -2737,6 +2737,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
       }
     }, 30000);
 
+    window.addEventListener("focus", () => {
+      loadMetrics();
+    });
+
     // If mobile or permission ready, start camera on load
     if (tabCameraScan && window.innerWidth < 768) {
       startCamera();

@@ -990,12 +990,12 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       let emailVal = userProfile?.email || localStorage.getItem("user_email");
       let phoneVal = sessionPhone;
 
-      const inputAlias = document.getElementById("alias_nombre") as HTMLInputElement | null;
-      const inputPhone = document.getElementById("whatsapp") as HTMLInputElement | null;
-      const inputEmail = document.getElementById("email") as HTMLInputElement | null;
+      const inputAlias = document.getElementById("alias_nombre");
+      const inputPhone = document.getElementById("whatsapp");
+      const inputEmail = document.getElementById("email");
       const noticeBanner = document.getElementById("prefilled-profile-notice");
 
-      function lockReadOnly(el: HTMLInputElement | null) {
+      function lockReadOnly(el) {
         if (!el || !el.value) return;
         el.readOnly = true;
         el.classList.add("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");

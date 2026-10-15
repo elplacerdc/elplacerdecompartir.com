@@ -94,25 +94,47 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       } catch (_) {}
     }
 
-    // Check if user has active VIP credential for permanent 10% discount
+    // Check if user has active VIP credential for permanent 20% honor discount
     let isVipActive = false;
     if (whatsapp || email) {
       try {
         const checkClient = await pool.connect();
         try {
+          const cleanPhone = (whatsapp || "").toString().replace(/\D/g, "");
+          const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+          const cleanEmail = (email || "").toString().trim().toLowerCase();
+
           const vipCheck = await checkClient.query(
-            `SELECT vip_until, metadata FROM leads 
-             WHERE (whatsapp IS NOT NULL AND whatsapp = $1) OR (email IS NOT NULL AND LOWER(email) = LOWER($2)) 
+            `SELECT id, vip_until, metadata, corset_vip, primer_pago_acreditado FROM leads 
+             WHERE (email IS NOT NULL AND LOWER(email) = $1)
+                OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $2)
              LIMIT 1`,
-            [whatsapp || '', email || '']
+            [cleanEmail, last10]
           );
           if (vipCheck.rows.length > 0) {
             const vRow = vipCheck.rows[0];
             isVipActive = Boolean(
               (vRow.vip_until && new Date(vRow.vip_until) > new Date()) ||
               (vRow.metadata?.vip_until && new Date(vRow.metadata.vip_until) > new Date()) ||
-              (vRow.metadata?.tags && vRow.metadata.tags.includes("vip_activo"))
+              (Array.isArray(vRow.metadata?.tags) && vRow.metadata.tags.includes("vip_activo")) ||
+              (Boolean(vRow.corset_vip) && Boolean(vRow.primer_pago_acreditado)) ||
+              (Boolean(vRow.corset_vip) && (!Array.isArray(vRow.metadata?.tags) || !vRow.metadata.tags.includes("posible vip")))
             );
+
+            // Auto-heal active VIP tag in DB if missing
+            if (isVipActive && (!Array.isArray(vRow.metadata?.tags) || !vRow.metadata.tags.includes("vip_activo"))) {
+              try {
+                await checkClient.query(`
+                  UPDATE leads 
+                  SET metadata = jsonb_set(
+                    COALESCE(metadata, '{}'::jsonb), 
+                    '{tags}', 
+                    to_jsonb(array_append(array_remove(array_remove(COALESCE(ARRAY(SELECT jsonb_array_elements_text(metadata->'tags')), '{}'::text[]), 'posible vip'), 'posible_vip'), 'vip_activo'))
+                  )
+                  WHERE id = $1
+                `, [vRow.id]);
+              } catch (_) {}
+            }
           }
         } finally {
           checkClient.release();

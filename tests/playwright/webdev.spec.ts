@@ -44,9 +44,8 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     // LeadForm with 2-phase progressive registration controls
     await expect(page.getByText("ENTRADA A LA COMUNIDAD")).toBeVisible();
     await expect(page.getByPlaceholder("Ej: 310 123 4567")).toBeVisible();
-    await expect(page.locator("#btn-send-wa-otp")).toBeVisible();
-    await expect(page.getByPlaceholder("Tu alias o nombre discreto")).toBeAttached();
-    await expect(page.locator("#lead-remaining-fields")).toHaveClass(/hidden/);
+    await expect(page.locator("#input-alias")).toBeAttached();
+    await expect(page.locator("#lead-remaining-fields")).toBeVisible();
   });
 
   test("Centro Cultural: Growth Copywriting, Buttons, Alianzas and Ambassador Section", async ({ page }) => {
@@ -212,7 +211,7 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await expect(page.locator("#btnNequi")).toBeVisible();
     await expect(page.locator("#btnNequi")).toContainText("Coordinar por WhatsApp (BreB, nequí, trasnferencia)");
     
-    const profileLink = page.locator('a[href="/dashboard#section-profile-settings"]');
+    const profileLink = page.locator('a[href="/dashboard#section-profile-settings"]').first();
     await expect(profileLink).toBeVisible();
 
     // 2. Dashboard Profile Settings Section
@@ -224,5 +223,48 @@ test.describe("El Placer de Compartir & The Corset Society — E2E Suite", () =>
     await base.goto("/the-corset-society");
     const vipPriceTag = page.locator(".corset-vip-price-tag").first();
     await expect(vipPriceTag).toBeAttached();
+  });
+
+  test("Taller de Baile Erótico: Dynamic VIP Discount, Select Tier and Checkout Anchor", async ({ page }) => {
+    const base = new BasePage(page);
+
+    await page.addInitScript(() => {
+      localStorage.setItem("user_phone", "3158443002");
+      localStorage.setItem("user_alias", "Jhon VIP");
+      localStorage.setItem("user_email", "jhonsankana@gmail.com");
+      localStorage.setItem("user_profile", JSON.stringify({
+        whatsapp: "3158443002",
+        alias_nombre: "Jhon VIP",
+        email: "jhonsankana@gmail.com",
+        corset_vip: true,
+        tags: ["vip_activo"]
+      }));
+    });
+
+    await base.goto("/taller-baile-erotico");
+
+    // Title / H1
+    await expect(page.locator("h1").first()).toContainText("Taller de Baile");
+
+    // Tier Cards should display VIP discount ($32.000 / $96.000)
+    await expect(page.locator("#price-display-solo")).toContainText("32.000");
+    await expect(page.locator("#price-display-velada")).toContainText("96.000");
+
+    // Pre-filled profile notice should be visible
+    await expect(page.locator("#prefilled-profile-notice")).toBeVisible();
+
+    // Checkout form inputs should be populated and locked readonly
+    const phoneInput = page.locator("#whatsapp");
+    await expect(phoneInput).toHaveValue("3158443002");
+    await expect(phoneInput).toHaveAttribute("readonly", "");
+
+    const aliasInput = page.locator("#alias_nombre");
+    await expect(aliasInput).toHaveValue("Jhon VIP");
+    await expect(aliasInput).toHaveAttribute("readonly", "");
+
+    // Selecting tier updates selectedTierInput
+    await page.click('#card-taller_solo');
+    const selectedTierInput = page.locator("#selectedTierInput");
+    await expect(selectedTierInput).toHaveValue("taller_solo");
   });
 });

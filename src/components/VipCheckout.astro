@@ -73,19 +73,19 @@ const initialPct = isVipRefSsr ? "20%" : "10%";
     Acceso preferencial con tu membresía anual a convocatorias secretas, descuentos permanentes en todas las veladas, convocatorias a fantasías privadas y trato de honor como miembro del círculo prémium de ElPlacerDC.
   </p>
   
-  <form id="vipCheckoutForm" action="/api/checkout/dlocal" method="POST" class="pt-2">
+  <form class="vipCheckoutForm pt-2" action="/api/checkout/dlocal" method="POST">
     <input type="hidden" name="userId" value={userId || ""} />
     <input type="hidden" name="userEmail" value={userEmail || ""} />
     <input type="hidden" name="userName" value={userName || ""} />
-    <input type="hidden" id="vip-input-phone" name="userPhone" value="" />
-    <input type="hidden" id="vip-input-ref" name="ref" value={cookieRef || ""} />
+    <input type="hidden" class="vip-input-phone" name="userPhone" value="" />
+    <input type="hidden" class="vip-input-ref" name="ref" value={cookieRef || ""} />
     <button 
       type="submit"
-      id="vip-submit-btn"
-      class="w-full sm:w-auto px-8 py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
+      class="vip-submit-btn w-full sm:w-auto px-8 py-4 rounded-full font-serif font-bold uppercase tracking-widest text-xs bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#8a6d3b] text-[#050505] hover:brightness-110 shadow-[0_0_20px_rgba(197,160,89,0.35)] transition-all cursor-pointer"
     >
       Adquirir Membresía Anual VIP ({initialPrice} COP)
     </button>
+    <p class="vip-checkout-msg text-xs text-[#ead397] mt-2 min-h-[1.25rem]"></p>
   </form>
   <p class="text-[10px] text-[#f7f4ee]/40 font-sans">Pago cifrado y seguro en pesos colombianos (COP). Activación inmediata.</p>
 </div>
@@ -93,28 +93,65 @@ const initialPct = isVipRefSsr ? "20%" : "10%";
 <script is:inline>
   function initVipPricing() {
     try {
-      // 1. Session autofill for VIP checkout from authenticated dashboard
+      // 1. Session autofill for all VIP checkout forms
+      let profile = null;
       try {
-        let profile = null;
         const rawProfile = localStorage.getItem("user_profile");
         if (rawProfile) profile = JSON.parse(rawProfile);
-        const phone = profile?.whatsapp || localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
-        const email = profile?.email || localStorage.getItem("user_email");
-        const alias = profile?.alias_nombre || localStorage.getItem("user_alias");
-
-        const form = document.getElementById("vipCheckoutForm");
-        if (form) {
-          const emailInput = form.querySelector('input[name="userEmail"]');
-          const nameInput = form.querySelector('input[name="userName"]');
-          const phoneInput = document.getElementById("vip-input-phone");
-          const idInput = form.querySelector('input[name="userId"]');
-
-          if (phone && phoneInput) phoneInput.value = phone;
-          if (email && emailInput) emailInput.value = email;
-          if (alias && nameInput) nameInput.value = alias;
-          if (phone && idInput) idInput.value = phone;
-        }
       } catch (_) {}
+      const phone = profile?.whatsapp || localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
+      const email = profile?.email || localStorage.getItem("user_email");
+      const alias = profile?.alias_nombre || localStorage.getItem("user_alias");
+
+      const forms = document.querySelectorAll(".vipCheckoutForm");
+      forms.forEach((form) => {
+        const emailInput = form.querySelector('input[name="userEmail"]');
+        const nameInput = form.querySelector('input[name="userName"]');
+        const phoneInput = form.querySelector('.vip-input-phone');
+        const idInput = form.querySelector('input[name="userId"]');
+
+        if (phone && phoneInput) phoneInput.value = phone;
+        if (email && emailInput && !emailInput.value) emailInput.value = email;
+        if (alias && nameInput && !nameInput.value) nameInput.value = alias;
+        if (phone && idInput && !idInput.value) idInput.value = phone;
+
+        // AJAX submit with clear feedback
+        form.addEventListener("submit", async function(e) {
+          e.preventDefault();
+          const btn = form.querySelector(".vip-submit-btn");
+          const msg = form.querySelector(".vip-checkout-msg");
+
+          if (btn) btn.disabled = true;
+          if (msg) msg.textContent = "⏳ Conectando con la pasarela segura...";
+
+          const payload = {
+            userId: (form.querySelector('input[name="userId"]')?.value || phone || "guest_" + Date.now()),
+            userEmail: (form.querySelector('input[name="userEmail"]')?.value || email || "contacto@elplacerdecompartir.com"),
+            userName: (form.querySelector('input[name="userName"]')?.value || alias || "Invitado VIP"),
+            userPhone: (form.querySelector('.vip-input-phone')?.value || phone || ""),
+            ref: (form.querySelector('.vip-input-ref')?.value || localStorage.getItem("affiliate_ref") || ""),
+          };
+
+          try {
+            const res = await fetch("/api/checkout/dlocal", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success && data.redirect_url) {
+              if (msg) msg.textContent = "✓ Redireccionando a la pasarela segura...";
+              window.location.href = data.redirect_url;
+            } else {
+              if (msg) msg.textContent = `❌ ${data.error || "No se pudo generar la orden de pago."}`;
+              if (btn) btn.disabled = false;
+            }
+          } catch (err) {
+            if (msg) msg.textContent = "❌ Error de conexión al procesar el pago.";
+            if (btn) btn.disabled = false;
+          }
+        });
+      });
 
       // 2. Affiliate Ref and Discount UI
       let myAlias = (localStorage.getItem("user_alias") || "").trim().toLowerCase();
@@ -138,7 +175,6 @@ const initialPct = isVipRefSsr ? "20%" : "10%";
       if (myReferredBy && myAlias && localRef && localRef !== myReferredBy) {
         localRef = myReferredBy;
       }
-
       if (!localRef) {
         localRef = localStorage.getItem("affiliate_ref");
       }
@@ -155,8 +191,9 @@ const initialPct = isVipRefSsr ? "20%" : "10%";
         localStorage.setItem("affiliate_ref", cleanRef);
         document.cookie = 'affiliate_ref=' + encodeURIComponent(cleanRef) + '; path=/; max-age=2592000; SameSite=Lax';
 
-        const inputRef = document.getElementById("vip-input-ref");
-        if (inputRef) inputRef.value = cleanRef;
+        document.querySelectorAll(".vip-input-ref").forEach((inp) => {
+          inp.value = cleanRef;
+        });
 
         let isVipRefClient = cleanRef === 'segisw';
         fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(cleanRef)}`)
@@ -170,33 +207,35 @@ const initialPct = isVipRefSsr ? "20%" : "10%";
           });
 
         function applyVipRefUI() {
-          const discountTag = document.getElementById("vip-discount-tag");
-          if (discountTag) {
-            discountTag.textContent = isVipRefClient ? "-20% Embajador VIP" : "-10% Embajador";
-            discountTag.classList.remove("hidden");
-          }
+          const discountTags = document.querySelectorAll("#vip-discount-tag");
+          discountTags.forEach((tag) => {
+            tag.textContent = isVipRefClient ? "-20% Embajador VIP" : "-10% Embajador";
+            tag.classList.remove("hidden");
+          });
 
-          const banner = document.getElementById("vip-affiliate-banner");
-          const bannerName = document.getElementById("vip-affiliate-name");
-          const bannerPct = document.getElementById("vip-affiliate-pct");
-          if (banner) banner.classList.remove("hidden");
-          if (bannerName) bannerName.textContent = `@${cleanRef}`;
-          if (bannerPct) bannerPct.textContent = isVipRefClient ? "20%" : "10%";
+          const banners = document.querySelectorAll("#vip-affiliate-banner");
+          banners.forEach((banner) => banner.classList.remove("hidden"));
+
+          const bannerNames = document.querySelectorAll("#vip-affiliate-name");
+          bannerNames.forEach((bn) => { bn.textContent = `@${cleanRef}`; });
+
+          const bannerPcts = document.querySelectorAll("#vip-affiliate-pct");
+          bannerPcts.forEach((bp) => { bp.textContent = isVipRefClient ? "20%" : "10%"; });
 
           const finalPriceStr = isVipRefClient ? "$159.000" : "$179.000";
-          const priceDisplay = document.getElementById("vip-price-display");
-          if (priceDisplay) {
-            priceDisplay.innerHTML = `
+          const priceDisplays = document.querySelectorAll("#vip-price-display");
+          priceDisplays.forEach((pd) => {
+            pd.innerHTML = `
               <span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal">$199.000</span>
               <span class="text-[#81c784] font-bold">${finalPriceStr}</span>
               <span class="text-sm font-sans font-normal text-[#c5a059] ml-1">COP / año</span>
             `;
-          }
+          });
 
-          const submitBtn = document.getElementById("vip-submit-btn");
-          if (submitBtn) {
-            submitBtn.textContent = `Adquirir Membresía Anual VIP (${finalPriceStr} COP)`;
-          }
+          const submitBtns = document.querySelectorAll(".vip-submit-btn");
+          submitBtns.forEach((btn) => {
+            btn.textContent = `Adquirir Membresía Anual VIP (${finalPriceStr} COP)`;
+          });
         }
         applyVipRefUI();
       }

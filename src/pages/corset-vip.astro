@@ -193,7 +193,11 @@ import VipCheckout from "../components/VipCheckout.astro";
           return;
         }
 
-        const identifier = localStorage.getItem("user_phone") || localStorage.getItem("user_alias") || localStorage.getItem("user_email");
+        let profile = null;
+        try {
+          profile = JSON.parse(localStorage.getItem("user_profile") || "{}");
+        } catch (_) {}
+        const identifier = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone") || profile?.whatsapp || profile?.email || localStorage.getItem("user_alias") || localStorage.getItem("user_email");
         if (!identifier) return;
 
         fetch(`/api/affiliates/stats?identifier=${encodeURIComponent(identifier)}`)

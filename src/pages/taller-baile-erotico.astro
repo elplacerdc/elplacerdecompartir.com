@@ -566,12 +566,12 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
   </div>
 
   <script is:inline>
-    let activeRef = null;
-    let discPercent = 0;
-    let isVipRef = false;
+    var activeRef = null;
+    var discPercent = 0;
+    var isVipRef = false;
 
     // 0. Precios base oficiales actualizados: $40.000 y $120.000
-    const PRICING = {
+    var PRICING = {
       taller_solo: {
         total: 40000,
         reserva_50: null,
@@ -584,73 +584,49 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
       }
     };
 
-    let selectedTier = "taller_velada";
+    var selectedTier = "taller_velada";
 
-    // 1. Inicialización de Afiliados y Descuentos
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const qRef = urlParams.get("ref") || urlParams.get("r");
+    // 1. Mostrar banner de beneficio de embajador / VIP
+    function showAffiliateBanner(title, alias, pct) {
+      var banner = document.getElementById("affiliateBanner");
+      if (banner) banner.classList.remove("hidden");
+      
+      var bannerTitle = document.getElementById("affiliateBannerTitle");
+      if (bannerTitle) bannerTitle.textContent = title;
 
-      let storedRef = qRef ? qRef.trim().toLowerCase() : localStorage.getItem("affiliate_ref");
-      if (!storedRef) {
-        const match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
-        if (match) storedRef = decodeURIComponent(match[1]).trim().toLowerCase();
-      }
+      var affText = document.getElementById("affiliateAliasText");
+      if (affText) affText.textContent = alias;
 
-      if (storedRef) {
-        activeRef = storedRef.trim().toLowerCase();
-        localStorage.setItem("affiliate_ref", activeRef);
-        document.cookie = 'affiliate_ref=' + encodeURIComponent(activeRef) + '; path=/; max-age=2592000; SameSite=Lax';
-        
-        isVipRef = (activeRef === "segisw");
-        discPercent = isVipRef ? 0.20 : 0.10;
-
-        const banner = document.getElementById("affiliateBanner");
-        if (banner) banner.classList.remove("hidden");
-        
-        const bannerTitle = document.getElementById("affiliateBannerTitle");
-        if (bannerTitle) {
-          bannerTitle.textContent = isVipRef 
-            ? "Has sido invitado por un Embajador VIP" 
-            : "Has sido invitado por un Embajador";
-        }
-
-        const affText = document.getElementById("affiliateAliasText");
-        if (affText) affText.textContent = activeRef;
-
-        const discText = document.getElementById("affiliateDiscText");
-        if (discText) discText.textContent = isVipRef ? "-20%" : "-10%";
-
-        applyDiscountToCards();
-      }
-    } catch (_) {}
+      var discText = document.getElementById("affiliateDiscText");
+      if (discText) discText.textContent = pct;
+    }
 
     function applyDiscountToCards() {
       if (discPercent <= 0) return;
 
-      const pSolo = Math.round(PRICING.taller_solo.total * (1 - discPercent));
-      const pVelada = Math.round(PRICING.taller_velada.total * (1 - discPercent));
-      const sVelada = Math.round(PRICING.taller_velada.reserva_50 * (1 - discPercent));
+      var pSolo = Math.round(PRICING.taller_solo.total * (1 - discPercent));
+      var pVelada = Math.round(PRICING.taller_velada.total * (1 - discPercent));
+      var sVelada = Math.round(PRICING.taller_velada.reserva_50 * (1 - discPercent));
 
-      const dispSolo = document.getElementById("price-display-solo");
+      var dispSolo = document.getElementById("price-display-solo");
       if (dispSolo) {
-        dispSolo.innerHTML = `<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$40.000</span><span class="text-[#81c784]">$${pSolo.toLocaleString('es-CO')}</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>`;
+        dispSolo.innerHTML = '<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$40.000</span><span class="text-[#81c784]">$' + pSolo.toLocaleString('es-CO') + '</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>';
       }
-      const badgeSolo = document.getElementById("badge-disc-solo");
+      var badgeSolo = document.getElementById("badge-disc-solo");
       if (badgeSolo) {
         badgeSolo.textContent = discPercent === 0.20 ? "-20%" : "-10%";
         badgeSolo.classList.remove("hidden");
       }
 
-      const dispVelada = document.getElementById("price-display-velada");
+      var dispVelada = document.getElementById("price-display-velada");
       if (dispVelada) {
-        dispVelada.innerHTML = `<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$120.000</span><span class="text-[#81c784]">$${pVelada.toLocaleString('es-CO')}</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>`;
+        dispVelada.innerHTML = '<span class="line-through text-[#f7f4ee]/40 text-xl mr-2 font-normal font-sans">$120.000</span><span class="text-[#81c784]">$' + pVelada.toLocaleString('es-CO') + '</span><span class="text-xs font-normal text-[#f7f4ee]/50 ml-1 font-sans">COP</span>';
       }
-      const separaVelada = document.getElementById("separa-display-velada");
+      var separaVelada = document.getElementById("separa-display-velada");
       if (separaVelada) {
-        separaVelada.innerHTML = `O separa con la mitad: <strong class="text-[#81c784]">$${sVelada.toLocaleString('es-CO')} COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[10px]">($60.000)</span>`;
+        separaVelada.innerHTML = 'O separa con la mitad: <strong class="text-[#81c784]">$' + sVelada.toLocaleString('es-CO') + ' COP</strong> <span class="line-through text-[#f7f4ee]/40 text-[10px]">($60.000)</span>';
       }
-      const badgeVelada = document.getElementById("badge-disc-velada");
+      var badgeVelada = document.getElementById("badge-disc-velada");
       if (badgeVelada) {
         badgeVelada.textContent = discPercent === 0.20 ? "-20%" : "-10%";
         badgeVelada.classList.remove("hidden");
@@ -660,7 +636,7 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
     // 2. Selección de Pase con Desplazamiento Suave al Formulario de Pago
     function selectTierAndScroll(tierKey) {
       selectTier(tierKey);
-      const checkoutEl = document.getElementById("checkout");
+      var checkoutEl = document.getElementById("checkout");
       if (checkoutEl) {
         checkoutEl.scrollIntoView({ behavior: "smooth", block: "start" });
       }
@@ -668,12 +644,12 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
 
     function selectTier(tierKey) {
       selectedTier = tierKey;
-      const tierInput = document.getElementById("selectedTierInput");
+      var tierInput = document.getElementById("selectedTierInput");
       if (tierInput) tierInput.value = tierKey;
 
-      const cardSolo = document.getElementById("card-taller_solo");
-      const cardVelada = document.getElementById("card-taller_velada");
-      const optReserva = document.getElementById("opt-reserva-50");
+      var cardSolo = document.getElementById("card-taller_solo");
+      var cardVelada = document.getElementById("card-taller_velada");
+      var optReserva = document.getElementById("opt-reserva-50");
 
       if (tierKey === "taller_solo") {
         if (cardSolo) {
@@ -684,9 +660,8 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
           cardVelada.classList.remove("border-[#c5a059]", "shadow-[0_0_30px_rgba(197,160,89,0.2)]");
           cardVelada.classList.add("border-[#c5a059]/40");
         }
-        // Solo Taller: NO permite reserva, solo pago completo
         if (optReserva) optReserva.classList.add("hidden");
-        const radioTotal = document.querySelector('input[name="modalidad"][value="pago_total"]');
+        var radioTotal = document.querySelector('input[name="modalidad"][value="pago_total"]');
         if (radioTotal) radioTotal.checked = true;
       } else {
         if (cardVelada) {
@@ -697,7 +672,6 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
           cardSolo.classList.remove("border-[#c5a059]", "shadow-[0_0_25px_rgba(197,160,89,0.3)]");
           cardSolo.classList.add("border-[#c5a059]/40");
         }
-        // Taller + Velada: Sí permite separación del 50%
         if (optReserva) optReserva.classList.remove("hidden");
       }
 
@@ -705,52 +679,126 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
     }
 
     function updateSummary() {
-      const tierInfo = PRICING[selectedTier];
-      const modRadio = document.querySelector('input[name="modalidad"]:checked');
-      const modalidad = modRadio ? modRadio.value : "pago_total";
+      var tierInfo = PRICING[selectedTier];
+      var modRadio = document.querySelector('input[name="modalidad"]:checked');
+      var modalidad = modRadio ? modRadio.value : "pago_total";
 
-      const totalReal = Math.round(tierInfo.total * (1 - discPercent));
-      const reservaReal = tierInfo.reserva_50 ? Math.round(tierInfo.reserva_50 * (1 - discPercent)) : null;
+      var totalReal = Math.round(tierInfo.total * (1 - discPercent));
+      var reservaReal = tierInfo.reserva_50 ? Math.round(tierInfo.reserva_50 * (1 - discPercent)) : null;
 
-      const sumTierName = document.getElementById("summary-tier-name");
-      const sumModName = document.getElementById("summary-mod-name");
-      const sumMontoHoy = document.getElementById("summary-monto-hoy");
-      const saldoRow = document.getElementById("summary-saldo-puerta-row");
-      const saldoPuerta = document.getElementById("summary-saldo-puerta");
+      var sumTierName = document.getElementById("summary-tier-name");
+      var sumModName = document.getElementById("summary-mod-name");
+      var sumMontoHoy = document.getElementById("summary-monto-hoy");
+      var saldoRow = document.getElementById("summary-saldo-puerta-row");
+      var saldoPuerta = document.getElementById("summary-saldo-puerta");
 
       if (sumTierName) sumTierName.textContent = tierInfo.name;
 
       if (modalidad === "reserva_50" && reservaReal) {
         if (sumModName) sumModName.textContent = "Separación de Cupo (50%)";
-        if (sumMontoHoy) sumMontoHoy.textContent = `$${reservaReal.toLocaleString('es-CO')} COP`;
+        if (sumMontoHoy) sumMontoHoy.textContent = "$" + reservaReal.toLocaleString('es-CO') + " COP";
         if (saldoRow) saldoRow.classList.remove("hidden");
-        if (saldoPuerta) saldoPuerta.textContent = `$${(totalReal - reservaReal).toLocaleString('es-CO')} COP`;
+        if (saldoPuerta) saldoPuerta.textContent = "$" + (totalReal - reservaReal).toLocaleString('es-CO') + " COP";
       } else {
         if (sumModName) sumModName.textContent = "Pago Total (100%)";
-        if (sumMontoHoy) sumMontoHoy.textContent = `$${totalReal.toLocaleString('es-CO')} COP`;
+        if (sumMontoHoy) sumMontoHoy.textContent = "$" + totalReal.toLocaleString('es-CO') + " COP";
         if (saldoRow) saldoRow.classList.add("hidden");
       }
     }
 
-    // 3. Carga Automática Inmutable de Usuario Activo y Enlace a Editar Perfil
-    async function hydrateSessionFormFields() {
-      let userProfile = null;
+    // 3. Resolución Dinámica de VIP y Descuentos
+    async function resolveDiscountsAndVip() {
       try {
-        const raw = localStorage.getItem("user_profile");
+        var urlParams = new URLSearchParams(window.location.search);
+        var qRef = urlParams.get("ref") || urlParams.get("r");
+
+        var storedRef = qRef ? qRef.trim().toLowerCase() : localStorage.getItem("affiliate_ref");
+        if (!storedRef) {
+          var match = document.cookie.match(/(?:^|;\s*)affiliate_ref=([^;]+)/);
+          if (match) storedRef = decodeURIComponent(match[1]).trim().toLowerCase();
+        }
+        if (storedRef) {
+          activeRef = storedRef.trim().toLowerCase();
+          localStorage.setItem("affiliate_ref", activeRef);
+          document.cookie = 'affiliate_ref=' + encodeURIComponent(activeRef) + '; path=/; max-age=2592000; SameSite=Lax';
+        }
+
+        // Revisar si el usuario en sesión activa es VIP activo
+        var isUserVip = false;
+        var sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
+        var userProfile = null;
+        try {
+          var raw = localStorage.getItem("user_profile");
+          if (raw) userProfile = JSON.parse(raw);
+        } catch (_) {}
+        var sessionEmail = userProfile?.email || localStorage.getItem("user_email");
+        var sessionAlias = userProfile?.alias_nombre || localStorage.getItem("user_alias");
+        var sessionIdent = sessionPhone || sessionEmail || sessionAlias;
+
+        if (sessionIdent) {
+          try {
+            var statsRes = await fetch("/api/affiliates/stats?identifier=" + encodeURIComponent(sessionIdent));
+            var statsData = await statsRes.json();
+            if (statsData?.stats?.vipStatus === "vip_activo") {
+              isUserVip = true;
+            }
+          } catch (_) {}
+        }
+
+        if (!isUserVip) {
+          var cachedVip = localStorage.getItem("user_vip_status") || localStorage.getItem("vip_status");
+          if (cachedVip === "vip_activo") isUserVip = true;
+        }
+
+        if (isUserVip) {
+          discPercent = 0.20;
+          isVipRef = true;
+          showAffiliateBanner("Has sido invitado por un Embajador VIP", "VIP Activo", "-20%");
+          applyDiscountToCards();
+          updateSummary();
+          return;
+        }
+
+        // Si no es VIP propio, verificar si el embajador referente es VIP
+        if (activeRef) {
+          var isAmbassadorVip = (activeRef === "segisw");
+          try {
+            var checkRes = await fetch("/api/affiliates/stats?identifier=" + encodeURIComponent(activeRef));
+            var checkData = await checkRes.json();
+            if (checkData?.stats?.vipStatus === "vip_activo") {
+              isAmbassadorVip = true;
+            }
+          } catch (_) {}
+
+          discPercent = isAmbassadorVip ? 0.20 : 0.10;
+          isVipRef = isAmbassadorVip;
+          var title = isAmbassadorVip ? "Has sido invitado por un Embajador VIP" : "Has sido invitado por un Embajador";
+          showAffiliateBanner(title, activeRef, isAmbassadorVip ? "-20%" : "-10%");
+          applyDiscountToCards();
+          updateSummary();
+        }
+      } catch (_) {}
+    }
+
+    // 4. Carga Automática Inmutable de Usuario Activo y Enlace a Editar Perfil
+    async function hydrateSessionFormFields() {
+      var userProfile = null;
+      try {
+        var raw = localStorage.getItem("user_profile");
         if (raw) userProfile = JSON.parse(raw);
       } catch (_) {}
 
-      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone") || userProfile?.whatsapp;
-      let aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
-      let emailVal = userProfile?.email || localStorage.getItem("user_email");
-      let phoneVal = sessionPhone;
+      var sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone") || userProfile?.whatsapp;
+      var aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
+      var emailVal = userProfile?.email || localStorage.getItem("user_email");
+      var phoneVal = sessionPhone;
 
-      const inputAlias = document.getElementById("alias_nombre") as HTMLInputElement | null;
-      const inputPhone = document.getElementById("whatsapp") as HTMLInputElement | null;
-      const inputEmail = document.getElementById("email") as HTMLInputElement | null;
-      const noticeBanner = document.getElementById("prefilled-profile-notice");
+      var inputAlias = document.getElementById("alias_nombre");
+      var inputPhone = document.getElementById("whatsapp");
+      var inputEmail = document.getElementById("email");
+      var noticeBanner = document.getElementById("prefilled-profile-notice");
 
-      function lockReadOnly(el: HTMLInputElement | null) {
+      function lockReadOnly(el) {
         if (!el || !el.value) return;
         el.readOnly = true;
         el.classList.add("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
@@ -776,14 +824,14 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
 
       if ((!aliasVal || !emailVal) && sessionPhone) {
         try {
-          const res = await fetch("/api/leads/check", {
+          var res = await fetch("/api/leads/check", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ whatsapp: sessionPhone }),
           });
-          const data = await res.json();
+          var data = await res.json();
           if (data.exists && data.lead) {
-            const lead = data.lead;
+            var lead = data.lead;
             if (lead.alias_nombre) {
               aliasVal = lead.alias_nombre;
               localStorage.setItem("user_alias", lead.alias_nombre);
@@ -824,36 +872,36 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
     }
 
     // Exponer funciones globales para onclick en HTML
-    (window as any).selectTierAndScroll = selectTierAndScroll;
-    (window as any).selectTier = selectTier;
-    (window as any).updateSummary = updateSummary;
-    (window as any).submitCheckout = submitCheckout;
+    window.selectTierAndScroll = selectTierAndScroll;
+    window.selectTier = selectTier;
+    window.updateSummary = updateSummary;
+    window.submitCheckout = submitCheckout;
 
-    document.getElementById("card-taller_solo")?.addEventListener("click", () => selectTierAndScroll("taller_solo"));
-    document.getElementById("card-taller_velada")?.addEventListener("click", () => selectTierAndScroll("taller_velada"));
+    document.getElementById("card-taller_solo")?.addEventListener("click", function() { selectTierAndScroll("taller_solo"); });
+    document.getElementById("card-taller_velada")?.addEventListener("click", function() { selectTierAndScroll("taller_velada"); });
 
     async function submitCheckout(metodo) {
-      const msg = document.getElementById("checkoutMsg");
-      const alias = document.getElementById("alias_nombre")?.value?.trim();
-      const whatsapp = document.getElementById("whatsapp")?.value?.trim();
-      const email = document.getElementById("email")?.value?.trim();
-      const modRadio = document.querySelector('input[name="modalidad"]:checked');
-      const modalidad = modRadio ? modRadio.value : "pago_total";
+      var msg = document.getElementById("checkoutMsg");
+      var alias = document.getElementById("alias_nombre")?.value?.trim();
+      var whatsapp = document.getElementById("whatsapp")?.value?.trim();
+      var email = document.getElementById("email")?.value?.trim();
+      var modRadio = document.querySelector('input[name="modalidad"]:checked');
+      var modalidad = modRadio ? modRadio.value : "pago_total";
 
       if (!alias || !whatsapp || !email) {
         if (msg) msg.textContent = "⚠️ Por favor completa tu nombre, WhatsApp y correo electrónico.";
         return;
       }
 
-      const btnDigital = document.getElementById("btnDigitalPay");
-      const btnManual = document.getElementById("btnManualPay");
+      var btnDigital = document.getElementById("btnDigitalPay");
+      var btnManual = document.getElementById("btnManualPay");
       if (btnDigital) btnDigital.disabled = true;
       if (btnManual) btnManual.disabled = true;
 
-      if (msg) msg.textContent = "⏳ Procesando tu reserva segura...";
+      if (msg) msg.textContent = "⏳ Conectando con la pasarela segura...";
 
       try {
-        const res = await fetch("/api/checkout/create", {
+        var res = await fetch("/api/checkout/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -862,18 +910,18 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
             modalidad_pago: modalidad,
             metodo_pago: metodo,
             alias_nombre: alias,
-            whatsapp,
-            email,
+            whatsapp: whatsapp,
+            email: email,
             ref: activeRef
           })
         });
 
-        const data = await res.json();
+        var data = await res.json();
         if (data.success && data.redirect_url) {
           if (msg) msg.textContent = "✓ Redireccionando a la pasarela segura...";
           window.location.href = data.redirect_url;
         } else if (data.error) {
-          if (msg) msg.textContent = `❌ ${data.error}`;
+          if (msg) msg.textContent = "❌ " + data.error;
           if (btnDigital) btnDigital.disabled = false;
           if (btnManual) btnManual.disabled = false;
         } else {
@@ -891,5 +939,6 @@ const separaVeladaSsr = Math.round(baseSeparaVeladaSsr * (1 - discPercentSsr));
     // Inicializar resumen e hidratar campos al cargar
     updateSummary();
     hydrateSessionFormFields();
+    resolveDiscountsAndVip();
   </script>
 </Layout>
