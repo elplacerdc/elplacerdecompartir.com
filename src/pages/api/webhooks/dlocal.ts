@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request }) => {
             } else {
               // Notificar reserva aclarando que se acredita tras pago total o asistencia
               import("../../../services/notifications").then(({ notifyAmbassadorNewReferral }) => {
-                client.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [ticket.afiliado_ref])
+                pool.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [ticket.afiliado_ref])
                   .then((ambRes) => {
                     if (ambRes.rows.length > 0) {
                       notifyAmbassadorNewReferral(ambRes.rows[0], {

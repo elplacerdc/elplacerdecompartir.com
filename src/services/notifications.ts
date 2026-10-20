@@ -510,27 +510,25 @@ export async function notifyEventReservation(
 
   // Programar recordatorios persistentes en PostgreSQL SSoT (BAI-284)
   if (isLuna) {
-    pool.connect().then((client) => {
-      return client.query(`
-        INSERT INTO scheduled_dispatches (evento, trigger_type, scheduled_for, channel, destination_phone, destination_email, payload, status)
-        VALUES 
-          ($1, '3_days_before', $2, 'both', $3, $4, $5, 'pending'),
-          ($1, 'doors_opening', $6, 'both', $3, $4, $5, 'pending')
-      `, [
-        ticket.evento,
-        new Date("2026-10-28T15:00:00Z"), // 3 días antes (10:00 AM Bogotá)
-        lead.whatsapp,
-        lead.email || null,
-        JSON.stringify({
-          alias_nombre: lead.alias_nombre,
-          ticket_hash: ticket.ticket_hash,
-          eventTitle,
-          eventPageUrl,
-          affLink
-        }),
-        new Date("2026-10-31T23:00:00Z")  // Apertura de puertas (6:00 PM Bogotá)
-      ]).finally(() => client.release());
-    }).catch((e) => console.warn("[Schedule Dispatch Insert Err]:", e.message));
+    pool.query(`
+      INSERT INTO scheduled_dispatches (evento, trigger_type, scheduled_for, channel, destination_phone, destination_email, payload, status)
+      VALUES 
+        ($1, '3_days_before', $2, 'both', $3, $4, $5, 'pending'),
+        ($1, 'doors_opening', $6, 'both', $3, $4, $5, 'pending')
+    `, [
+      ticket.evento,
+      new Date("2026-10-28T15:00:00Z"), // 3 días antes (10:00 AM Bogotá)
+      lead.whatsapp,
+      lead.email || null,
+      JSON.stringify({
+        alias_nombre: lead.alias_nombre,
+        ticket_hash: ticket.ticket_hash,
+        eventTitle,
+        eventPageUrl,
+        affLink
+      }),
+      new Date("2026-10-31T23:00:00Z")  // Apertura de puertas (6:00 PM Bogotá)
+    ]).catch((e) => console.warn("[Schedule Dispatch Insert Err]:", e.message));
   }
 
   // 1. WhatsApp al asistente

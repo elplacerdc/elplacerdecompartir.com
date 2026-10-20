@@ -62,183 +62,178 @@ export class ElPlacerDcDiscountStrategy implements DiscountStrategy {
     const phoneNorm = normalizePhone(whatsapp);
     const phoneVariants = phoneNorm ? phoneNorm.variants : [];
 
-    const client = await pool.connect();
-    try {
-      // Prevención de auto-referido: un embajador no puede ser su propio referente
-      let effectiveAffiliateRef = affiliateRef;
-      if (effectiveAffiliateRef && (cleanEmail || phoneVariants.length > 0)) {
-        try {
-          const selfCheck = await client.query(
-            `SELECT alias FROM afiliados 
-             WHERE LOWER(alias) = LOWER($1)
-               AND ((email IS NOT NULL AND LOWER(email) = LOWER($2)) 
-                    OR ($3::text[] IS NOT NULL AND whatsapp = ANY($3::text[])))
+    // Prevención de auto-referido: un embajador no puede ser su propio referente
+    let effectiveAffiliateRef = affiliateRef;
+    if (effectiveAffiliateRef && (cleanEmail || phoneVariants.length > 0)) {
+      try {
+        const selfCheck = await pool.query(
+          `SELECT alias FROM afiliados 
+           WHERE LOWER(alias) = LOWER($1)
+             AND ((email IS NOT NULL AND LOWER(email) = LOWER($2)) 
+                  OR ($3::text[] IS NOT NULL AND whatsapp = ANY($3::text[])))
+           LIMIT 1`,
+          [effectiveAffiliateRef.trim(), cleanEmail || '', phoneVariants.length > 0 ? phoneVariants : null]
+        );
+        if (selfCheck.rows.length > 0) {
+          // Si el comprador es el mismo embajador, verificar su referidor original en leads
+          const leadRefCheck = await pool.query(
+            `SELECT afiliado_id FROM leads 
+             WHERE (email IS NOT NULL AND LOWER(email) = LOWER($1))
+                OR ($2::text[] IS NOT NULL AND whatsapp = ANY($2::text[]))
              LIMIT 1`,
-            [effectiveAffiliateRef.trim(), cleanEmail || '', phoneVariants.length > 0 ? phoneVariants : null]
+            [cleanEmail || '', phoneVariants.length > 0 ? phoneVariants : null]
           );
-          if (selfCheck.rows.length > 0) {
-            // Si el comprador es el mismo embajador, verificar su referidor original en leads
-            const leadRefCheck = await client.query(
-              `SELECT afiliado_id FROM leads 
-               WHERE (email IS NOT NULL AND LOWER(email) = LOWER($1))
-                  OR ($2::text[] IS NOT NULL AND whatsapp = ANY($2::text[]))
-               LIMIT 1`,
-              [cleanEmail || '', phoneVariants.length > 0 ? phoneVariants : null]
-            );
-            const trueRef = leadRefCheck.rows[0]?.afiliado_id;
-            if (trueRef && trueRef.toLowerCase() !== effectiveAffiliateRef.trim().toLowerCase()) {
-              effectiveAffiliateRef = trueRef;
-            } else {
-              effectiveAffiliateRef = "segisw";
-            }
+          const trueRef = leadRefCheck.rows[0]?.afiliado_id;
+          if (trueRef && trueRef.toLowerCase() !== effectiveAffiliateRef.trim().toLowerCase()) {
+            effectiveAffiliateRef = trueRef;
+          } else {
+            effectiveAffiliateRef = "segisw";
           }
-        } catch (_) {}
-      }
+        }
+      } catch (_) {}
+    }
 
-      // Consultar si el embajador referente cuenta con credencial VIP activa
-      let isReferringAmbassadorVip = false;
-      if (effectiveAffiliateRef) {
-        try {
-          const ambRes = await client.query(
-            `SELECT l.vip_until, l.metadata, l.corset_vip, l.primer_pago_acreditado 
-             FROM afiliados a 
-             LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
-             WHERE LOWER(a.alias) = LOWER($1)
-             LIMIT 1`,
-            [effectiveAffiliateRef.trim()]
+    // Consultar si el embajador referente cuenta con credencial VIP activa
+    let isReferringAmbassadorVip = false;
+    if (effectiveAffiliateRef) {
+      try {
+        const ambRes = await pool.query(
+          `SELECT l.vip_until, l.metadata, l.corset_vip, l.primer_pago_acreditado 
+           FROM afiliados a 
+           LEFT JOIN leads l ON (LOWER(l.email) = LOWER(a.email) OR l.whatsapp = a.whatsapp OR LOWER(l.alias_nombre) = LOWER(a.alias))
+           WHERE LOWER(a.alias) = LOWER($1)
+           LIMIT 1`,
+          [effectiveAffiliateRef.trim()]
+        );
+        if (ambRes.rows.length > 0) {
+          const amb = ambRes.rows[0];
+          isReferringAmbassadorVip = Boolean(
+            (amb.vip_until && new Date(amb.vip_until) > new Date()) ||
+            (amb.metadata?.vip_until && new Date(amb.metadata.vip_until) > new Date()) ||
+            (Array.isArray(amb.metadata?.tags) && amb.metadata.tags.includes("vip_activo")) ||
+            (Boolean(amb.corset_vip) && Boolean(amb.primer_pago_acreditado)) ||
+            effectiveAffiliateRef.trim().toLowerCase() === "segisw"
           );
-          if (ambRes.rows.length > 0) {
-            const amb = ambRes.rows[0];
-            isReferringAmbassadorVip = Boolean(
-              (amb.vip_until && new Date(amb.vip_until) > new Date()) ||
-              (amb.metadata?.vip_until && new Date(amb.metadata.vip_until) > new Date()) ||
-              (Array.isArray(amb.metadata?.tags) && amb.metadata.tags.includes("vip_activo")) ||
-              (Boolean(amb.corset_vip) && Boolean(amb.primer_pago_acreditado)) ||
-              effectiveAffiliateRef.trim().toLowerCase() === "segisw"
-            );
-          } else if (effectiveAffiliateRef.trim().toLowerCase() === "segisw") {
-            isReferringAmbassadorVip = true;
-          }
-        } catch (e) {
-          console.warn("[DiscountStrategy Amb Check Err]:", e);
+        } else if (effectiveAffiliateRef.trim().toLowerCase() === "segisw") {
+          isReferringAmbassadorVip = true;
+        }
+      } catch (e) {
+        console.warn("[DiscountStrategy Amb Check Err]:", e);
+      }
+    }
+
+    const activeRate = isReferringAmbassadorVip ? 0.20 : 0.10;
+
+    if (domain === "event_ticket") {
+      // Check prior confirmed event ticket purchases
+      if (cleanEmail || phoneVariants.length > 0) {
+        const queryParams: any[] = [];
+        const conditions: string[] = [];
+
+        if (phoneVariants.length > 0) {
+          queryParams.push(phoneVariants);
+          conditions.push(`l.whatsapp = ANY($${queryParams.length})`);
+        }
+
+        if (cleanEmail) {
+          queryParams.push(cleanEmail);
+          conditions.push(`LOWER(l.email) = LOWER($${queryParams.length})`);
+        }
+
+        const ticketCheckQuery = `
+          SELECT COUNT(*)::int as count
+          FROM event_tickets et
+          JOIN leads l ON et.lead_id = l.id
+          WHERE (${conditions.join(" OR ")})
+            AND et.estado IN ('confirmado', 'aprobado', 'pagado', 'asistido')
+        `;
+
+        const checkRes = await pool.query(ticketCheckQuery, queryParams);
+        const confirmedTicketsCount = Number(checkRes.rows[0]?.count || 0);
+
+        if (confirmedTicketsCount > 0) {
+          return {
+            hasDiscount: false,
+            discountRate: 0,
+            isVipAmbassador: isReferringAmbassadorVip,
+            reason: "ambassador_single_use_consumed_event_ticket",
+            strategy: this.name,
+          };
         }
       }
 
-      const activeRate = isReferringAmbassadorVip ? 0.20 : 0.10;
+      // First event ticket: grant 20% (VIP ambassador) or 10% (standard ambassador)
+      return {
+        hasDiscount: true,
+        discountRate: activeRate,
+        isVipAmbassador: isReferringAmbassadorVip,
+        reason: isReferringAmbassadorVip ? "vip_ambassador_first_event_ticket" : "ambassador_first_event_ticket",
+        strategy: this.name,
+      };
+    }
 
-      if (domain === "event_ticket") {
-        // Check prior confirmed event ticket purchases
-        if (cleanEmail || phoneVariants.length > 0) {
-          const queryParams: any[] = [];
-          const conditions: string[] = [];
+    if (domain === "vip_membership") {
+      // Check prior VIP purchases / accredited status
+      if (cleanEmail || phoneVariants.length > 0) {
+        const queryParams: any[] = [];
+        const conditions: string[] = [];
 
-          if (phoneVariants.length > 0) {
-            queryParams.push(phoneVariants);
-            conditions.push(`l.whatsapp = ANY($${queryParams.length})`);
-          }
+        if (phoneVariants.length > 0) {
+          queryParams.push(phoneVariants);
+          conditions.push(`whatsapp = ANY($${queryParams.length})`);
+        }
 
-          if (cleanEmail) {
-            queryParams.push(cleanEmail);
-            conditions.push(`LOWER(l.email) = LOWER($${queryParams.length})`);
-          }
+        if (cleanEmail) {
+          queryParams.push(cleanEmail);
+          conditions.push(`LOWER(email) = LOWER($${queryParams.length})`);
+        }
 
-          const ticketCheckQuery = `
-            SELECT COUNT(*)::int as count
-            FROM event_tickets et
-            JOIN leads l ON et.lead_id = l.id
-            WHERE (${conditions.join(" OR ")})
-              AND et.estado IN ('confirmado', 'aprobado', 'pagado', 'asistido')
-          `;
+        const vipCheckQuery = `
+          SELECT primer_pago_acreditado, corset_vip, vip_until, metadata
+          FROM leads
+          WHERE (${conditions.join(" OR ")})
+          ORDER BY created_at DESC
+          LIMIT 1
+        `;
 
-          const checkRes = await client.query(ticketCheckQuery, queryParams);
-          const confirmedTicketsCount = Number(checkRes.rows[0]?.count || 0);
+        const checkRes = await pool.query(vipCheckQuery, queryParams);
+        if (checkRes.rows.length > 0) {
+          const row = checkRes.rows[0];
+          const hasPriorVipPurchase = Boolean(
+            row.primer_pago_acreditado === true ||
+            row.corset_vip === true ||
+            (row.vip_until && new Date(row.vip_until).getTime() > 0) ||
+            row.metadata?.vip_purchased === true
+          );
 
-          if (confirmedTicketsCount > 0) {
+          if (hasPriorVipPurchase) {
             return {
               hasDiscount: false,
               discountRate: 0,
               isVipAmbassador: isReferringAmbassadorVip,
-              reason: "ambassador_single_use_consumed_event_ticket",
+              reason: "ambassador_single_use_consumed_vip_membership",
               strategy: this.name,
             };
           }
         }
-
-        // First event ticket: grant 20% (VIP ambassador) or 10% (standard ambassador)
-        return {
-          hasDiscount: true,
-          discountRate: activeRate,
-          isVipAmbassador: isReferringAmbassadorVip,
-          reason: isReferringAmbassadorVip ? "vip_ambassador_first_event_ticket" : "ambassador_first_event_ticket",
-          strategy: this.name,
-        };
       }
 
-      if (domain === "vip_membership") {
-        // Check prior VIP purchases / accredited status
-        if (cleanEmail || phoneVariants.length > 0) {
-          const queryParams: any[] = [];
-          const conditions: string[] = [];
-
-          if (phoneVariants.length > 0) {
-            queryParams.push(phoneVariants);
-            conditions.push(`whatsapp = ANY($${queryParams.length})`);
-          }
-
-          if (cleanEmail) {
-            queryParams.push(cleanEmail);
-            conditions.push(`LOWER(email) = LOWER($${queryParams.length})`);
-          }
-
-          const vipCheckQuery = `
-            SELECT primer_pago_acreditado, corset_vip, vip_until, metadata
-            FROM leads
-            WHERE (${conditions.join(" OR ")})
-            ORDER BY created_at DESC
-            LIMIT 1
-          `;
-
-          const checkRes = await client.query(vipCheckQuery, queryParams);
-          if (checkRes.rows.length > 0) {
-            const row = checkRes.rows[0];
-            const hasPriorVipPurchase = Boolean(
-              row.primer_pago_acreditado === true ||
-              row.corset_vip === true ||
-              (row.vip_until && new Date(row.vip_until).getTime() > 0) ||
-              row.metadata?.vip_purchased === true
-            );
-
-            if (hasPriorVipPurchase) {
-              return {
-                hasDiscount: false,
-                discountRate: 0,
-                isVipAmbassador: isReferringAmbassadorVip,
-                reason: "ambassador_single_use_consumed_vip_membership",
-                strategy: this.name,
-              };
-            }
-          }
-        }
-
-        // First VIP membership purchase: grant 20% (VIP ambassador) or 10% (standard ambassador)
-        return {
-          hasDiscount: true,
-          discountRate: activeRate,
-          isVipAmbassador: isReferringAmbassadorVip,
-          reason: isReferringAmbassadorVip ? "vip_ambassador_first_vip_membership" : "ambassador_first_vip_membership",
-          strategy: this.name,
-        };
-      }
-
+      // First VIP membership purchase: grant 20% (VIP ambassador) or 10% (standard ambassador)
       return {
-        hasDiscount: false,
-        discountRate: 0,
-        reason: "unknown_domain",
+        hasDiscount: true,
+        discountRate: activeRate,
+        isVipAmbassador: isReferringAmbassadorVip,
+        reason: isReferringAmbassadorVip ? "vip_ambassador_first_vip_membership" : "ambassador_first_vip_membership",
         strategy: this.name,
       };
-    } finally {
-      client.release();
     }
+
+    return {
+      hasDiscount: false,
+      discountRate: 0,
+      reason: "unknown_domain",
+      strategy: this.name,
+    };
   }
 }
 

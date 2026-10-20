@@ -4,11 +4,18 @@ const { Pool } = pg;
 
 const connectionString = process.env.DATABASE_URL;
 
+const isTls = connectionString?.includes(":6432") || connectionString?.includes("sslmode=require");
+
 export const pool = new Pool({
   connectionString,
   max: 10,
-  idleTimeoutMillis: 30000,
+  idleTimeoutMillis: 10000,
   connectionTimeoutMillis: 5000,
+  ...(isTls ? { ssl: { rejectUnauthorized: false } } : {}),
+});
+
+pool.on("error", (err) => {
+  console.error("[PostgreSQL Pool Unexpected Error]:", err.message);
 });
 
 export const query = (text: string, params?: any[]) => pool.query(text, params);

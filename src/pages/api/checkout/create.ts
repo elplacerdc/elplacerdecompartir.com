@@ -51,45 +51,40 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     let affiliateRef = rawAffiliateRef;
     if (whatsapp || email || alias_nombre) {
       try {
-        const clientRef = await pool.connect();
-        try {
-          const cleanPhone = (whatsapp || "").toString().replace(/\D/g, "");
-          const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
-          const cleanEmail = (email || "").toString().trim().toLowerCase();
-          const cleanAlias = (alias_nombre || "").toString().trim().toLowerCase();
+        const cleanPhone = (whatsapp || "").toString().replace(/\D/g, "");
+        const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+        const cleanEmail = (email || "").toString().trim().toLowerCase();
+        const cleanAlias = (alias_nombre || "").toString().trim().toLowerCase();
 
-          // 1. Resolver Embajador Padre para fallback orgánico si no viene enlace en la compra
-          const existingLeadRes = await clientRef.query(
-            `SELECT afiliado_id FROM leads 
-             WHERE (email IS NOT NULL AND LOWER(email) = $1)
-                OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $2)
+        // 1. Resolver Embajador Padre para fallback orgánico si no viene enlace en la compra
+        const existingLeadRes = await pool.query(
+          `SELECT afiliado_id FROM leads 
+           WHERE (email IS NOT NULL AND LOWER(email) = $1)
+              OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $2)
+           LIMIT 1`,
+          [cleanEmail, last10]
+        );
+        const parentAffiliate = (existingLeadRes.rows[0]?.afiliado_id || "").toString().trim().toLowerCase() || null;
+
+        // Si la compra no trae enlace de último clic, fallback al Embajador Padre (LTV)
+        if (!affiliateRef && parentAffiliate) {
+          affiliateRef = parentAffiliate;
+        }
+
+        // 2. Anti auto-referido estricto contra la tabla de afiliados
+        if (affiliateRef) {
+          const selfAff = await pool.query(
+            `SELECT alias FROM afiliados 
+             WHERE LOWER(alias) = LOWER($1)
+               AND ((email IS NOT NULL AND LOWER(email) = $2)
+                    OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $3)
+                    OR (nombre IS NOT NULL AND LOWER(nombre) = $4))
              LIMIT 1`,
-            [cleanEmail, last10]
+            [affiliateRef, cleanEmail, last10, cleanAlias]
           );
-          const parentAffiliate = (existingLeadRes.rows[0]?.afiliado_id || "").toString().trim().toLowerCase() || null;
-
-          // Si la compra no trae enlace de último clic, fallback al Embajador Padre (LTV)
-          if (!affiliateRef && parentAffiliate) {
-            affiliateRef = parentAffiliate;
+          if (selfAff.rows.length > 0 || (cleanAlias && affiliateRef === cleanAlias)) {
+            affiliateRef = (parentAffiliate && parentAffiliate !== affiliateRef) ? parentAffiliate : null;
           }
-
-          // 2. Anti auto-referido estricto contra la tabla de afiliados
-          if (affiliateRef) {
-            const selfAff = await clientRef.query(
-              `SELECT alias FROM afiliados 
-               WHERE LOWER(alias) = LOWER($1)
-                 AND ((email IS NOT NULL AND LOWER(email) = $2)
-                      OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $3)
-                      OR (nombre IS NOT NULL AND LOWER(nombre) = $4))
-               LIMIT 1`,
-              [affiliateRef, cleanEmail, last10, cleanAlias]
-            );
-            if (selfAff.rows.length > 0 || (cleanAlias && affiliateRef === cleanAlias)) {
-              affiliateRef = (parentAffiliate && parentAffiliate !== affiliateRef) ? parentAffiliate : null;
-            }
-          }
-        } finally {
-          clientRef.release();
         }
       } catch (_) {}
     }
@@ -98,46 +93,41 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     let isVipActive = false;
     if (whatsapp || email) {
       try {
-        const checkClient = await pool.connect();
-        try {
-          const cleanPhone = (whatsapp || "").toString().replace(/\D/g, "");
-          const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
-          const cleanEmail = (email || "").toString().trim().toLowerCase();
+        const cleanPhone = (whatsapp || "").toString().replace(/\D/g, "");
+        const last10 = cleanPhone.length >= 10 ? cleanPhone.slice(-10) : cleanPhone;
+        const cleanEmail = (email || "").toString().trim().toLowerCase();
 
-          const vipCheck = await checkClient.query(
-            `SELECT id, vip_until, metadata, corset_vip, primer_pago_acreditado FROM leads 
-             WHERE (email IS NOT NULL AND LOWER(email) = $1)
-                OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $2)
-             LIMIT 1`,
-            [cleanEmail, last10]
+        const vipCheck = await pool.query(
+          `SELECT id, vip_until, metadata, corset_vip, primer_pago_acreditado FROM leads 
+           WHERE (email IS NOT NULL AND LOWER(email) = $1)
+              OR (whatsapp IS NOT NULL AND RIGHT(regexp_replace(whatsapp, '\\D', '', 'g'), 10) = $2)
+           LIMIT 1`,
+          [cleanEmail, last10]
+        );
+        if (vipCheck.rows.length > 0) {
+          const vRow = vipCheck.rows[0];
+          isVipActive = Boolean(
+            (vRow.vip_until && new Date(vRow.vip_until) > new Date()) ||
+            (vRow.metadata?.vip_until && new Date(vRow.metadata.vip_until) > new Date()) ||
+            (Array.isArray(vRow.metadata?.tags) && vRow.metadata.tags.includes("vip_activo")) ||
+            (Boolean(vRow.corset_vip) && Boolean(vRow.primer_pago_acreditado)) ||
+            (Boolean(vRow.corset_vip) && (!Array.isArray(vRow.metadata?.tags) || !vRow.metadata.tags.includes("posible vip")))
           );
-          if (vipCheck.rows.length > 0) {
-            const vRow = vipCheck.rows[0];
-            isVipActive = Boolean(
-              (vRow.vip_until && new Date(vRow.vip_until) > new Date()) ||
-              (vRow.metadata?.vip_until && new Date(vRow.metadata.vip_until) > new Date()) ||
-              (Array.isArray(vRow.metadata?.tags) && vRow.metadata.tags.includes("vip_activo")) ||
-              (Boolean(vRow.corset_vip) && Boolean(vRow.primer_pago_acreditado)) ||
-              (Boolean(vRow.corset_vip) && (!Array.isArray(vRow.metadata?.tags) || !vRow.metadata.tags.includes("posible vip")))
-            );
 
-            // Auto-heal active VIP tag in DB if missing
-            if (isVipActive && (!Array.isArray(vRow.metadata?.tags) || !vRow.metadata.tags.includes("vip_activo"))) {
-              try {
-                await checkClient.query(`
-                  UPDATE leads 
-                  SET metadata = jsonb_set(
-                    COALESCE(metadata, '{}'::jsonb), 
-                    '{tags}', 
-                    to_jsonb(array_append(array_remove(array_remove(COALESCE(ARRAY(SELECT jsonb_array_elements_text(metadata->'tags')), '{}'::text[]), 'posible vip'), 'posible_vip'), 'vip_activo'))
-                  )
-                  WHERE id = $1
-                `, [vRow.id]);
-              } catch (_) {}
-            }
+          // Auto-heal active VIP tag in DB if missing
+          if (isVipActive && (!Array.isArray(vRow.metadata?.tags) || !vRow.metadata.tags.includes("vip_activo"))) {
+            try {
+              await pool.query(`
+                UPDATE leads 
+                SET metadata = jsonb_set(
+                  COALESCE(metadata, '{}'::jsonb), 
+                  '{tags}', 
+                  to_jsonb(array_append(array_remove(array_remove(COALESCE(ARRAY(SELECT jsonb_array_elements_text(metadata->'tags')), '{}'::text[]), 'posible vip'), 'posible_vip'), 'vip_activo'))
+                )
+                WHERE id = $1
+              `, [vRow.id]);
+            } catch (_) {}
           }
-        } finally {
-          checkClient.release();
         }
       } catch (e) {}
     }
@@ -178,68 +168,63 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // 1.1 Validar filtro dinámico para hombres solos (Single en Luna Llena)
     if (evento === "luna_llena" && tipo_entrada === "single") {
-      const clientRatio = await pool.connect();
-      try {
-        const countsRes = await clientRatio.query(
-          `SELECT 
-             COUNT(*) FILTER (WHERE tipo_entrada = 'pareja' AND estado NOT IN ('cancelado', 'rechazado')) as parejas,
-             COUNT(*) FILTER (WHERE tipo_entrada = 'single' AND estado NOT IN ('cancelado', 'rechazado')) as singles
-           FROM event_tickets
-           WHERE evento = 'luna_llena'`
+      const countsRes = await pool.query(
+        `SELECT 
+           COUNT(*) FILTER (WHERE tipo_entrada = 'pareja' AND estado NOT IN ('cancelado', 'rechazado')) as parejas,
+           COUNT(*) FILTER (WHERE tipo_entrada = 'single' AND estado NOT IN ('cancelado', 'rechazado')) as singles
+         FROM event_tickets
+         WHERE evento = 'luna_llena'`
+      );
+      const parejas = parseInt(countsRes.rows[0]?.parejas || "0", 10);
+      const singles = parseInt(countsRes.rows[0]?.singles || "0", 10);
+
+      const isUserVip = Boolean(
+        isVipActive || 
+        lead.primer_pago_acreditado ||
+        (lead.vip_until && new Date(lead.vip_until) > new Date()) ||
+        (lead.metadata?.tags && lead.metadata.tags.includes("vip_activo"))
+      );
+
+      // Subfiltro VIP: De las 3 primeras plazas para hombre, 1 plaza se reserva para socio VIP
+      if (singles >= 2 && !isUserVip && singles < 3) {
+        const waText = encodeURIComponent(
+          `Hola Segisw, soy ${lead.alias_nombre || 'invitado'} (ID: ${lead.id.substring(0, 8)}) y deseo consultar cupos Single para Luna Llena.`
         );
-        const parejas = parseInt(countsRes.rows[0]?.parejas || "0", 10);
-        const singles = parseInt(countsRes.rows[0]?.singles || "0", 10);
-
-        const isUserVip = Boolean(
-          isVipActive || 
-          lead.primer_pago_acreditado ||
-          (lead.vip_until && new Date(lead.vip_until) > new Date()) ||
-          (lead.metadata?.tags && lead.metadata.tags.includes("vip_activo"))
+        const whatsappUrl = `https://wa.me/573194194785?text=${waText}`;
+        return new Response(
+          JSON.stringify({
+            error: `El último cupo disponible en esta fase está reservado exclusivamente para miembros con Credencial VIP activa. Para desbloquear tu reserva inmediata, activa tu credencial VIP.`,
+            vipRequired: true,
+            checkoutUrl: `/corset-vip#vip-checkout-box`,
+            whatsappUrl,
+            waitlist: true,
+          }),
+          { status: 422, headers: { "Content-Type": "application/json" } }
         );
+      }
 
-        // Subfiltro VIP: De las 3 primeras plazas para hombre, 1 plaza se reserva para socio VIP
-        if (singles >= 2 && !isUserVip && singles < 3) {
-          const waText = encodeURIComponent(
-            `Hola Segisw, soy ${lead.alias_nombre || 'invitado'} (ID: ${lead.id.substring(0, 8)}) y deseo consultar cupos Single para Luna Llena.`
-          );
-          const whatsappUrl = `https://wa.me/573194194785?text=${waText}`;
-          return new Response(
-            JSON.stringify({
-              error: `El último cupo disponible en esta fase está reservado exclusivamente para miembros con Credencial VIP activa. Para desbloquear tu reserva inmediata, activa tu credencial VIP.`,
-              vipRequired: true,
-              checkoutUrl: `/corset-vip#vip-checkout-box`,
-              whatsappUrl,
-              waitlist: true,
-            }),
-            { status: 422, headers: { "Content-Type": "application/json" } }
-          );
-        }
+      // A partir de 3 hombres confirmados rige proporción 1:3 respecto a parejas confirmadas:
+      const maxSinglesAllowed = Math.max(3, Math.floor(parejas / 3));
 
-        // A partir de 3 hombres confirmados rige proporción 1:3 respecto a parejas confirmadas:
-        const maxSinglesAllowed = Math.max(3, Math.floor(parejas / 3));
+      if (singles >= maxSinglesAllowed) {
+        const waText = encodeURIComponent(
+          `Hola Segisw, soy ${lead.alias_nombre || 'invitado'} (ID: ${lead.id.substring(0, 8)}) y deseo validar cupo en lista de espera para pase Single en Luna Llena.`
+        );
+        const whatsappUrl = `https://wa.me/573194194785?text=${waText}`;
 
-        if (singles >= maxSinglesAllowed) {
-          const waText = encodeURIComponent(
-            `Hola Segisw, soy ${lead.alias_nombre || 'invitado'} (ID: ${lead.id.substring(0, 8)}) y deseo validar cupo en lista de espera para pase Single en Luna Llena.`
-          );
-          const whatsappUrl = `https://wa.me/573194194785?text=${waText}`;
+        const parejasInfo = parejas > 6 ? ` Actualmente contamos con ${parejas} parejas confirmadas.` : "";
+        const errorMsg = `Cupos de pase Single temporalmente en espera por política de aforo y equilibrio del evento.${parejasInfo} Te invitamos a comunicarte directamente con Segisw para coordinar tu ingreso o consultar nuevas liberaciones de aforo.`;
 
-          const parejasInfo = parejas > 6 ? ` Actualmente contamos con ${parejas} parejas confirmadas.` : "";
-          const errorMsg = `Cupos de pase Single temporalmente en espera por política de aforo y equilibrio del evento.${parejasInfo} Te invitamos a comunicarte directamente con Segisw para coordinar tu ingreso o consultar nuevas liberaciones de aforo.`;
-
-          return new Response(
-            JSON.stringify({
-              error: errorMsg,
-              waitlist: true,
-              parejas: parejas > 6 ? parejas : undefined,
-              whatsappUrl,
-              whatsappButtonText: "Hablar con Segisw por WhatsApp",
-            }),
-            { status: 422, headers: { "Content-Type": "application/json" } }
-          );
-        }
-      } finally {
-        clientRatio.release();
+        return new Response(
+          JSON.stringify({
+            error: errorMsg,
+            waitlist: true,
+            parejas: parejas > 6 ? parejas : undefined,
+            whatsappUrl,
+            whatsappButtonText: "Hablar con Segisw por WhatsApp",
+          }),
+          { status: 422, headers: { "Content-Type": "application/json" } }
+        );
       }
     }
 
@@ -280,43 +265,38 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // 2. Insert or Reuse pending ticket (Idempotency lock: avoid multi-click duplication within 60s)
-    const client = await pool.connect();
     let ticketId = "";
     let ticketHash = "";
-    try {
-      const existing = await client.query(
-        `SELECT id, ticket_hash FROM event_tickets 
-         WHERE lead_id = $1 AND evento = $2 AND tipo_entrada = $3 AND tipo_pago = $4 AND estado = 'pendiente' AND created_at > NOW() - INTERVAL '60 seconds'
-         ORDER BY created_at DESC LIMIT 1`,
-        [lead.id, evento, tipo_entrada, modalidad_pago]
-      );
+    const existing = await pool.query(
+      `SELECT id, ticket_hash FROM event_tickets 
+       WHERE lead_id = $1 AND evento = $2 AND tipo_entrada = $3 AND tipo_pago = $4 AND estado = 'pendiente' AND created_at > NOW() - INTERVAL '60 seconds'
+       ORDER BY created_at DESC LIMIT 1`,
+      [lead.id, evento, tipo_entrada, modalidad_pago]
+    );
 
-      if (existing.rows.length > 0) {
-        ticketId = existing.rows[0].id;
-        ticketHash = existing.rows[0].ticket_hash;
-      } else {
-        ticketHash = crypto.randomBytes(16).toString("hex");
-        const res = await client.query(
-          `INSERT INTO event_tickets (
-            lead_id, evento, tipo_entrada, tipo_pago, monto_pagado, metodo_pago, 
-            estado, afiliado_ref, ticket_hash
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-          [
-            lead.id,
-            evento,
-            tipo_entrada,
-            modalidad_pago,
-            monto,
-            metodo_pago || "pasarela_digital",
-            "pendiente",
-            lockedAffiliate,
-            ticketHash,
-          ]
-        );
-        ticketId = res.rows[0].id;
-      }
-    } finally {
-      client.release();
+    if (existing.rows.length > 0) {
+      ticketId = existing.rows[0].id;
+      ticketHash = existing.rows[0].ticket_hash;
+    } else {
+      ticketHash = crypto.randomBytes(16).toString("hex");
+      const res = await pool.query(
+        `INSERT INTO event_tickets (
+          lead_id, evento, tipo_entrada, tipo_pago, monto_pagado, metodo_pago, 
+          estado, afiliado_ref, ticket_hash
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+        [
+          lead.id,
+          evento,
+          tipo_entrada,
+          modalidad_pago,
+          monto,
+          metodo_pago || "pasarela_digital",
+          "pendiente",
+          lockedAffiliate,
+          ticketHash,
+        ]
+      );
+      ticketId = res.rows[0].id;
     }
 
     // 3. Handle Digital Payment Method
@@ -396,8 +376,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
+    console.error("[Checkout Create Error]:", error);
+    const isConnError = error?.code === "53300" || 
+      error?.message?.includes("connection slots") || 
+      error?.message?.includes("too many clients") ||
+      error?.message?.includes("timeout exceeded");
+
+    const userMessage = isConnError
+      ? "En este momento estamos experimentando alta demanda en el sistema de pagos. Por favor intenta nuevamente en unos instantes."
+      : error.message || "Error al procesar la orden.";
+
+    return new Response(JSON.stringify({ error: userMessage }), {
+      status: isConnError ? 503 : 500,
       headers: { "Content-Type": "application/json" },
     });
   }
