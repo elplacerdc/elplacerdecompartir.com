@@ -893,7 +893,7 @@ const isAuthenticated = verifyAdminSessionToken(token);
         const checkins = data.counts.totalCheckins ?? 0;
         kpiPendingCash.innerHTML = `
           <span>${total}</span>
-          <span class="text-xs font-sans font-semibold text-[#81c784] block mt-0.5">${checkins} Asistidos</span>
+          <span class="text-xs font-sans font-semibold text-[#81c784] block mt-0.5">✓ ${checkins} Asistidos</span>
         `;
       }
       if (kpiCheckins) kpiCheckins.textContent = `$${Number(data.counts.netRevenue ?? 0).toLocaleString("es-CO")}`;
@@ -1921,10 +1921,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
               Confirmados (${countAll})
             </button>
             <button type="button" class="btn-ticket-tab flex-1 min-w-[100px] py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'pagos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="pagos">
-              💰 Pagos (${countPagos})
+              💰 Eventos Pagos (${countPagos})
             </button>
             <button type="button" class="btn-ticket-tab flex-1 min-w-[100px] py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'gratuitos' ? 'bg-[#c5a059] text-[#0a050c] font-bold shadow-sm' : 'text-[#ead397] hover:bg-[#c5a059]/20'}" data-tab="gratuitos">
-              🎁 Cortesías (${countGratis})
+              🎁 Gratuitos / Cortesías (${countGratis})
             </button>
             <button type="button" class="btn-ticket-tab flex-1 min-w-[100px] py-1.5 px-3 rounded-lg font-semibold transition-all ${ticketsCategoryFilter === 'pendientes' ? 'bg-[#f57c00] text-white font-bold shadow-sm' : 'text-[#ffb74d] hover:bg-[#f57c00]/20'}" data-tab="pendientes">
               ⏳ En Proceso (${countPendientes})

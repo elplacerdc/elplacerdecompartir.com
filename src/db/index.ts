@@ -274,8 +274,8 @@ export async function upsertLead(
       if (resolvedChannel === "elplacerdc" || data.origen === "web_comunidad" || (!existingTags.includes("general") && !existingTags.includes("corset") && !existingTags.includes("alianzas"))) {
         newTagsToAdd.push("general");
       }
-      const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen === "web_corset";
-      if (isExplicitCorsetVipSubmission) {
+      const isCorsetVip = Boolean(data.corset_vip || data.origen === "web_corset");
+      if (isCorsetVip) {
         newTagsToAdd.push("corset");
         newTagsToAdd.push("corset_vip");
         if (!existingTags.includes("vip_activo")) {
@@ -340,7 +340,7 @@ export async function upsertLead(
           canonicalPhone || existingLead.whatsapp,
           normalizedRol,
           data.ciudad || null,
-          Boolean(isExplicitCorsetVipSubmission || existingLead.corset_vip),
+          Boolean(isCorsetVip || existingLead.corset_vip),
           data.afiliado_id || null,
           JSON.stringify(mergedMeta),
           existingLead.id,
@@ -375,8 +375,8 @@ export async function upsertLead(
 
     // 3. New Lead Insertion Path (Ensure canonical tags array is initialized monotonically)
     const initialTags: string[] = [];
-    const isExplicitCorsetVipSubmission = Boolean(data.corset_vip) && data.origen === "web_corset";
-    if (isExplicitCorsetVipSubmission) {
+    const isCorsetVip = Boolean(data.corset_vip || data.origen === "web_corset");
+    if (isCorsetVip) {
       initialTags.push("corset");
       initialTags.push("corset_vip");
       initialTags.push("posible vip");
@@ -417,7 +417,7 @@ export async function upsertLead(
           data.ciudad || "Bogotá",
           data.origen || (resolvedChannel === "corset" ? "web_corset" : resolvedChannel === "centro_cultural" ? "alianza_centro_cultural" : "web_comunidad"),
           data.afiliado_id || null,
-          Boolean(isExplicitCorsetVipSubmission),
+          Boolean(isCorsetVip),
           JSON.stringify(initialMeta),
           isWhatsappVerified,
           isEmailVerified,

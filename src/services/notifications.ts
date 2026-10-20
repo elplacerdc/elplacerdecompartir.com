@@ -470,6 +470,8 @@ export async function notifyEventReservation(
     affiliateCode?: string;
   }
 ): Promise<void> {
+  const isViernes23 = ticket.evento.includes("viernes-23") || ticket.evento.includes("viernes_23") || ticket.evento.includes("23-oct");
+  const isSabado24 = ticket.evento.includes("sabado-24") || ticket.evento.includes("sabado_24") || ticket.evento.includes("24-oct");
   const isTaller = ticket.evento.includes("taller") || ticket.evento.includes("baile");
   const isLuna = ticket.evento.includes("luna_llena") || ticket.evento.includes("luna-llena");
   const isSitio = ticket.evento.includes("sitio") || ticket.evento.includes("9-oct");
@@ -477,7 +479,11 @@ export async function notifyEventReservation(
   const isCorsetVip = ticket.evento.includes("corset_vip") || ticket.evento.includes("vip");
 
   let eventTitle = "Evento Oficial El Placer de Compartir";
-  if (isTaller) {
+  if (isViernes23) {
+    eventTitle = "Viernes 23 de Octubre — Show de Sexo en Vivo (ElPlacerDC)";
+  } else if (isSabado24) {
+    eventTitle = "Sábado 24 de Octubre — Camas Francas & Lencería Sexy (ElPlacerDC)";
+  } else if (isTaller) {
     eventTitle = "Taller de Baile Erótico — Sensualidad & Heels (Viernes 16 de Octubre)";
   } else if (isLuna) {
     eventTitle = "The Corset Society — Noche de Luna Llena (Gala Mascarada Noir de Halloween)";
@@ -496,7 +502,11 @@ export async function notifyEventReservation(
   const affCode = options?.affiliateCode || "segisw";
 
   // URL del evento específico para el enlace de embajador
-  const eventPageUrl = isTaller
+  const eventPageUrl = isViernes23
+    ? `https://elplacerdecompartir.com/eventos/viernes-23-oct/`
+    : isSabado24
+    ? `https://elplacerdecompartir.com/eventos/sabado-24-oct/`
+    : isTaller
     ? `https://elplacerdecompartir.com/taller-baile-erotico/`
     : isLuna
     ? `https://elplacerdecompartir.com/the-corset-society/luna-llena/`
@@ -504,7 +514,7 @@ export async function notifyEventReservation(
     ? `https://elplacerdecompartir.com/eventos/sitio-9-oct/`
     : isImpacto
     ? `https://elplacerdecompartir.com/eventos/impacto-10-oct/`
-    : `https://elplacerdecompartir.com/taller-baile-erotico/`;
+    : `https://elplacerdecompartir.com/centro-cultural/`;
 
   const affLink = `${eventPageUrl.replace(/\/+$/, "")}/?ref=${encodeURIComponent(affCode)}`;
 

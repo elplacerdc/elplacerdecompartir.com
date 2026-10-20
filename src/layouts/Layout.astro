@@ -37,13 +37,14 @@ const description = Astro.props.description || defaultDescription;
 
 const reqHeaders = Astro.request?.headers;
 const forwardedHost = reqHeaders?.get("x-forwarded-host") || reqHeaders?.get("host");
-const siteUrl = (forwardedHost && forwardedHost.includes("zerops.app"))
+const siteUrl = "https://elplacerdecompartir.com";
+const effectiveSiteUrl = (forwardedHost && forwardedHost.includes("zerops.app"))
   ? `https://${forwardedHost}`
-  : "https://elplacerdecompartir.com";
+  : siteUrl;
 
 const resolvedOgImage = ogImage.startsWith("http")
   ? ogImage
-  : `${siteUrl}${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
+  : `${effectiveSiteUrl}${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
 
 const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
 ---

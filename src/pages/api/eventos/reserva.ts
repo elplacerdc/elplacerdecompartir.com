@@ -90,37 +90,32 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // 2. Insert into event_tickets
-    const client = await pool.connect();
-    try {
-      await client.query(
-        `INSERT INTO event_tickets (
-          lead_id,
-          evento,
-          tipo_entrada,
-          tipo_pago,
-          monto_pagado,
-          metodo_pago,
-          referencia_transaccion,
-          estado,
-          afiliado_ref,
-          ticket_hash
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-        [
-          leadId,
-          evento,
-          "reserva_gratuita",
-          "gratis",
-          0,
-          "registro_web",
-          `RES-${Date.now()}`,
-          "confirmada",
-          leadResult.lead?.afiliado_id || affiliateRef,
-          ticketHash,
-        ]
-      );
-    } finally {
-      client.release();
-    }
+    await pool.query(
+      `INSERT INTO event_tickets (
+        lead_id,
+        evento,
+        tipo_entrada,
+        tipo_pago,
+        monto_pagado,
+        metodo_pago,
+        referencia_transaccion,
+        estado,
+        afiliado_ref,
+        ticket_hash
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      [
+        leadId,
+        evento,
+        "reserva_gratuita",
+        "gratis",
+        0,
+        "registro_web",
+        `RES-${Date.now()}`,
+        "confirmada",
+        leadResult.lead?.afiliado_id || affiliateRef,
+        ticketHash,
+      ]
+    );
 
     // 3. Dispatch multi-channel notification (WA + Email with QR, combined with Welcome/Ambassador if new)
     notifyEventReservation(

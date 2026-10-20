@@ -19,6 +19,14 @@ const EVENT_PRICES: Record<string, Record<string, EventTier>> = {
     taller_solo: { total: 40000, label: "Pase Solo Taller (Individual o Pareja)" },
     taller_velada: { total: 120000, reserva: 60000, label: "Pase Taller + Velada VIP Centro Cultural" },
   },
+  viernes_23: {
+    cover_individual: { total: 15000, label: "Solo Cover (Solos y Solas) — Promo Web" },
+    consumo_pareja: { total: 60000, label: "Todo en Consumo (Parejas) — Promo Web" },
+  },
+  sabado_24: {
+    cover_individual: { total: 15000, label: "Solo Cover (Solos y Solas) — Promo Web" },
+    consumo_pareja: { total: 55000, label: "Todo en Consumo (Parejas) — Promo Web" },
+  },
 };
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -27,7 +35,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const { tipo_entrada, metodo_pago, alias_nombre, email, whatsapp } = body;
     
     const rawEvento = (body.evento || body.event || "luna_llena").toString().toLowerCase().replace(/-/g, "_");
-    const evento = rawEvento.includes("taller") || rawEvento.includes("baile") ? "taller_baile_erotico" : "luna_llena";
+    let evento = "luna_llena";
+    if (rawEvento.includes("viernes") || rawEvento.includes("23")) {
+      evento = "viernes_23";
+    } else if (rawEvento.includes("sabado") || rawEvento.includes("24")) {
+      evento = "sabado_24";
+    } else if (rawEvento.includes("taller") || rawEvento.includes("baile")) {
+      evento = "taller_baile_erotico";
+    } else {
+      evento = "luna_llena";
+    }
     const eventTiers = EVENT_PRICES[evento] || EVENT_PRICES.luna_llena;
     const priceInfo = eventTiers[tipo_entrada] || EVENT_PRICES.luna_llena[tipo_entrada] || EVENT_PRICES.taller_baile_erotico[tipo_entrada];
 
@@ -149,12 +166,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         alias_nombre,
         email,
         whatsapp,
-        rol: (tipo_entrada === "pareja" || tipo_entrada === "taller_velada") ? "pareja" : tipo_entrada === "unicornio" ? "mujer_sola" : "hombre_solo",
+        rol: (tipo_entrada === "pareja" || tipo_entrada === "consumo_pareja" || tipo_entrada === "taller_velada") ? "pareja" : tipo_entrada === "unicornio" ? "mujer_sola" : (body.rol || "hombre_solo"),
         corset_vip: isVipActive,
         origen: `evento_${evento}`,
         afiliado_id: affiliateRef || undefined,
       },
-      evento === "taller_baile_erotico" ? "elplacerdc" : "corset"
+      (evento === "viernes_23" || evento === "sabado_24" || evento === "taller_baile_erotico") ? "elplacerdc" : "corset"
     );
 
     if (leadResult.status === "conflict") {
@@ -236,7 +253,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (!isDigitalGateway) {
       // Manual coordination via WhatsApp (Bre-B, Nequi, Transferencia)
-      const waTitle = evento === "taller_baile_erotico"
+      const waTitle = evento === "viernes_23"
+        ? `🔥 *COORDINACIÓN DE PAGO ONLINE — VIERNES 23 DE OCTUBRE — SHOW DE SEXO EN VIVO*`
+        : evento === "sabado_24"
+        ? `🛏️ *COORDINACIÓN DE PAGO ONLINE — SÁBADO 24 DE OCTUBRE — CAMAS FRANCAS & LENCERÍA*`
+        : evento === "taller_baile_erotico"
         ? `💃 *COORDINACIÓN DE PAGO MANUAL — TALLER DE BAILE — EL PLACER DE COMPARTIR*`
         : `🌕 *COORDINACIÓN DE PAGO MANUAL — NOCHE DE LUNA LLENA — THE CORSET SOCIETY*`;
 
@@ -310,15 +331,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Sanitización estricta de términos restringidos por pasarelas (Compliance dLocal Go)
     const cleanTierLabel = (priceInfo.label || "")
       .replace(/er[oó]tico/gi, "")
+      .replace(/sexo/gi, "")
       .replace(/(\(hasta 4am\)|hasta 4am)/gi, "")
       .replace(/\s+/g, " ")
       .trim();
 
-    const eventDesc = evento === "taller_baile_erotico"
+    const eventDesc = evento === "viernes_23"
+      ? `Viernes 23 Oct: ${cleanTierLabel}`.slice(0, 95)
+      : evento === "sabado_24"
+      ? `Sabado 24 Oct: ${cleanTierLabel}`.slice(0, 95)
+      : evento === "taller_baile_erotico"
       ? `Taller de Baile: ${cleanTierLabel} (${modalidad_pago === "reserva_50" ? "Separacion 50%" : "Pago Total"})`.slice(0, 95)
       : `Cover Cultural: ${cleanTierLabel} (${modalidad_pago === "reserva_40" ? "Separacion 40%" : "Pago Total"})`.slice(0, 95);
 
-    const backUrl = evento === "taller_baile_erotico"
+    const backUrl = evento === "viernes_23"
+      ? "https://elplacerdecompartir.com/eventos/viernes-23-oct"
+      : evento === "sabado_24"
+      ? "https://elplacerdecompartir.com/eventos/sabado-24-oct"
+      : evento === "taller_baile_erotico"
       ? "https://elplacerdecompartir.com/taller-baile-erotico/"
       : "https://elplacerdecompartir.com/the-corset-society/luna-llena/";
 
