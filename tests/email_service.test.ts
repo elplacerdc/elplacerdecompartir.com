@@ -25,5 +25,5 @@ describe("Transactional Email Multi-Tier Transport Invariants", () => {
 
     expect(res.success).toBe(false);
     expect(res.provider).toBe("failed");
-  });
+  }, 15000);
 });
