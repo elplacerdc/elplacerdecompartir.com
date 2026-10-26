@@ -4,9 +4,9 @@ import { syncSubscriberToListmonk, LISTMONK_LISTS } from "../src/services/listmo
 import { dispatchDomainEvent } from "../src/services/automation";
 
 describe("BAI-244: Identidad Unificada & Event-Driven Listmonk Invariants", () => {
-  const testPhoneA = "+573119990001";
+  const testPhoneA = "+570009990001";
   const testEmailA = "test_lead_a@elplacerdecompartir.com";
-  const testPhoneB = "+573119990002";
+  const testPhoneB = "+570009990002";
   const testEmailB = "test_lead_b@elplacerdecompartir.com";
 
   afterAll(async () => {

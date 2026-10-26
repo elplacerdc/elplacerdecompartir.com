@@ -151,6 +151,8 @@ export const GET: APIRoute = async ({ cookies }) => {
         (a.whatsapp IS NOT NULL AND RIGHT(regexp_replace(a.whatsapp, '\\D', '', 'g'), 10) = RIGHT(regexp_replace(l.whatsapp, '\\D', '', 'g'), 10)) OR
         (a.alias IS NOT NULL AND LOWER(a.alias) = LOWER(l.alias_nombre))
       )
+      WHERE (l.email IS NULL OR (l.email NOT LIKE '%@test.com' AND l.email NOT LIKE '%@example.com'))
+        AND (l.alias_nombre IS NULL OR (LOWER(l.alias_nombre) NOT LIKE '%valquiria%' AND LOWER(l.alias_nombre) NOT LIKE '%baron%'))
       ORDER BY l.created_at DESC
       LIMIT 200
     `);
@@ -161,6 +163,8 @@ export const GET: APIRoute = async ({ cookies }) => {
         a.id, a.alias, a.nombre, a.whatsapp, a.email, a.clicks, a.referidos_pagados, a.entradas_ganadas, a.created_at,
         (SELECT COUNT(*)::int FROM leads WHERE LOWER(afiliado_id) = LOWER(a.alias)) AS referidos_registrados
       FROM afiliados a
+      WHERE (a.email IS NULL OR (a.email NOT LIKE '%@test.com' AND a.email NOT LIKE '%@example.com'))
+        AND (a.alias IS NULL OR (LOWER(a.alias) NOT LIKE '%valquiria%' AND LOWER(a.alias) NOT LIKE '%baron%'))
       ORDER BY a.created_at DESC
       LIMIT 150
     `);

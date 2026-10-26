@@ -3,7 +3,7 @@ import { pool } from "../src/db";
 
 describe("BAI-290: Purga Total Indivisible al Eliminar Usuario (DB, Valkey, Sesiones)", () => {
   const testEmail = "test_purge_user@example.com";
-  const testPhone = "+573009998877";
+  const testPhone = "+570009998877";
 
   const cleanup = async () => {
     const client = await pool.connect();
@@ -90,7 +90,7 @@ describe("BAI-290: Purga Total Indivisible al Eliminar Usuario (DB, Valkey, Sesi
 
       const refLead = await client.query(
         `INSERT INTO leads (alias_nombre, email, whatsapp, rol, ciudad, origen, afiliado_id)
-         VALUES ('ReferredChild', $1, '+573112223344', 'pareja', 'Bogotá', 'web_comunidad', $2)
+         VALUES ('ReferredChild', $1, '+570002223344', 'pareja', 'Bogotá', 'web_comunidad', $2)
          RETURNING id`,
         [testRefEmail, testAffAlias]
       );

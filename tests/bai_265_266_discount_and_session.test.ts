@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 describe("BAI-265: Regla de 10% de Uso Único por Dominio Independiente & Estrategia Pluggable", () => {
-  const testPhone = "+573009998877";
+  const testPhone = "+570009998877";
   const testEmail = "test_ambassador_discount@elplacerdecompartir.com";
   let testLeadId: string;
 

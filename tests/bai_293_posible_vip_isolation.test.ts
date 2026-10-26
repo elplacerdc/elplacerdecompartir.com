@@ -2,7 +2,7 @@ import { describe, test, expect, beforeEach, afterAll } from "bun:test";
 import { upsertLead, pool } from "../src/db";
 
 describe("BAI-293: Aislamiento Estricto de Posible VIP (Solo Formulario The Corset Society)", () => {
-  const testPhoneDashboard = "573105556677";
+  const testPhoneDashboard = "570005556677";
   const testEmailDashboard = "dashboard_user_test@example.com";
 
   const cleanup = async () => {

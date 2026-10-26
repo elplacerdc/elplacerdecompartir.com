@@ -3,16 +3,45 @@ import { upsertLead, pool } from "../src/db";
 import { POST as registerHandler } from "../src/pages/api/leads/register";
 
 describe("Domain Invariants: Multi-Channel Lead Accumulation & Corset VIP", () => {
-  const testPhoneNew = "573001112233";
-  const testPhoneDual = "573004445566";
-  const testPhoneEndpoint = "573007778899";
+  const testPhoneNew = "570001112233";
+  const testPhoneDual = "570004445566";
+  const testPhoneEndpoint = "570007778899";
 
   const cleanup = async () => {
     await pool.query(
+      `DELETE FROM event_tickets WHERE lead_id IN (
+         SELECT id FROM leads WHERE email LIKE '%@test.com' 
+         OR whatsapp LIKE '%0001112233%' 
+         OR whatsapp LIKE '%0004445566%' 
+         OR whatsapp LIKE '%0007778899%'
+         OR whatsapp LIKE '%3001112233%'
+         OR whatsapp LIKE '%3004445566%'
+         OR whatsapp LIKE '%3007778899%'
+         OR alias_nombre ILIKE '%baron%'
+         OR alias_nombre ILIKE '%ladynoir%'
+       )`
+    );
+    await pool.query(
       `DELETE FROM leads WHERE email LIKE '%@test.com' 
-       OR whatsapp LIKE '%3001112233%' 
-       OR whatsapp LIKE '%3004445566%' 
-       OR whatsapp LIKE '%3007778899%'`
+       OR whatsapp LIKE '%0001112233%' 
+       OR whatsapp LIKE '%0004445566%' 
+       OR whatsapp LIKE '%0007778899%'
+       OR whatsapp LIKE '%3001112233%'
+       OR whatsapp LIKE '%3004445566%'
+       OR whatsapp LIKE '%3007778899%'
+       OR alias_nombre ILIKE '%baron%'
+       OR alias_nombre ILIKE '%ladynoir%'`
+    );
+    await pool.query(
+      `DELETE FROM afiliados WHERE email LIKE '%@test.com' 
+       OR whatsapp LIKE '%0001112233%' 
+       OR whatsapp LIKE '%0004445566%' 
+       OR whatsapp LIKE '%0007778899%'
+       OR whatsapp LIKE '%3001112233%'
+       OR whatsapp LIKE '%3004445566%'
+       OR whatsapp LIKE '%3007778899%'
+       OR alias ILIKE '%baron%'
+       OR alias ILIKE '%ladynoir%'`
     );
   };
 

@@ -62,6 +62,79 @@ export function formatBogotaTime(date: Date = new Date()): string {
   }) + " (UTC-5 Bogotá)";
 }
 
+/**
+ * Detects if the current runtime is in an automated test environment.
+ */
+export function isTestExecution(): boolean {
+  return (
+    process.env.NODE_ENV === "test" ||
+    process.env.BUN_ENV === "test" ||
+    process.env.TEST_MODE === "true" ||
+    process.env.CI === "true" ||
+    typeof (globalThis as any).describe === "function" ||
+    typeof (globalThis as any).test === "function" ||
+    typeof (globalThis as any).it === "function"
+  );
+}
+
+/**
+ * Detects if a phone number belongs to test ranges, preventing dispatch to real cellphones.
+ */
+export function isTestOrMockPhone(phone?: string | null): boolean {
+  if (!phone) return true;
+  const digits = phone.replace(/\D/g, "");
+  if (!digits || digits.length < 7) return true;
+
+  return (
+    digits.startsWith("57000") ||
+    digits.startsWith("000") ||
+    digits.startsWith("57999") ||
+    digits === "573000000000" ||
+    digits.endsWith("1112233") ||
+    digits.endsWith("4445566") ||
+    digits.endsWith("7778899") ||
+    digits.endsWith("9887766") ||
+    digits.endsWith("8887766") ||
+    digits.endsWith("9990001") ||
+    digits.endsWith("9990002") ||
+    digits.endsWith("9998877") ||
+    digits.endsWith("2223344") ||
+    digits.endsWith("1111111") ||
+    digits.endsWith("2222222") ||
+    digits.endsWith("5556677") ||
+    digits.endsWith("9991122")
+  );
+}
+
+/**
+ * Detects if an entity is a test lead / mock subject to prevent spamming admin or clients.
+ */
+export function isTestEntity(lead?: {
+  alias_nombre?: string | null;
+  alias?: string | null;
+  email?: string | null;
+  whatsapp?: string | null;
+} | null): boolean {
+  if (!lead) return true;
+  if (isTestExecution()) return true;
+  if (isTestOrMockPhone(lead.whatsapp)) return true;
+
+  const email = (lead.email || "").toLowerCase();
+  const alias = (lead.alias_nombre || lead.alias || "").toLowerCase();
+
+  return (
+    email.includes("@test.com") ||
+    email.includes("@example.com") ||
+    email.includes("test_") ||
+    email.includes("test@") ||
+    alias.includes("valquiria") ||
+    alias.includes("baron") ||
+    alias.includes("test") ||
+    alias.includes("mock") ||
+    alias.includes("dummy")
+  );
+}
+
 export async function sendEvolutionWhatsApp(
   number: string,
   text: string
@@ -70,6 +143,12 @@ export async function sendEvolutionWhatsApp(
     const cleanNumber = formatEvolutionNumber(number);
     if (!cleanNumber) {
       return { success: false, error: "Número vacío o inválido" };
+    }
+
+    // Safety Shield: Never dispatch real WhatsApp messages to test/mock numbers or during tests
+    if (isTestExecution() || isTestOrMockPhone(cleanNumber)) {
+      console.log(`[Test Shield] 🛡️ Suppressed WhatsApp dispatch to test/mock recipient: ${cleanNumber}`);
+      return { success: true };
     }
 
     const response = await fetch(`${EVOLUTION_API_URL.replace(/\/$/, "")}/send/text`, {
@@ -109,6 +188,12 @@ export async function notifyNewLead(
   },
   channel?: "elplacerdc" | "corset" | "centro_cultural" | string
 ): Promise<void> {
+  // Safety Shield: Never dispatch notifications for test entities or during automated test runs
+  if (isTestEntity(lead)) {
+    console.log(`[Test Shield] 🛡️ Suppressed lead & admin notifications for test entity: ${lead.alias_nombre || lead.email}`);
+    return;
+  }
+
   const effectiveChannel = channel || (lead.corset_vip ? "corset" : "elplacerdc");
   const isCorset = effectiveChannel === "corset";
   const channelName = isCorset ? "The Corset Society (VIP - Membresía Anual)" : "El Placer de Compartir";

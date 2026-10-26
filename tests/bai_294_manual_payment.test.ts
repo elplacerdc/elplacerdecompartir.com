@@ -5,7 +5,7 @@ import { readFileSync } from "fs";
 import { join } from "path";
 
 describe("BAI-294 & BAI-295: Coordinación Manual por WhatsApp & Enlace de Perfil", () => {
-  const testPhone = "573198887766";
+  const testPhone = "570009887766";
   const testEmail = "manual_payment_test@example.com";
 
   const cleanup = async () => {

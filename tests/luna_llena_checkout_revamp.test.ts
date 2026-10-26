@@ -6,7 +6,7 @@ import { POST as createCheckout } from "../src/pages/api/checkout/create";
 import { getGrammaticalProfile } from "../src/services/notifications";
 
 describe("Luna Llena Checkout Revamp (BAI-362 to BAI-369)", () => {
-  const testPhone = "573199991122";
+  const testPhone = "570009991122";
   const testEmail = "luna_revamp_test@example.com";
 
   const cleanup = async () => {

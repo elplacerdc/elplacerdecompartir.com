@@ -2,6 +2,7 @@
 import Redis from "ioredis";
 import { normalizePhone } from "../db";
 import { sendTransactionalEmail } from "./email";
+import { isTestExecution, isTestOrMockPhone } from "./notifications";
 
 const rawKey = process.env.EVOLUTION_API_KEY || "";
 const EVOLUTION_API_KEY = (rawKey && !rawKey.startsWith("${")) ? rawKey : "481c8c43-0023-4028-bad5-9d1355a3674c";
@@ -78,6 +79,12 @@ export async function sendWhatsAppMessage(
     const cleanNumber = formatEvolutionNumber(phone);
     if (!cleanNumber) {
       return { success: false, error: "Número de teléfono inválido o vacío" };
+    }
+
+    // Safety Shield: Never dispatch real WhatsApp OTP/messages to test numbers or during test execution
+    if (isTestExecution() || isTestOrMockPhone(phone)) {
+      console.log(`[Test Shield] 🛡️ Suppressed WhatsApp OTP/message dispatch to test number: ${phone}`);
+      return { success: true, messageId: `mock-msg-${Date.now()}`, chat: `${cleanNumber}@s.whatsapp.net` };
     }
 
     const endpoint = `${EVOLUTION_API_URL.replace(/\/$/, "")}/send/text`;

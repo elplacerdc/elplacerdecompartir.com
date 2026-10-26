@@ -3,14 +3,14 @@ import { pool, upsertLead, getAffiliateStats, ensureAffiliateCode } from "../src
 import { deleteWhatsAppMessage } from "../src/services/evolution";
 
 describe("User Profile, Dynamic Roles & OTP Revocation Invariants", () => {
-  const testPhone = "3199887766";
+  const testPhone = "570009887766";
   const testEmail = "test_profile_invariants@elplacerdecompartir.com";
 
   async function cleanup() {
     const client = await pool.connect();
     try {
-      await client.query("DELETE FROM leads WHERE email = $1 OR whatsapp LIKE '%3199887766%'", [testEmail]);
-      await client.query("DELETE FROM afiliados WHERE email = $1 OR whatsapp LIKE '%3199887766%'", [testEmail]);
+      await client.query("DELETE FROM leads WHERE email = $1 OR email LIKE '%valquiria%' OR whatsapp LIKE '%0009887766%' OR whatsapp LIKE '%3199887766%' OR alias_nombre LIKE 'Valquiria%'", [testEmail]);
+      await client.query("DELETE FROM afiliados WHERE email = $1 OR email LIKE '%valquiria%' OR whatsapp LIKE '%0009887766%' OR whatsapp LIKE '%3199887766%' OR alias LIKE 'Valquiria%'", [testEmail]);
     } finally {
       client.release();
     }

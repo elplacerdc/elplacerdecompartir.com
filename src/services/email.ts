@@ -70,6 +70,20 @@ export async function sendTransactionalEmail({
   html,
   replyTo,
 }: SendEmailOptions): Promise<{ success: boolean; provider: string; messageId?: string; error?: string }> {
+  const cleanTo = (to || "").toLowerCase().trim();
+
+  // Safety Shield: Suppress real email dispatch to test / mock domains
+  if (
+    cleanTo.endsWith("@test.com") ||
+    cleanTo.endsWith("@example.com") ||
+    cleanTo.includes("test_") ||
+    cleanTo.includes("mock") ||
+    cleanTo.includes("dummy")
+  ) {
+    console.info(`[Test Shield] 🛡️ Suppressed external email dispatch to test recipient: ${to}`);
+    return { success: true, provider: "mock_shielded", messageId: `mock-email-${Date.now()}` };
+  }
+
   const senderEmail = fromEmail || process.env.AWS_FROM_EMAIL || DEFAULT_FROM_EMAIL;
   const senderName = fromName || DEFAULT_FROM_NAME;
   const formattedFrom = `"${senderName.replace(/"/g, '')}" <${senderEmail}>`;

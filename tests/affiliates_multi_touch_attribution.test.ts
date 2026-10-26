@@ -12,8 +12,8 @@ describe("Sovereign Affiliate Multi-Touch Attribution (Debut vs Recompra vs Fall
       // 1. Crear embajadores de prueba
       await client.query(
         `INSERT INTO afiliados (alias, nombre, email, whatsapp, clicks, referidos_pagados, entradas_ganadas)
-         VALUES ($1, 'Embajador Padre', $2, '+573111111111', 10, 0, 0),
-                ($3, 'Embajador Closer', $4, '+573222222222', 20, 0, 0)`,
+         VALUES ($1, 'Embajador Padre', $2, '+570001111111', 10, 0, 0),
+                ($3, 'Embajador Closer', $4, '+570002222222', 20, 0, 0)`,
         [padreAlias, `${padreAlias}@test.com`, closerAlias, `${closerAlias}@test.com`]
       );
 
@@ -22,7 +22,7 @@ describe("Sovereign Affiliate Multi-Touch Attribution (Debut vs Recompra vs Fall
         `INSERT INTO leads (alias_nombre, email, whatsapp, rol, ciudad, origen, afiliado_id, primer_pago_acreditado)
          VALUES ('Usuario Test', $1, $2, 'pareja', 'Bogotá', 'web_comunidad', $3, false)
          RETURNING id`,
-        [`lead_${Date.now()}@test.com`, `+57399${Math.floor(1000000 + Math.random() * 9000000)}`, padreAlias]
+        [`lead_${Date.now()}@test.com`, `+57000${Math.floor(1000000 + Math.random() * 9000000)}`, padreAlias]
       );
       leadId = leadRes.rows[0].id;
     } finally {

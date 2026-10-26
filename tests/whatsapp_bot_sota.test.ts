@@ -54,7 +54,7 @@ describe("2. Blindaje Cultural y Erradicación del Término 'Anfitriona'", () =>
 });
 
 describe("3. Resolución de Identificadores Múltiples (Phone + LID) en Intervención Humana", () => {
-  const testPhone = "573109998877";
+  const testPhone = "570009998877";
   const testLid = "82747628478683";
 
   test("setHumanTakeover con array bloquea tanto el teléfono como el LID", async () => {

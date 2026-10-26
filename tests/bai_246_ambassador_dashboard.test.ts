@@ -38,7 +38,7 @@ describe("BAI-246: Ambassador Dashboard — Responsive, Decoupled Sections & Pro
   });
 
   it("should successfully update lead profile via /api/leads/update-profile by phone or alias", async () => {
-    const testPhone = "+573009998877";
+    const testPhone = "+570009998877";
     const testAlias = "test-ambassador-profile";
     const client = await pool.connect();
 
