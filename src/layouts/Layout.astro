@@ -23,7 +23,7 @@ const {
   ogImage = isCorset ? "/assets_corsetsociety/og-default.jpg" : "/assets_elplacerdc/og-default.jpg",
   ogImageWidth = 1200,
   ogImageHeight = 630,
-  canonicalUrl = Astro.url.href,
+  canonicalUrl,
   noindex = false,
   hideFooter = false,
   hideHeader = false,
@@ -35,16 +35,18 @@ const defaultDescription = isCorset
 
 const description = Astro.props.description || defaultDescription;
 
-const reqHeaders = Astro.request?.headers;
-const forwardedHost = reqHeaders?.get("x-forwarded-host") || reqHeaders?.get("host");
 const siteUrl = "https://elplacerdecompartir.com";
-const effectiveSiteUrl = (forwardedHost && forwardedHost.includes("zerops.app"))
-  ? `https://${forwardedHost}`
-  : siteUrl;
+
+// Resolve canonical URL avoiding SSR "localhost" fallback
+const currentPath = Astro.url.pathname;
+const currentSearch = Astro.url.search;
+const resolvedCanonical = canonicalUrl && !canonicalUrl.includes("localhost")
+  ? canonicalUrl
+  : `${siteUrl}${currentPath}${currentSearch}`;
 
 const resolvedOgImage = ogImage.startsWith("http")
   ? ogImage
-  : `${effectiveSiteUrl}${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
+  : `${siteUrl}${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
 
 const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
 ---
@@ -56,7 +58,7 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalUrl} />
+    <link rel="canonical" href={resolvedCanonical} />
     {noindex && (
       <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
       <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
@@ -72,7 +74,7 @@ const faviconFolder = isCorset ? "/assets_corsetsociety" : "/assets_elplacerdc";
     <!-- OpenGraph / WhatsApp (<300KB budget) -->
     <meta property="og:site_name" content={isCorset ? "The Corset Society" : "El Placer de Compartir"} />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:url" content={resolvedCanonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={resolvedOgImage} />
