@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
-import { findLeadByContact, ensureAffiliateCode } from "../../../db";
+import { findLeadByContact, ensureAffiliateCode, pool } from "../../../db";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const { email, whatsapp } = body;
+    const { email, whatsapp, evento } = body;
 
     if (!email && !whatsapp) {
       return new Response(JSON.stringify({ error: "Email o WhatsApp requerido" }), {
@@ -21,6 +21,19 @@ export const POST: APIRoute = async ({ request }) => {
         affiliateCode = await ensureAffiliateCode(lead.alias_nombre || "embajador", lead.whatsapp, lead.email);
       } catch (e) {}
 
+      // Consultar pases activos existentes del lead
+      let existingTickets: any[] = [];
+      try {
+        const tRes = await pool.query(
+          `SELECT id, evento, tipo_entrada, tipo_pago, monto_pagado, estado, ticket_hash, created_at 
+           FROM event_tickets 
+           WHERE lead_id = $1 AND estado NOT IN ('cancelado', 'rechazado')
+           ORDER BY created_at DESC`,
+          [lead.id]
+        );
+        existingTickets = tRes.rows;
+      } catch (_) {}
+
       return new Response(
         JSON.stringify({
           exists: true,
@@ -36,6 +49,7 @@ export const POST: APIRoute = async ({ request }) => {
             email_verified: Boolean(lead.email_verified || (lead as any).metadata?.email_verified),
             affiliate_code: affiliateCode,
           },
+          existingTickets,
         }),
         { status: 200, headers: { "Content-Type": "application/json" } }
       );

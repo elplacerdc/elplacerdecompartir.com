@@ -116,11 +116,13 @@ export async function notifyNewLead(
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
   const waDirectDigits = phoneNorm ? phoneNorm.waNumber : lead.whatsapp.replace(/\D/g, "");
 
+  const gram = getGrammaticalProfile(lead.rol);
+
   // 1. Notificación WhatsApp directa al Lead
   if (isCorset) {
     const leadCorsetWa =
       `🖤 *THE CORSET SOCIETY — CÍRCULO HERMÉTICO*\n\n` +
-      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*,\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}*,\n\n` +
       `Hemos recibido tu postulación de admisión. The Corset Society es la línea de alta exclusividad de ElPlacerDC: un círculo privado de gala con credencial VIP por suscripción anual ($199.000 COP) que otorga acceso a convocatorias privadas, encuentros de ticket alto, descuentos permanentes y beneficios exclusivos.\n\n` +
       `Conoce los detalles de la membresía y activa tu credencial en nuestra página oficial:\n` +
       `👉 https://elplacerdecompartir.com/corset-vip/?ref=segisw\n\n` +
@@ -134,10 +136,10 @@ export async function notifyNewLead(
   } else {
     const leadPlacerWa =
       `🍷 *EL PLACER DE COMPARTIR — COMUNIDAD & EVENTOS*\n\n` +
-      `Hola *${lead.alias_nombre || "Bienvenido(a)"}* ✨\n\n` +
-      `¡Qué alegría darte la bienvenida! Somos pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo libre de presiones, con nuestro nuevo Centro Cultural en Bogotá.\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}* ✨\n\n` +
+      `¡Qué alegría darte la bienvenida! Somos pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo libre de presiones, con nuestro nuevo Centro Cultural en Bogotá (Calle 67 # 23-46 Piso 2, 7 de Agosto).\n\n` +
       `Te acabamos de remitir a tu correo electrónico una guía con nuestros principios comunitarios, eventos programados y la galería de espacios.\n\n` +
-      `Además, como miembro activo ya haces parte de nuestro Programa Oficial de Embajadores. Comparte tu enlace exclusivo y gana entradas gratuitas:\n` +
+      `Además, como miembro activo ya haces parte de nuestro Programa Oficial de Embajadores. Comparte tu enlace exclusivo con tus amigos mente abierta y gana entradas gratuitas:\n` +
       `👉 https://elplacerdecompartir.com/dashboard\n\n` +
       `Guarda este contacto en tu agenda para no perderte nuestras próximas fechas.\n\n` +
       `🍷 *El Placer de Compartir*`;
@@ -303,6 +305,81 @@ export async function notifyNewLead(
   );
 }
 
+export interface GrammaticalProfile {
+  subject: "Él" | "Ella" | "Ellos/Ustedes";
+  greeting: string;
+  welcome: string;
+  pronounTu: string;
+  possessive: string;
+  pluralPossessive: string;
+  dontGoAlone: string;
+  openMindedFriends: string;
+  shareWithFriends: string;
+}
+
+export function getGrammaticalProfile(rol?: string | null, tipoEntradaOrEvento?: string | null): GrammaticalProfile {
+  const normRol = (rol || "").toLowerCase().trim();
+  const normExtra = (tipoEntradaOrEvento || "").toLowerCase().trim();
+
+  const isPareja = normRol === "pareja" || normExtra.includes("pareja") || normExtra.includes("velada");
+  const isMujer = normRol === "mujer_sola" || normRol === "unicornio" || normExtra.includes("unicornio");
+  const isHombre = normRol === "hombre_solo" || normRol === "single" || normExtra.includes("single");
+
+  if (isPareja) {
+    return {
+      subject: "Ellos/Ustedes",
+      greeting: "Estimados",
+      welcome: "Bienvenidos",
+      pronounTu: "ustedes",
+      possessive: "su",
+      pluralPossessive: "sus",
+      dontGoAlone: "No vayan solos",
+      openMindedFriends: "amigos mente abierta",
+      shareWithFriends: "Compartan su enlace exclusivo con sus amigos mente abierta para que asistan con ustedes",
+    };
+  }
+
+  if (isMujer) {
+    return {
+      subject: "Ella",
+      greeting: "Estimada",
+      welcome: "Bienvenida",
+      pronounTu: "tú",
+      possessive: "tu",
+      pluralPossessive: "tus",
+      dontGoAlone: "No vayas sola",
+      openMindedFriends: "amigos mente abierta",
+      shareWithFriends: "Comparte tu enlace exclusivo con tus amigos mente abierta para que asistan contigo",
+    };
+  }
+
+  if (isHombre) {
+    return {
+      subject: "Él",
+      greeting: "Estimado",
+      welcome: "Bienvenido",
+      pronounTu: "tú",
+      possessive: "tu",
+      pluralPossessive: "tus",
+      dontGoAlone: "No vayas solo",
+      openMindedFriends: "amigos mente abierta",
+      shareWithFriends: "Comparte tu enlace exclusivo con tus amigos mente abierta para que asistan contigo",
+    };
+  }
+
+  return {
+    subject: "Él",
+    greeting: "Hola",
+    welcome: "Bienvenido(a)",
+    pronounTu: "tú",
+    possessive: "tu",
+    pluralPossessive: "tus",
+    dontGoAlone: "No vayan solos",
+    openMindedFriends: "amigos mente abierta",
+    shareWithFriends: "Comparte tu enlace con tus amigos mente abierta para que asistan contigo",
+  };
+}
+
 export async function notifyNewTicket(
   ticket: {
     id?: string;
@@ -330,24 +407,26 @@ export async function notifyNewTicket(
     ? `https://elplacerdecompartir.com/taller-baile-erotico/?ref=${encodeURIComponent(affCode)}`
     : `https://elplacerdecompartir.com/the-corset-society/luna-llena/?ref=${encodeURIComponent(affCode)}`;
 
+  const gram = getGrammaticalProfile((lead as any).rol, ticket.tipo_entrada);
+
   // 1. WhatsApp Directo al Comprador (Dirección real y conciso sin 'leer más')
   const buyerWaText = isTaller
     ? `💃 *CREDENCIAL CONFIRMADA — TALLER DE BAILE ERÓTICO*\n\n` +
-      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*, tu acceso para el *Taller de Baile Erótico* (Viernes 16 de Octubre) está confirmado.\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}*, ${gram.possessive} acceso para el *Taller de Baile Erótico* (Viernes 16 Oct) está confirmado.\n\n` +
       `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago === "reserva_50" ? "Separación 50%" : "Pago Total 100%"})\n` +
       `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
-      `📍 *Lugar:* Centro Cultural ElPlacerDC: Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá.\n` +
+      `📍 *Lugar:* Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá\n` +
       `⏰ *Horario:* Llegada 7:30 P.M. • Inicio Taller 8:00 P.M.\n\n` +
-      `🔐 *Tu credencial digital con QR:*\n${ticketUrl}\n\n` +
-      `💎 *Tu enlace de embajador (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
+      `🔐 *Tu credencial con QR:*\n${ticketUrl}\n\n` +
+      `💎 *${gram.dontGoAlone}. ${gram.shareWithFriends} (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
       `_«Sensualidad & Heels en total libertad y consentimiento lúcido.»_`
     : `🌕 *CREDENCIAL CONFIRMADA — THE CORSET SOCIETY*\n\n` +
-      `Estimado(a) *${lead.alias_nombre || "Invitado(a)"}*, tu acceso para la *Noche de Luna Llena* (31 de Octubre) está confirmado.\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}*, ${gram.possessive} acceso para la *Noche de Luna Llena* (31 Oct) está confirmado.\n\n` +
       `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n` +
       `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
-      `📍 *Lugar:* Centro Cultural ElPlacerDC: Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá.\n\n` +
-      `🔐 *Tu credencial digital con QR:*\n${ticketUrl}\n\n` +
-      `💎 *Tu enlace de embajador (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
+      `📍 *Lugar:* Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá\n\n` +
+      `🔐 *Tu credencial con QR:*\n${ticketUrl}\n\n` +
+      `💎 *${gram.dontGoAlone}. ${gram.shareWithFriends} (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
       `_«El acceso se concede, no se anuncia.»_`;
 
   sendEvolutionWhatsApp(lead.whatsapp, buyerWaText).catch((e) =>
@@ -464,6 +543,7 @@ export async function notifyEventReservation(
     alias_nombre?: string;
     whatsapp: string;
     email?: string;
+    rol?: string;
   },
   options?: {
     isNewLead?: boolean;
@@ -542,28 +622,28 @@ export async function notifyEventReservation(
   }
 
   // 1. WhatsApp al asistente
+  const gram = getGrammaticalProfile(lead.rol, ticket.evento);
   let waText = "";
   if (isNew) {
     waText =
-      `✨ *¡BIENVENIDO(A) A EL PLACER DE COMPARTIR!* ✨\n\n` +
-      `Hola *${lead.alias_nombre || "Bienvenido(a)"}*, tu registro a nuestra comunidad y tu pase para *${eventTitle}* han sido confirmados exitosamente.\n\n` +
+      `✨ *¡${gram.welcome.toUpperCase()} A EL PLACER DE COMPARTIR!* ✨\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}*, ${gram.possessive} registro y pase para *${eventTitle}* están confirmados.\n\n` +
       `🎫 *Pase ID:* \`${ticket.ticket_hash}\`\n` +
-      `📍 *Ubicación:* Centro Cultural El Placer de Compartir, Bogotá.\n\n` +
-      `📲 *Ingreso Requerido con QR:* Es requerido para el ingreso presentar tu código QR en tu pantalla al llegar. Lo hemos enviado a tu correo *${lead.email || "registrado"}*.\n\n` +
-      `💎 *TU ENLACE DE EMBAJADOR EXCLUSIVO PARA ESTE EVENTO:*\n` +
-      `Al registrarte, ya cuentas con tu enlace oficial de embajador. Por cada 3 compras generadas con tu link, ¡recibes 1 entrada 100% gratuita!\n` +
-      `🔗 *Enlace:* ${affLink}\n` +
-      `⚙️ *Personaliza tu código y sigue tus pases en:* https://elplacerdecompartir.com/dashboard\n\n` +
+      `📍 *Lugar:* Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá\n\n` +
+      `📲 *Ingreso Requerido con QR:* Presenta tu QR al llegar. Lo enviamos a tu correo *${lead.email || "registrado"}*.\n\n` +
+      `💎 *${gram.dontGoAlone}. ${gram.shareWithFriends} (3 compras = 1 pase gratis):*\n` +
+      `🔗 ${affLink}\n` +
+      `⚙️ *Panel de embajador:* https://elplacerdecompartir.com/dashboard\n\n` +
       `🍷 *El Placer de Compartir*`;
   } else {
     waText =
       `🎟️ *RESERVA CONFIRMADA — ${eventTitle.toUpperCase()}*\n\n` +
-      `Hola *${lead.alias_nombre || "Bienvenido(a)"}* ✨\n\n` +
-      `Tu reserva para *${eventTitle}* en el Centro Cultural El Placer de Compartir ha sido registrada exitosamente.\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}* ✨\n\n` +
+      `${gram.possessive.charAt(0).toUpperCase() + gram.possessive.slice(1)} reserva para *${eventTitle}* está registrada exitosamente.\n\n` +
       `🎫 *Ticket ID:* \`${ticket.ticket_hash}\`\n\n` +
-      `📲 *Ingreso Requerido con QR:* Es requerido para el ingreso presentar tu código QR de asistencia al momento de entrar. Lo hemos enviado a tu correo *${lead.email || "registrado"}*.\n\n` +
-      `📍 *Dirección:* Centro Cultural El Placer de Compartir, Bogotá.\n\n` +
-      `🎉 *¡Nos vemos en el evento!* Comparte tu enlace exclusivo con tus amigos para que reserven contigo y gana entradas gratuitas:\n` +
+      `📍 *Lugar:* Calle 67 # 23-46 Piso 2, Barrio 7 de Agosto, Bogotá\n\n` +
+      `📲 *QR de Ingreso:* Presenta tu código al ingresar (enviado a tu correo *${lead.email || "registrado"}*).\n\n` +
+      `🎉 *${gram.dontGoAlone}.* ${gram.shareWithFriends} y gana entradas gratuitas:\n` +
       `🔗 ${affLink}\n\n` +
       `🍷 *El Placer de Compartir*`;
   }

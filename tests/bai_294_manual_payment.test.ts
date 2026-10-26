@@ -28,7 +28,7 @@ describe("BAI-294 & BAI-295: Coordinación Manual por WhatsApp & Enlace de Perfi
     await cleanup();
   });
 
-  test("1. Checkout con nequi_breb NO crea tickets en BD y retorna enlace directo de WhatsApp", async () => {
+  test("1. BAI-364: Checkout con nequi_breb crea ticket pendiente en BD para acreditar referido y retorna enlace de WhatsApp", async () => {
     const request = new Request("http://localhost:3000/api/checkout/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ describe("BAI-294 & BAI-295: Coordinación Manual por WhatsApp & Enlace de Perfi
     expect(decodeURIComponent(data.redirect_url)).toContain("UsuarioPruebaManual");
     expect(decodeURIComponent(data.redirect_url)).toContain("Bre-B, Nequi");
 
-    // Verificar en base de datos que NO existe ningún ticket en event_tickets
+    // Verificar en base de datos que se registra el ticket con estado 'pendiente' para asegurar acreditación de embajador
     const leadRes = await pool.query(
       `SELECT id FROM leads WHERE email = $1 OR whatsapp = $2`,
       [testEmail, testPhone]
@@ -66,7 +66,8 @@ describe("BAI-294 & BAI-295: Coordinación Manual por WhatsApp & Enlace de Perfi
       `SELECT * FROM event_tickets WHERE lead_id = $1`,
       [leadId]
     );
-    expect(ticketsRes.rows.length).toBe(0);
+    expect(ticketsRes.rows.length).toBe(1);
+    expect(ticketsRes.rows[0].estado).toBe("pendiente");
   });
 
   test("2. El botón en luna-llena.astro tiene el texto '(BreB, nequí, trasnferencia)' y elimina '(transferencia directa)'", () => {

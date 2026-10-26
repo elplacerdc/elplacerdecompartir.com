@@ -78,10 +78,10 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
             <span>🎃</span> Promoción Exclusiva Gala Halloween <span>💎</span>
           </div>
           <h3 class="text-2xl sm:text-3xl font-bold font-serif text-[#f7f4ee]">
-            ¡Tu Entrada a Luna Llena Activa <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">1 Año de Membresía VIP</span> de Regalo!
+            ¡Con tu entrada a Halloween Luna Llena se te activa <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#c5a059] via-[#ead397] to-[#c5a059]">1 Año de Membresía VIP</span> de Regalo!
           </h3>
           <p class="max-w-2xl mx-auto text-xs sm:text-sm font-sans text-[#f7f4ee]/90 leading-relaxed">
-            Quienes adquieran su pase y asistan a la <strong>Mascarada de Halloween Noir</strong> reciben la activación formal de su <strong>Credencial VIP Anual de The Corset Society ($199.000 COP) totalmente sin costo</strong>. Acceso a convocatorias secretas, 20% de descuento permanente en eventos y tu enlace exclusivo de embajador.
+            Quienes adquieran su pase y asistan a la <strong>Mascarada de Halloween Noir</strong> reciben la activación formal de su <strong>Credencial VIP Anual de The Corset Society ($199.000 COP) totalmente sin costo</strong>. Acceso a convocatorias secretas, 20% de descuento permanente en eventos y tu enlace exclusivo de embajador VIP.
           </p>
         </div>
 
@@ -365,6 +365,42 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
             <p class="text-xs font-sans text-[#f7f4ee]/60 mt-1">Completa los datos de tu credencial digital sellada</p>
           </div>
 
+          <!-- Banner de Reserva Existente para Usuario Logueado -->
+          <div id="existing-ticket-banner" class="hidden p-4 rounded-2xl bg-gradient-to-r from-[#140816] via-[#250F22] to-[#140816] border border-[#c5a059] space-y-3 text-left shadow-lg">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="text-2xl">🎟️</span>
+                <div>
+                  <span class="text-xs uppercase tracking-wider text-[#c5a059] font-bold block">Tienes una Reserva Activa en este Evento</span>
+                  <span id="existing-ticket-desc" class="text-xs text-[#f7f4ee] font-medium">Cargando reserva...</span>
+                </div>
+              </div>
+              <a 
+                id="existing-ticket-link" 
+                href="/the-corset-society/ticket" 
+                class="px-4 py-1.5 rounded-full border border-[#c5a059] text-[#ead397] hover:bg-[#c5a059]/20 text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 inline-flex items-center gap-1.5"
+              >
+                <span>QR</span> Ver Credencial →
+              </a>
+            </div>
+            <div class="pt-2 border-t border-[#c5a059]/20 flex flex-wrap gap-2 text-xs">
+              <button 
+                type="button" 
+                id="btn-book-another-ticket" 
+                class="px-3.5 py-1.5 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 hover:bg-[#c5a059]/30 font-medium transition-all cursor-pointer"
+              >
+                ➕ Reservar Entrada para Otra Persona
+              </button>
+              <button 
+                type="button" 
+                id="btn-upgrade-ticket" 
+                class="px-3.5 py-1.5 rounded-lg bg-[#2e7d32]/30 text-[#81c784] border border-[#81c784]/40 hover:bg-[#2e7d32]/50 font-bold transition-all cursor-pointer"
+              >
+                💎 Mejorar mi Pase (Upgrade)
+              </button>
+            </div>
+          </div>
+
           <form id="checkoutForm" class="space-y-5">
             <!-- Modalidad Switch -->
             <div class="space-y-2">
@@ -384,23 +420,6 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
             <!-- Tier Select (Controlled visually by interactive cards) -->
             <input type="hidden" id="tipo_entrada" name="tipo_entrada" value="pareja" />
 
-            <!-- Aviso cuando los datos están precargados de la cuenta oficial -->
-            <div id="prefilled-profile-notice" class="hidden p-3.5 rounded-xl bg-[#140816] border border-[#c5a059]/40 text-xs font-sans text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm">
-              <div class="flex items-center gap-2">
-                <span class="text-base">🔒</span>
-                <div>
-                  <span class="text-[#ead397] font-semibold block text-[11px]">Datos vinculados a tu cuenta oficial</span>
-                  <span class="text-[#f7f4ee]/70 text-[10px]">Para modificar tu nombre, correo o modalidad:</span>
-                </div>
-              </div>
-              <a 
-                href="/dashboard#section-profile-settings" 
-                class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 inline-flex items-center gap-1"
-              >
-                <span>⚙️</span> Editar mi Perfil →
-              </a>
-            </div>
-
             <!-- Lead Details -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="space-y-1">
@@ -417,14 +436,48 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
 
               <div class="space-y-1">
                 <label for="whatsapp" class="block text-xs text-[#c5a059] uppercase tracking-wider">WhatsApp Oficial (+57) *</label>
-                <input 
-                  type="tel" 
-                  id="whatsapp" 
-                  name="whatsapp" 
-                  required 
-                  placeholder="3194194785" 
-                  class="w-full bg-[#140a18] border border-[#c5a059]/30 rounded-xl px-4 py-2.5 text-sm text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
-                />
+                <div class="flex gap-2">
+                  <input 
+                    type="tel" 
+                    id="whatsapp" 
+                    name="whatsapp" 
+                    required 
+                    placeholder="3194194785" 
+                    class="w-full bg-[#140a18] border border-[#c5a059]/30 rounded-xl px-4 py-2.5 text-sm text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    id="btnSendWaOtp"
+                    class="hidden px-3.5 py-2 rounded-xl bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] text-xs font-bold whitespace-nowrap transition-all shadow-sm cursor-pointer"
+                  >
+                    Verificar
+                  </button>
+                </div>
+
+                <!-- Inline WA OTP Box para no logueados -->
+                <div id="wa-otp-box" class="hidden mt-2 p-3 rounded-xl bg-[#140816] border border-[#c5a059]/40 space-y-2">
+                  <p class="text-[11px] text-[#f7f4ee]/80">Ingresa el código de 6 dígitos enviado a tu WhatsApp:</p>
+                  <div class="flex items-center gap-2">
+                    <input
+                      type="text"
+                      id="input-wa-otp"
+                      maxlength="6"
+                      placeholder="123456"
+                      class="w-32 px-3 py-1.5 text-center font-mono tracking-widest text-sm rounded-lg bg-[#0a0608] border border-[#c5a059]/40 text-[#ead397] focus:outline-none focus:border-[#c5a059]"
+                    />
+                    <button
+                      type="button"
+                      id="btnVerifyWaOtp"
+                      class="px-4 py-1.5 text-xs font-bold uppercase rounded-lg bg-[#c5a059] text-[#0a0608] hover:bg-[#ead397] transition-all shadow-md cursor-pointer"
+                    >
+                      Confirmar
+                    </button>
+                  </div>
+                  <span id="wa-otp-status" class="text-[11px] text-[#ead397] block min-h-[14px]"></span>
+                </div>
+                <div id="wa-verified-badge" class="hidden text-[11px] text-[#81c784] font-medium mt-1">
+                  <span>✓ WhatsApp verificado</span>
+                </div>
               </div>
             </div>
 
@@ -438,6 +491,23 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
                 placeholder="tu-correo@privado.com" 
                 class="w-full bg-[#140a18] border border-[#c5a059]/30 rounded-xl px-4 py-2.5 text-sm text-[#f7f4ee] focus:border-[#c5a059] focus:outline-none"
               />
+            </div>
+
+            <!-- Aviso cuando los datos están precargados de la cuenta oficial (UBICADO DESPUÉS DE CAMPOS Y ANTES DE TOTAL A PAGAR) -->
+            <div id="prefilled-profile-notice" class="hidden p-3.5 rounded-xl bg-[#140816] border border-[#c5a059]/40 text-xs font-sans text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-2 shadow-sm">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🔒</span>
+                <div>
+                  <span class="text-[#ead397] font-semibold block text-[11px]">Datos vinculados a tu cuenta oficial</span>
+                  <span class="text-[#f7f4ee]/70 text-[10px]">Para modificar tu nombre, correo o modalidad:</span>
+                </div>
+              </div>
+              <a 
+                href="/dashboard#section-profile-settings" 
+                class="px-3.5 py-1.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 text-[11px] font-bold uppercase tracking-wider transition-all whitespace-nowrap shrink-0 inline-flex items-center gap-1"
+              >
+                <span>⚙️</span> Editar mi Perfil →
+              </a>
             </div>
 
             <!-- Price Breakdown Box -->
@@ -784,6 +854,97 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       }
     }
 
+    let isWaVerified = false;
+    let isUpgradeMode = false;
+    let activePreviousTicketHash = null;
+    let isBookingAnotherTicket = false;
+    let isUserAuthenticated = false;
+
+    async function triggerSendWaOtp() {
+      const whatsapp = document.getElementById('whatsapp')?.value.trim();
+      const statusEl = document.getElementById('wa-otp-status');
+      const otpBox = document.getElementById('wa-otp-box');
+      const btnSend = document.getElementById('btnSendWaOtp');
+
+      if (!whatsapp || whatsapp.length < 7) {
+        if (statusEl) statusEl.textContent = 'Ingresa un número de WhatsApp válido (+57)';
+        return;
+      }
+
+      if (btnSend) {
+        btnSend.disabled = true;
+        btnSend.textContent = 'Enviando...';
+      }
+      if (statusEl) statusEl.textContent = 'Enviando código de 6 dígitos a tu WhatsApp...';
+      if (otpBox) otpBox.classList.remove('hidden');
+
+      try {
+        const res = await fetch('/api/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination: whatsapp, channel: 'whatsapp' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (statusEl) statusEl.textContent = '✓ Código enviado a tu WhatsApp. Ingrésalo a continuación:';
+          if (btnSend) {
+            btnSend.textContent = 'Reenviar';
+            btnSend.disabled = false;
+          }
+          document.getElementById('input-wa-otp')?.focus();
+        } else {
+          if (statusEl) statusEl.textContent = 'Error: ' + (data.error || 'No se pudo enviar el código');
+          if (btnSend) {
+            btnSend.textContent = 'Reintentar';
+            btnSend.disabled = false;
+          }
+        }
+      } catch (err) {
+        if (statusEl) statusEl.textContent = 'Error de conexión enviando código';
+        if (btnSend) {
+          btnSend.textContent = 'Reintentar';
+          btnSend.disabled = false;
+        }
+      }
+    }
+
+    async function triggerVerifyWaOtp() {
+      const whatsapp = document.getElementById('whatsapp')?.value.trim();
+      const otpCode = document.getElementById('input-wa-otp')?.value.trim();
+      const statusEl = document.getElementById('wa-otp-status');
+      const otpBox = document.getElementById('wa-otp-box');
+      const btnSend = document.getElementById('btnSendWaOtp');
+      const verifiedBadge = document.getElementById('wa-verified-badge');
+
+      if (!otpCode || otpCode.length !== 6) {
+        if (statusEl) statusEl.textContent = 'Ingresa el código completo de 6 dígitos';
+        return;
+      }
+
+      if (statusEl) statusEl.textContent = 'Validando código...';
+
+      try {
+        const res = await fetch('/api/otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination: whatsapp, code: otpCode, channel: 'whatsapp' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          isWaVerified = true;
+          localStorage.setItem('wa_verified_phone', whatsapp);
+          if (otpBox) otpBox.classList.add('hidden');
+          if (btnSend) btnSend.classList.add('hidden');
+          if (verifiedBadge) verifiedBadge.classList.remove('hidden');
+          if (statusEl) statusEl.textContent = '';
+        } else {
+          if (statusEl) statusEl.textContent = 'Código incorrecto o vencido. Intenta de nuevo.';
+        }
+      } catch (err) {
+        if (statusEl) statusEl.textContent = 'Error al validar el código';
+      }
+    }
+
     async function handleCheckout(metodo) {
       const alias = document.getElementById('alias_nombre')?.value.trim();
       const whatsapp = document.getElementById('whatsapp')?.value.trim();
@@ -799,55 +960,26 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         return;
       }
 
-      // Coordinación manual por WhatsApp (Bre-B, Nequi, transferencia)
-      if (metodo === 'nequi_breb') {
-        const prices = PRICING[tipo_entrada] || PRICING.pareja;
-        const montoHoy = modalidad === 'reserva_40' ? prices.reserva_40 : prices.total;
-        const modName = modalidad === 'reserva_40' ? 'Separación de Cupo (40%)' : 'Pago Total (100%)';
-        const passName = tipo_entrada === 'pareja' ? '👫 Pareja' : (tipo_entrada === 'single' ? '🙋‍♂️ Single' : '🦄 Unicornio');
-
-        const waText = encodeURIComponent(
-          `¡Hola Segisw / El Placer DC! Deseo coordinar el pago manual para la Noche de Luna Llena:\n\n` +
-          `• Alias: ${alias}\n` +
-          `• WhatsApp: ${whatsapp}\n` +
-          `• Correo: ${email}\n` +
-          `• Pase: ${passName}\n` +
-          `• Modalidad: ${modName}\n` +
-          `• Monto a transferir: $${montoHoy.toLocaleString('es-CO')} COP\n` +
-          `${activeRef ? `• Embajador: @${activeRef}\n` : ''}\n` +
-          `Solicito los datos para transferir por Bre-B, Nequi o Bancolombia.`
-        );
-        const waUrl = `https://wa.me/573194194785?text=${waText}`;
-
-        if (msg) {
-          msg.innerHTML = `
-            <div class="p-4 rounded-2xl bg-[#140816] border border-[#c5a059]/50 text-xs text-[#ead397] space-y-2.5 text-left mt-2 shadow-lg">
-              <div class="font-bold flex items-center gap-1.5 text-white">
-                <span>📲</span> <span>Coordinación de Transferencia Manual (Bre-B / Nequi / Bancolombia)</span>
-              </div>
-              <p class="text-[#f7f4ee]/80 leading-relaxed text-[11px]">
-                Te hemos redirigido a la línea oficial para coordinar tu transferencia manual por <strong>$${montoHoy.toLocaleString('es-CO')} COP</strong>. Tu entrada y credencial digital sellada serán activadas por el administrador una vez confirmado el comprobante.
-              </p>
-              <div class="pt-1 flex flex-wrap gap-2">
-                <a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2e7d32] text-white font-bold text-xs hover:bg-[#388e3c] shadow-sm">
-                  <span>Abrir WhatsApp Ahora 💬</span>
-                </a>
-              </div>
-            </div>
-          `;
+      // Validación OTP para usuarios no autenticados
+      if (!isUserAuthenticated && !isWaVerified) {
+        const cachedVerified = localStorage.getItem('wa_verified_phone');
+        if (cachedVerified && cachedVerified === whatsapp) {
+          isWaVerified = true;
+        } else {
+          if (msg) msg.textContent = 'Por favor verifica tu WhatsApp antes de completar la reserva para asegurar tu acreditación.';
+          await triggerSendWaOtp();
+          document.getElementById('wa-otp-box')?.scrollIntoView({ behavior: 'smooth' });
+          return;
         }
-
-        window.open(waUrl, "_blank");
-        if (btnDigital) btnDigital.disabled = false;
-        if (btnNequi) btnNequi.disabled = false;
-        return;
       }
 
-      // Pasarela Digital online
+      const prices = PRICING[tipo_entrada] || PRICING.pareja;
+      const montoHoy = modalidad === 'reserva_40' ? prices.reserva_40 : prices.total;
+
       if (btnDigital) btnDigital.disabled = true;
       if (btnNequi) btnNequi.disabled = true;
 
-      if (msg) msg.textContent = 'Conectando con la pasarela segura de pagos...';
+      if (msg) msg.textContent = metodo === 'nequi_breb' ? 'Registrando tu reserva...' : 'Conectando con la pasarela segura de pagos...';
 
       try {
         const res = await fetch('/api/checkout/create', {
@@ -860,11 +992,45 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
             tipo_entrada: tipo_entrada,
             modalidad_pago: modalidad,
             metodo_pago: metodo,
-            ref: activeRef || undefined
+            ref: activeRef || undefined,
+            is_upgrade: isUpgradeMode,
+            previous_ticket_hash: activePreviousTicketHash || undefined
           })
         });
 
         const data = await res.json();
+
+        // 1. Manejo de transferencia manual Bre-B / Nequi
+        if (metodo === 'nequi_breb' && data.redirect_url) {
+          if (msg) {
+            msg.innerHTML = `
+              <div class="p-4 rounded-2xl bg-[#140816] border border-[#c5a059]/50 text-xs text-[#ead397] space-y-2.5 text-left mt-2 shadow-lg">
+                <div class="font-bold flex items-center gap-1.5 text-white">
+                  <span>📲</span> <span>Coordinación de Transferencia Manual (Bre-B / Nequi / Bancolombia)</span>
+                </div>
+                <p class="text-[#f7f4ee]/80 leading-relaxed text-[11px]">
+                  Hemos registrado tu reserva y te hemos redirigido a la línea oficial para coordinar tu transferencia manual por <strong>$${montoHoy.toLocaleString('es-CO')} COP</strong>. Tu entrada y credencial digital sellada serán activadas por el administrador una vez confirmado el comprobante.
+                </p>
+                <div class="pt-1 flex flex-wrap gap-2">
+                  <a href="${data.redirect_url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2e7d32] text-white font-bold text-xs hover:bg-[#388e3c] shadow-sm">
+                    <span>Abrir WhatsApp Ahora 💬</span>
+                  </a>
+                  ${data.ticketHash ? `
+                    <a href="/the-corset-society/ticket?hash=${data.ticketHash}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#c5a059]/20 text-[#ead397] border border-[#c5a059]/40 font-bold text-xs hover:bg-[#c5a059]/30 shadow-sm">
+                      <span>Ver Credencial Digital 🎟️</span>
+                    </a>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }
+          window.open(data.redirect_url, "_blank");
+          if (btnDigital) btnDigital.disabled = false;
+          if (btnNequi) btnNequi.disabled = false;
+          return;
+        }
+
+        // 2. Pasarela Digital online
         if (data.redirect_url) {
           if (msg) msg.textContent = 'Redirigiendo a pasarela...';
           window.location.href = data.redirect_url;
@@ -976,24 +1142,27 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
 
     function setTemporaryPassMode(mode) {
       applyRoleTicketFilter(mode, true);
+      document.getElementById('checkoutForm')?.scrollIntoView({ behavior: 'smooth' });
     }
 
     async function hydrateSessionFormFields() {
+      if (isBookingAnotherTicket) return;
+
       let userProfile = null;
       try {
         const raw = localStorage.getItem("user_profile");
         if (raw) userProfile = JSON.parse(raw);
       } catch (_) {}
 
-      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone") || userProfile?.whatsapp;
-      let aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
-      let emailVal = userProfile?.email || localStorage.getItem("user_email");
-      let phoneVal = sessionPhone;
+      const sessionPhone = localStorage.getItem("ambassador_session_phone");
+      isUserAuthenticated = Boolean(sessionPhone);
 
       const inputAlias = document.getElementById("alias_nombre");
       const inputPhone = document.getElementById("whatsapp");
       const inputEmail = document.getElementById("email");
       const noticeBanner = document.getElementById("prefilled-profile-notice");
+      const btnSendWaOtp = document.getElementById("btnSendWaOtp");
+      const waVerifiedBadge = document.getElementById("wa-verified-badge");
 
       function lockReadOnly(el) {
         if (!el || !el.value) return;
@@ -1002,24 +1171,31 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         el.title = "Dato vinculado a tu cuenta oficial. Para modificarlo haz clic en 'Editar mi Perfil'.";
       }
 
-      if (inputAlias && aliasVal) {
-        inputAlias.value = aliasVal;
-        lockReadOnly(inputAlias);
-      }
-      if (inputPhone && phoneVal) {
-        inputPhone.value = phoneVal;
-        lockReadOnly(inputPhone);
-      }
-      if (inputEmail && emailVal) {
-        inputEmail.value = emailVal;
-        lockReadOnly(inputEmail);
-      }
+      if (isUserAuthenticated) {
+        isWaVerified = true;
+        if (btnSendWaOtp) btnSendWaOtp.classList.add("hidden");
+        if (waVerifiedBadge) waVerifiedBadge.classList.remove("hidden");
 
-      if (aliasVal || phoneVal || emailVal) {
+        const aliasVal = userProfile?.alias_nombre || localStorage.getItem("user_alias");
+        const emailVal = userProfile?.email || localStorage.getItem("user_email");
+        const phoneVal = sessionPhone || userProfile?.whatsapp || localStorage.getItem("user_phone");
+
+        if (inputAlias && aliasVal) {
+          inputAlias.value = aliasVal;
+          lockReadOnly(inputAlias);
+        }
+        if (inputPhone && phoneVal) {
+          inputPhone.value = phoneVal;
+          lockReadOnly(inputPhone);
+        }
+        if (inputEmail && emailVal) {
+          inputEmail.value = emailVal;
+          lockReadOnly(inputEmail);
+        }
+
         if (noticeBanner) noticeBanner.classList.remove("hidden");
-      }
 
-      if ((!aliasVal || !emailVal) && sessionPhone) {
+        // Consultar reserva existente y datos actualizados desde el backend
         try {
           const res = await fetch("/api/leads/check", {
             method: "POST",
@@ -1029,46 +1205,89 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
           const data = await res.json();
           if (data.exists && data.lead) {
             const lead = data.lead;
-            if (lead.alias_nombre) {
-              aliasVal = lead.alias_nombre;
-              localStorage.setItem("user_alias", lead.alias_nombre);
-              if (inputAlias) {
-                inputAlias.value = lead.alias_nombre;
-                lockReadOnly(inputAlias);
-              }
+            if (lead.alias_nombre && inputAlias) {
+              inputAlias.value = lead.alias_nombre;
+              lockReadOnly(inputAlias);
             }
-            if (lead.email) {
-              emailVal = lead.email;
-              localStorage.setItem("user_email", lead.email);
-              if (inputEmail) {
-                inputEmail.value = lead.email;
-                lockReadOnly(inputEmail);
-              }
-            }
-            if (lead.whatsapp) {
-              phoneVal = lead.whatsapp;
-              localStorage.setItem("user_phone", lead.whatsapp);
-              if (inputPhone) {
-                inputPhone.value = lead.whatsapp;
-                lockReadOnly(inputPhone);
-              }
+            if (lead.email && inputEmail) {
+              inputEmail.value = lead.email;
+              lockReadOnly(inputEmail);
             }
             if (lead.rol) {
               localStorage.setItem("user_role", lead.rol);
               applyRoleTicketFilter(lead.rol);
             }
-            localStorage.setItem("user_profile", JSON.stringify({
-              alias: lead.affiliate_code || aliasVal,
-              alias_nombre: aliasVal,
-              whatsapp: phoneVal,
-              email: emailVal || "",
-              rol: lead.rol || "pareja",
-              ciudad: lead.ciudad || "Bogotá",
-              referredBy: lead.referred_by || null,
-            }));
-            if (noticeBanner) noticeBanner.classList.remove("hidden");
+
+            // Reflejar reserva existente si ya cuenta con pase para Luna Llena
+            if (Array.isArray(data.existingTickets)) {
+              const lunaTicket = data.existingTickets.find(
+                (t) => t.evento === "luna_llena" || t.evento === "luna-llena"
+              );
+              if (lunaTicket) {
+                const banner = document.getElementById("existing-ticket-banner");
+                const desc = document.getElementById("existing-ticket-desc");
+                const link = document.getElementById("existing-ticket-link");
+                if (banner && desc && link) {
+                  const pName = lunaTicket.tipo_entrada === "pareja" ? "👫 Pareja" : (lunaTicket.tipo_entrada === "single" ? "🙋‍♂️ Single" : "🦄 Unicornio");
+                  const mName = (lunaTicket.tipo_pago === "reserva_40" || lunaTicket.tipo_pago === "reserva") ? "Reserva 40%" : "Pago 100%";
+                  desc.textContent = `${pName} • ${mName} ($${Number(lunaTicket.monto_pagado || 0).toLocaleString('es-CO')} COP)`;
+                  link.href = `/the-corset-society/ticket?hash=${lunaTicket.ticket_hash}`;
+                  banner.classList.remove("hidden");
+
+                  // Botón reservar para otra persona
+                  document.getElementById("btn-book-another-ticket")?.addEventListener("click", () => {
+                    isBookingAnotherTicket = true;
+                    isUpgradeMode = false;
+                    activePreviousTicketHash = null;
+                    if (inputAlias) { inputAlias.value = ""; inputAlias.readOnly = false; inputAlias.classList.remove("opacity-80", "cursor-not-allowed", "bg-[#0a050c]"); }
+                    if (inputPhone) { inputPhone.value = ""; inputPhone.readOnly = false; inputPhone.classList.remove("opacity-80", "cursor-not-allowed", "bg-[#0a050c]"); }
+                    if (inputEmail) { inputEmail.value = ""; inputEmail.readOnly = false; inputEmail.classList.remove("opacity-80", "cursor-not-allowed", "bg-[#0a050c]"); }
+                    banner.classList.add("hidden");
+                    if (noticeBanner) noticeBanner.classList.add("hidden");
+                    if (btnSendWaOtp) btnSendWaOtp.classList.remove("hidden");
+                    if (waVerifiedBadge) waVerifiedBadge.classList.add("hidden");
+                    isWaVerified = false;
+                    document.getElementById("checkoutForm")?.scrollIntoView({ behavior: "smooth" });
+                  });
+
+                  // Botón Upgrade de pase
+                  document.getElementById("btn-upgrade-ticket")?.addEventListener("click", () => {
+                    isUpgradeMode = true;
+                    activePreviousTicketHash = lunaTicket.ticket_hash;
+                    if (lunaTicket.tipo_entrada === "unicornio") {
+                      applyRoleTicketFilter("pareja", true);
+                    } else if (lunaTicket.tipo_entrada === "pareja" && (lunaTicket.tipo_pago === "reserva_40" || lunaTicket.tipo_pago === "reserva")) {
+                      const rTotal = document.querySelector('input[name="modalidad"][value="total"]');
+                      if (rTotal) rTotal.checked = true;
+                    } else if (lunaTicket.tipo_entrada === "pareja") {
+                      applyRoleTicketFilter("single", true);
+                    }
+                    updateSummary();
+                    document.getElementById("checkoutForm")?.scrollIntoView({ behavior: "smooth" });
+                  });
+                }
+              }
+            }
           }
         } catch (_) {}
+      } else {
+        // Usuario no autenticado: correo y datos SIEMPRE editables libremente
+        if (inputEmail) {
+          inputEmail.readOnly = false;
+          inputEmail.classList.remove("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
+        }
+        if (inputAlias) {
+          inputAlias.readOnly = false;
+          inputAlias.classList.remove("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
+        }
+        if (inputPhone) {
+          inputPhone.readOnly = false;
+          inputPhone.classList.remove("opacity-80", "cursor-not-allowed", "bg-[#0a050c]");
+          if (btnSendWaOtp && !isWaVerified) {
+            btnSendWaOtp.classList.remove("hidden");
+          }
+        }
+        if (noticeBanner) noticeBanner.classList.add("hidden");
       }
     }
 
@@ -1080,7 +1299,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       } catch (_) {}
 
       let userRole = userProfile?.rol || localStorage.getItem("user_role");
-      const sessionPhone = localStorage.getItem("ambassador_session_phone") || localStorage.getItem("user_phone");
+      const sessionPhone = localStorage.getItem("ambassador_session_phone");
 
       if (!userRole && sessionPhone) {
         try {
@@ -1108,10 +1327,23 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
     window.handleCheckout = handleCheckout;
     window.updateSummary = updateSummary;
     window.applyRoleTicketFilter = applyRoleTicketFilter;
+    window.triggerSendWaOtp = triggerSendWaOtp;
+    window.triggerVerifyWaOtp = triggerVerifyWaOtp;
 
-    // Real-time reactive hydration when user inputs phone or email
+    // Real-time reactive hydration and OTP listeners
     const inputPhone = document.getElementById("whatsapp");
     const inputEmail = document.getElementById("email");
+
+    document.getElementById("btnSendWaOtp")?.addEventListener("click", triggerSendWaOtp);
+    document.getElementById("btnVerifyWaOtp")?.addEventListener("click", triggerVerifyWaOtp);
+
+    inputPhone?.addEventListener("input", () => {
+      const val = inputPhone.value.trim();
+      const btnSend = document.getElementById("btnSendWaOtp");
+      if (!isUserAuthenticated && val.length >= 7 && !isWaVerified) {
+        if (btnSend) btnSend.classList.remove("hidden");
+      }
+    });
 
     inputPhone?.addEventListener("change", async () => {
       const val = inputPhone.value.trim();
@@ -1127,14 +1359,18 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
       const val = inputEmail.value.trim();
       if (val && val.includes("@")) {
         localStorage.setItem("user_email", val);
-        await hydrateSessionFormFields();
-        await checkUserRoleAndFilter();
+        if (isUserAuthenticated) {
+          await hydrateSessionFormFields();
+        }
         await applyDynamicDiscountUI();
       }
     });
 
     // Initialize display immediately or on load
     async function initPricing() {
+      try {
+        localStorage.setItem("last_event_url", "/the-corset-society/luna-llena");
+      } catch (_) {}
       await checkUserRoleAndFilter();
       await hydrateSessionFormFields();
       await applyDynamicDiscountUI();

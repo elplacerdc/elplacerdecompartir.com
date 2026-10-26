@@ -391,6 +391,31 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           </form>
         </div>
 
+        <!-- Section: Continuar Reserva o Explorar Próximos Eventos -->
+        <div id="section-continue-navigation" class="p-6 rounded-2xl bg-[#0a050c] border border-[#c5a059]/40 text-center space-y-3 shadow-md">
+          <div class="text-xs uppercase tracking-wider text-[#c5a059] font-bold">
+            ¿Deseas continuar tu reserva o conocer nuevas fechas?
+          </div>
+          <p class="text-xs text-[#f7f4ee]/70 max-w-lg mx-auto">
+            Tus datos de perfil han quedado guardados. Puedes retomar inmediatamente el formulario del evento o explorar las próximas fechas de nuestra comunidad.
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
+            <a 
+              id="btn-return-to-checkout" 
+              href="/the-corset-society/luna-llena#checkoutForm" 
+              class="px-6 py-2.5 rounded-full font-serif font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] hover:brightness-110 transition-all shadow-md inline-flex items-center gap-2"
+            >
+              <span>←</span> Volver a Completar Reserva en Luna Llena
+            </a>
+            <a 
+              href="/centro-cultural" 
+              class="px-5 py-2.5 rounded-full border border-[#c5a059]/50 text-[#ead397] hover:bg-[#c5a059]/20 font-serif font-bold uppercase tracking-wider text-xs transition-all inline-flex items-center gap-1.5"
+            >
+              <span>📅</span> Ver Próximos Eventos
+            </a>
+          </div>
+        </div>
+
       </div>
 
     </div>
@@ -420,6 +445,21 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
 
   let currentAlias = "";
   let activeShareUrl = "";
+
+  // Resolver retorno dinámico al evento desde el cual vino el usuario
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get("return_to") || urlParams.get("from") || localStorage.getItem("last_event_url");
+    const returnBtn = document.getElementById("btn-return-to-checkout") as HTMLAnchorElement | null;
+    if (returnBtn && returnTo) {
+      returnBtn.href = returnTo.includes("#") ? returnTo : `${returnTo}#checkoutForm`;
+      if (returnTo.includes("luna-llena")) {
+        returnBtn.innerHTML = `<span>←</span> Volver a Completar Reserva en Luna Llena`;
+      } else {
+        returnBtn.innerHTML = `<span>←</span> Volver al Formulario de Pago del Evento`;
+      }
+    }
+  } catch (_) {}
 
   async function loadDashboard() {
     const sessionIdentifier = localStorage.getItem("ambassador_session_phone");

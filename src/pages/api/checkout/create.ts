@@ -158,7 +158,36 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
     const hasDiscount = discountResult.hasDiscount;
     const discountRate = discountResult.discountRate;
-    const monto = Math.round(baseMonto * (1 - discountRate));
+    let monto = Math.round(baseMonto * (1 - discountRate));
+
+    // Soporte para Upgrade de pase existente (pagando excedente strictly upward)
+    let isUpgrade = Boolean(body.is_upgrade && body.previous_ticket_hash);
+    let previousTicket: any = null;
+    if (isUpgrade) {
+      try {
+        const prevRes = await pool.query(
+          `SELECT id, tipo_entrada, tipo_pago, monto_pagado, ticket_hash, lead_id 
+           FROM event_tickets 
+           WHERE ticket_hash = $1 AND estado NOT IN ('cancelado', 'rechazado') 
+           LIMIT 1`,
+          [body.previous_ticket_hash]
+        );
+        if (prevRes.rows.length > 0) {
+          previousTicket = prevRes.rows[0];
+          const prevMonto = Number(previousTicket.monto_pagado || 0);
+          if (monto <= prevMonto) {
+            return new Response(
+              JSON.stringify({ error: "El nuevo pase seleccionado debe ser de una categoría o valor superior al previamente adquirido." }),
+              { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+          }
+          monto = monto - prevMonto;
+          modalidad_pago = `upgrade_${previousTicket.tipo_entrada}_a_${tipo_entrada}`;
+        }
+      } catch (err: any) {
+        console.warn("[Upgrade Calc Error]:", err.message);
+      }
+    }
 
     // 1. Upsert lead first
     const leadResult = await upsertLead(
@@ -249,42 +278,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // If the registered lead already has an attributed ambassador (lead.afiliado_id), that affiliate is immutable and takes absolute priority!
     const lockedAffiliate = lead.afiliado_id || (affiliateRef && affiliateRef !== (lead.alias_nombre || '').toLowerCase() ? affiliateRef : null);
 
-    const isDigitalGateway = metodo_pago === "pasarela_digital" || metodo_pago === "dlocal_go";
-
-    if (!isDigitalGateway) {
-      // Manual coordination via WhatsApp (Bre-B, Nequi, Transferencia)
-      const waTitle = evento === "viernes_23"
-        ? `🔥 *COORDINACIÓN DE PAGO ONLINE — VIERNES 23 DE OCTUBRE — SHOW DE SEXO EN VIVO*`
-        : evento === "sabado_24"
-        ? `🛏️ *COORDINACIÓN DE PAGO ONLINE — SÁBADO 24 DE OCTUBRE — CAMAS FRANCAS & LENCERÍA*`
-        : evento === "taller_baile_erotico"
-        ? `💃 *COORDINACIÓN DE PAGO MANUAL — TALLER DE BAILE — EL PLACER DE COMPARTIR*`
-        : `🌕 *COORDINACIÓN DE PAGO MANUAL — NOCHE DE LUNA LLENA — THE CORSET SOCIETY*`;
-
-      const modLabel = modalidad_pago === "reserva_50"
-        ? `Separación 50% ($${monto.toLocaleString("es-CO")})`
-        : modalidad_pago === "reserva_40"
-        ? `Separación 40% ($${monto.toLocaleString("es-CO")})`
-        : `Pago Total ($${monto.toLocaleString("es-CO")})`;
-
-      const waText = encodeURIComponent(
-        `${waTitle}\n\n` +
-        `👤 *Alias/Nombre:* ${alias_nombre}\n` +
-        `📱 *WhatsApp:* ${whatsapp}\n` +
-        `📧 *Email:* ${email}\n` +
-        `🎟️ *Entrada:* ${priceInfo.label}\n` +
-        `💵 *Modalidad:* ${modLabel}\n` +
-        (lockedAffiliate ? `🤝 *Referido por:* ${lockedAffiliate}\n` : "") +
-        `\nHola Segisw, deseo coordinar mi pago manual vía Bre-B, Nequi o transferencia bancaria para el evento.`
-      );
-      const waUrl = `https://wa.me/573194194785?text=${waText}`;
-
-      return new Response(JSON.stringify({ success: true, redirect_url: waUrl }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
     // 2. Insert or Reuse pending ticket (Idempotency lock: avoid multi-click duplication within 60s)
     let ticketId = "";
     let ticketHash = "";
@@ -318,6 +311,59 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         ]
       );
       ticketId = res.rows[0].id;
+    }
+
+    // Acreditar / notificar nuevo referido al embajador si viene por enlace
+    if (lockedAffiliate) {
+      try {
+        const affRes = await pool.query("SELECT * FROM afiliados WHERE LOWER(alias) = LOWER($1) LIMIT 1", [lockedAffiliate]);
+        if (affRes.rows.length > 0) {
+          const { notifyAmbassadorNewReferral } = await import("../../../services/notifications");
+          notifyAmbassadorNewReferral(affRes.rows[0], {
+            alias_nombre: lead.alias_nombre,
+            email: lead.email,
+          }).catch(() => {});
+        }
+      } catch (_) {}
+    }
+
+    const isDigitalGateway = metodo_pago === "pasarela_digital" || metodo_pago === "dlocal_go";
+
+    if (!isDigitalGateway) {
+      // Manual coordination via WhatsApp (Bre-B, Nequi, Transferencia)
+      const waTitle = evento === "viernes_23"
+        ? `🔥 *COORDINACIÓN DE PAGO ONLINE — VIERNES 23 DE OCTUBRE*`
+        : evento === "sabado_24"
+        ? `🛏️ *COORDINACIÓN DE PAGO ONLINE — SÁBADO 24 DE OCTUBRE*`
+        : evento === "taller_baile_erotico"
+        ? `💃 *COORDINACIÓN DE PAGO MANUAL — TALLER DE BAILE*`
+        : `🌕 *COORDINACIÓN DE PAGO MANUAL — NOCHE DE LUNA LLENA*`;
+
+      const modLabel = isUpgrade
+        ? `Mejora de Pase (Excedente $${monto.toLocaleString("es-CO")})`
+        : modalidad_pago === "reserva_50"
+        ? `Separación 50% ($${monto.toLocaleString("es-CO")})`
+        : modalidad_pago === "reserva_40"
+        ? `Separación 40% ($${monto.toLocaleString("es-CO")})`
+        : `Pago Total ($${monto.toLocaleString("es-CO")})`;
+
+      const waText = encodeURIComponent(
+        `¡Hola Segisw! Deseo coordinar el pago manual para la Noche de Luna Llena:\n\n` +
+        `• Alias: ${alias_nombre}\n` +
+        `• WhatsApp: ${whatsapp}\n` +
+        `• Correo: ${email}\n` +
+        `• Pase: ${priceInfo.label}\n` +
+        `• Modalidad: ${modLabel}\n` +
+        (lockedAffiliate ? `• Embajador: @${lockedAffiliate}\n` : "") +
+        `• Ticket Ref: ${ticketHash.substring(0, 8)}\n\n` +
+        `Solicito los datos para transferir por Bre-B, Nequi o Bancolombia.`
+      );
+      const waUrl = `https://wa.me/573194194785?text=${waText}`;
+
+      return new Response(JSON.stringify({ success: true, redirect_url: waUrl, ticketHash }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // 3. Handle Digital Payment Method

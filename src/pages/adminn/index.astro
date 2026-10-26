@@ -1973,6 +1973,10 @@ const isAuthenticated = verifyAdminSessionToken(token);
                   <div class="text-xs text-[#f7f4ee]/90 font-medium">
                     🎟️ Evento: <strong class="text-[#ead397]">${t.evento || "General"}</strong> • Pase: <strong>${t.tipo_entrada || "General"}</strong>
                   </div>
+                  <div class="text-xs text-[#f7f4ee]/80 font-mono flex flex-wrap gap-x-3 gap-y-1">
+                    <span>📱 WhatsApp: <strong class="text-[#ead397]">${t.whatsapp || 'Sin WhatsApp'}</strong></span>
+                    <span>✉️ Correo: <strong class="text-[#ead397]">${t.email || 'Sin correo'}</strong></span>
+                  </div>
                   <div class="text-xs text-[#f7f4ee]/70 font-mono flex flex-wrap gap-x-3 gap-y-1">
                     <span>👤 Rol: <strong class="text-[#ead397] capitalize">${roleName}</strong></span>
                     <span>📅 Fecha: <strong>${formattedDate}</strong></span>
@@ -2253,17 +2257,14 @@ const isAuthenticated = verifyAdminSessionToken(token);
         ];
       }
 
-      const EVENT_CATALOG: Record<string, { name: string; isFree: boolean }> = {
-        taller_baile_erotico: {
-          name: "💃 Taller de Baile Erótico — Sensualidad & Heels (Viernes 16 Oct)",
-          isFree: false
-        },
+      const EVENT_CATALOG: Record<string, { name: string; isFree: boolean; date?: string }> = {
         luna_llena: {
           name: "The Corset Society — Noche de Luna Llena (Halloween - 31 Oct)",
-          isFree: false
+          isFree: false,
+          date: "2026-10-31T23:59:59-05:00"
         },
         corset_vip: {
-          name: "The Corset Society — Membresía Anual VIP",
+          name: "The Corset Society — Membresía Anual VIP (Permanente)",
           isFree: false
         }
       };
@@ -2302,9 +2303,12 @@ const isAuthenticated = verifyAdminSessionToken(token);
         `;
       }
 
-      const eventsOptions = Object.entries(EVENT_CATALOG).map(([key, ev]) => `
-        <option value="${key}">${ev.name}</option>
-      `).join("");
+      const nowTime = Date.now();
+      const eventsOptions = Object.entries(EVENT_CATALOG)
+        .filter(([_, ev]) => !ev.date || new Date(ev.date).getTime() >= nowTime)
+        .map(([key, ev]) => `
+          <option value="${key}">${ev.name}</option>
+        `).join("");
 
       crudFieldsContainer.innerHTML = `
         ${userBlockHtml}
