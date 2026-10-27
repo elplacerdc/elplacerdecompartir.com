@@ -43,6 +43,20 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
               </a>
             </div>
             <p id="ambassador-contact" class="text-xs text-[#f7f4ee]/50 mt-0.5 font-mono"></p>
+            <div id="quick-aff-bar" class="mt-3 flex flex-wrap items-center gap-2">
+              <span class="text-[11px] text-[#ead397] font-mono bg-[#0a0608] px-3 py-1.5 rounded-xl border border-[#c5a059]/40 flex items-center gap-1.5 shadow-inner">
+                <span class="text-[#c5a059] font-bold">Tu Enlace:</span>
+                <span id="top-aff-url" class="select-all">https://elplacerdecompartir.com/?ref=...</span>
+              </span>
+              <button 
+                id="btn-top-copy" 
+                type="button" 
+                class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#c5a059] to-[#ead397] text-[#0a0608] text-[11px] font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-sm cursor-pointer flex items-center gap-1"
+                title="Copiar tu enlace oficial de embajador"
+              >
+                <span>📋</span> Copiar Enlace
+              </button>
+            </div>
           </div>
           <div class="flex items-center gap-2">
             <button 
@@ -574,6 +588,9 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
           const shareUrlPreview = document.getElementById("share-url-preview");
           if (shareUrlPreview) shareUrlPreview.textContent = activeShareUrl;
 
+          const topAffUrl = document.getElementById("top-aff-url");
+          if (topAffUrl) topAffUrl.textContent = `https://elplacerdecompartir.com/?ref=${alias}`;
+
           if (btnShareWa) {
             const waMsg = encodeURIComponent(`¡Hola! Te invito a conocer El Placer de Compartir y The Corset Society: ${activeShareUrl}`);
             btnShareWa.href = `https://wa.me/?text=${waMsg}`;
@@ -762,6 +779,18 @@ import AmbassadorLogin from "../components/AmbassadorLogin.astro";
       btnCopyUrl.textContent = "¡Copiado!";
       setTimeout(() => {
         btnCopyUrl.textContent = originalText;
+      }, 2000);
+    });
+  });
+
+  const btnTopCopy = document.getElementById("btn-top-copy");
+  btnTopCopy?.addEventListener("click", () => {
+    if (!currentAlias) return;
+    const fullUrl = `https://elplacerdecompartir.com/?ref=${currentAlias}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      btnTopCopy.innerHTML = "<span>✅</span> ¡Copiado!";
+      setTimeout(() => {
+        btnTopCopy.innerHTML = "<span>📋</span> Copiar Enlace";
       }, 2000);
     });
   });

@@ -952,8 +952,25 @@ const isAuthenticated = verifyAdminSessionToken(token);
             <div class="text-[#f7f4ee]/90">${l.whatsapp || "—"}</div>
             <div class="text-[#f7f4ee]/50 text-[10px] truncate max-w-[150px]">${l.email || "—"}</div>
           </td>
-          <td class="py-3 px-3 font-mono text-[11px] text-[#ead397] font-semibold">
-            ${affAlias}
+          <td class="py-3 px-3 font-mono text-[11px]">
+            <div class="flex items-center gap-1.5 font-semibold text-[#ead397]">
+              <span>${affAlias}</span>
+              ${l.affiliate_alias ? `
+                <button 
+                  type="button" 
+                  class="btn-copy-aff-link p-1 rounded hover:bg-[#c5a059]/20 text-[#c5a059] text-[10px] transition-colors"
+                  data-link="https://elplacerdecompartir.com/?ref=${encodeURIComponent(l.affiliate_alias)}"
+                  title="Copiar enlace de embajador oficial"
+                >
+                  📋
+                </button>
+              ` : ''}
+            </div>
+            ${l.afiliado_id ? `
+              <div class="text-[10px] text-[#f7f4ee]/50 mt-0.5">
+                Ref: <span class="text-[#c5a059]">@${l.afiliado_id}</span>
+              </div>
+            ` : ''}
           </td>
           <td class="py-3 px-3 text-[11px]">
             <span class="capitalize text-[#f7f4ee]/80">${roleDisplay}</span>
@@ -1121,6 +1138,20 @@ const isAuthenticated = verifyAdminSessionToken(token);
       e.stopPropagation();
       const leadId = editLeadBtn.getAttribute("data-lead-id");
       if (leadId) openEditLeadModal(leadId);
+      return;
+    }
+
+    // 📋 Copy affiliate link button
+    const copyAffBtn = target.closest(".btn-copy-aff-link") as HTMLElement;
+    if (copyAffBtn) {
+      e.stopPropagation();
+      const link = copyAffBtn.getAttribute("data-link");
+      if (link) {
+        navigator.clipboard.writeText(link);
+        const originalHtml = copyAffBtn.innerHTML;
+        copyAffBtn.innerHTML = "✅";
+        setTimeout(() => { copyAffBtn.innerHTML = originalHtml; }, 1500);
+      }
       return;
     }
 

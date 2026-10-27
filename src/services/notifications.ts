@@ -1,14 +1,14 @@
 // notifications.ts - Multi-Channel Notification Orchestrator
 import { sendTransactionalEmail } from "./email";
 import { pool, normalizePhone } from "../db";
+import { getEvolutionApiKey } from "./evolution";
 
 const BRAND_NOTIFICATION_EMAIL = "web@elplacerdecompartir.com";
-const EVOLUTION_INITIAL_NUMBER = "573021004070";
+const EVOLUTION_INITIAL_NUMBER = process.env.ADMIN_WHATSAPP_NUMBER || "573194194785";
 const EVOLUTION_API_URL = process.env.EVOLUTION_URL || process.env.EVOLUTION_API_URL || "http://evolution:8085";
-const EVOLUTION_API_KEY = process.env.EVOLUTION_API_KEY || "481c8c43-0023-4028-bad5-9d1355a3674c";
 
 // Verified public accessible transparent logo for The Corset Society
-const CORSET_LOGO_URL = "https://webdev-278-3000.ny1.zerops.app/media/logo_corsetsociety_transparent.png";
+const CORSET_LOGO_URL = "https://elplacerdecompartir.com/media/logo_corsetsociety_transparent.png";
 const PLACER_LOGO_URL = "https://elplacerdecompartir.com/media/logo_elplacerdc_x.jpg";
 
 export function formatEvolutionNumber(phone: string): string {
@@ -25,16 +25,20 @@ export function formatEvolutionNumber(phone: string): string {
 
 export function wrapSpanishEmail(content: string, title: string = "El Placer de Compartir"): string {
   return `<!DOCTYPE html>
-<html lang="es" dir="ltr">
+<html lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta http-equiv="Content-Language" content="es">
+  <meta name="language" content="es">
+  <meta name="google" content="notranslate">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${title}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #120713; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-  ${content}
+<body class="notranslate" translate="no" style="margin: 0; padding: 0; background-color: #120713; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no">
+    ${content}
+  </div>
 </body>
 </html>`;
 }
@@ -151,11 +155,12 @@ export async function sendEvolutionWhatsApp(
       return { success: true };
     }
 
+    const apiKey = await getEvolutionApiKey();
     const response = await fetch(`${EVOLUTION_API_URL.replace(/\/$/, "")}/send/text`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: EVOLUTION_API_KEY,
+        apikey: apiKey,
       },
       body: JSON.stringify({
         number: cleanNumber,
@@ -185,6 +190,7 @@ export async function notifyNewLead(
     ciudad?: string;
     origen?: string;
     corset_vip?: boolean;
+    afiliado_id?: string;
   },
   channel?: "elplacerdc" | "corset" | "centro_cultural" | string
 ): Promise<void> {
@@ -196,38 +202,61 @@ export async function notifyNewLead(
 
   const effectiveChannel = channel || (lead.corset_vip ? "corset" : "elplacerdc");
   const isCorset = effectiveChannel === "corset";
-  const channelName = isCorset ? "The Corset Society (VIP - Membresía Anual)" : "El Placer de Compartir";
+  const channelName = isCorset ? "La Sociedad del Corset (Membresía Anual VIP)" : "El Placer de Compartir";
   const phoneNorm = normalizePhone(lead.whatsapp);
   const formattedPhone = phoneNorm ? phoneNorm.display : lead.whatsapp;
   const waDirectDigits = phoneNorm ? phoneNorm.waNumber : lead.whatsapp.replace(/\D/g, "");
 
   const gram = getGrammaticalProfile(lead.rol);
 
-  // 1. Notificación WhatsApp directa al Lead
+  // 1. Código propio del usuario para su enlace de embajador
+  let ownCode = "embajador";
+  try {
+    const { ensureAffiliateCode } = await import("../db");
+    ownCode = await ensureAffiliateCode(lead.alias_nombre || "Embajador", lead.whatsapp, lead.email);
+  } catch (err: any) {
+    console.warn("[notifyNewLead] Error resolving own affiliate code:", err.message);
+  }
+
+  // Enlaces de embajador propios y botones directos para compartir (WhatsApp & X)
+  const ownAffLink = isCorset
+    ? `https://elplacerdecompartir.com/the-corset-society/?ref=${encodeURIComponent(ownCode)}`
+    : `https://elplacerdecompartir.com/?ref=${encodeURIComponent(ownCode)}`;
+
+  const waShareMsg = isCorset
+    ? `«El acceso se concede, no se anuncia.» Conoce La Sociedad del Corset en Bogotá: ${ownAffLink}`
+    : `¡Hola! Te invito a conocer El Placer de Compartir, comunidad y centro cultural de erotismo consciente en Bogotá: ${ownAffLink}`;
+
+  const xShareMsg = isCorset
+    ? `«El acceso se concede, no se anuncia.» Conoce La Sociedad del Corset en Bogotá:`
+    : `Te invito a descubrir @elplacerdc, espacio de libertad y erotismo consciente en Bogotá:`;
+
+  const waShareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waShareMsg)}`;
+  const xShareUrl = `https://x.com/intent/post?text=${encodeURIComponent(xShareMsg)}&url=${encodeURIComponent(ownAffLink)}`;
+
+  // 1. Notificación WhatsApp directa al Lead con la voz y calidez del Brandbook (sin 'leer más')
   if (isCorset) {
     const leadCorsetWa =
-      `🖤 *THE CORSET SOCIETY — CÍRCULO HERMÉTICO*\n\n` +
-      `${gram.greeting} *${lead.alias_nombre || "Invitado"}*,\n\n` +
-      `Hemos recibido tu postulación de admisión. The Corset Society es la línea de alta exclusividad de ElPlacerDC: un círculo privado de gala con credencial VIP por suscripción anual ($199.000 COP) que otorga acceso a convocatorias privadas, encuentros de ticket alto, descuentos permanentes y beneficios exclusivos.\n\n` +
-      `Conoce los detalles de la membresía y activa tu credencial en nuestra página oficial:\n` +
-      `👉 https://elplacerdecompartir.com/corset-vip/?ref=segisw\n\n` +
-      `Tu perfil se encuentra en evaluación confidencial por el comité de admisión.\n\n` +
-      `_«El acceso se concede, no se anuncia.»_\n\n` +
-      `🏛️ *Dirección & Comité de Admisión • The Corset Society*`;
+      `🖤 *LA SOCIEDAD DEL CORSET*\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}*, hemos recibido tu solicitud de admisión. Cuidamos celosamente el misterio, la estética noir y el confort de quienes cruzan nuestro umbral.\n\n` +
+      `👑 *Membresía VIP:* https://elplacerdecompartir.com/the-corset-society/\n` +
+      `🎁 *Tu Enlace Reservado:* ${ownAffLink}\n` +
+      `_(Recomienda este círculo a personas afines y desbloquea pases de honor)_\n\n` +
+      `_«El acceso se concede, no se anuncia.»_\n` +
+      `🏛️ *Comité de Admisión & Segi*`;
 
     sendEvolutionWhatsApp(lead.whatsapp, leadCorsetWa).catch((e) =>
       console.error("[NotifyLead Corset WhatsApp Err]:", e)
     );
   } else {
     const leadPlacerWa =
-      `🍷 *EL PLACER DE COMPARTIR — COMUNIDAD & EVENTOS*\n\n` +
-      `${gram.greeting} *${lead.alias_nombre || "Invitado"}* ✨\n\n` +
-      `¡Qué alegría darte la bienvenida! Somos pioneros en Colombia en explorar la libertad relacional, el consentimiento lúcido y el erotismo libre de presiones, con nuestro nuevo Centro Cultural en Bogotá (Calle 67 # 23-46 Piso 2, 7 de Agosto).\n\n` +
-      `Te acabamos de remitir a tu correo electrónico una guía con nuestros principios comunitarios, eventos programados y la galería de espacios.\n\n` +
-      `Además, como miembro activo ya haces parte de nuestro Programa Oficial de Embajadores. Comparte tu enlace exclusivo con tus amigos mente abierta y gana entradas gratuitas:\n` +
-      `👉 https://elplacerdecompartir.com/dashboard\n\n` +
-      `Guarda este contacto en tu agenda para no perderte nuestras próximas fechas.\n\n` +
-      `🍷 *El Placer de Compartir*`;
+      `🍷 *EL PLACER DE COMPARTIR*\n\n` +
+      `${gram.greeting} *${lead.alias_nombre || "Invitado"}*, qué placer darte la bienvenida. Creamos un espacio seguro de libertad, erotismo lúcido y complicidad entre adultos de mente abierta en Bogotá.\n\n` +
+      `🏛️ *Casa & Agenda:* https://elplacerdecompartir.com/galeria-centro-cultural/\n` +
+      `🎁 *Tu Enlace de Embajador:* ${ownAffLink}\n` +
+      `_(Compártelo: por cada 3 compras acreditadas ganas 1 pase gratis)_\n\n` +
+      `Guarda este número para coordinar tus accesos.\n` +
+      `🍷 *Segi* • Curadora de Experiencias`;
 
     sendEvolutionWhatsApp(lead.whatsapp, leadPlacerWa).catch((e) =>
       console.error("[NotifyLead Placer WhatsApp Err]:", e)
@@ -237,11 +266,11 @@ export async function notifyNewLead(
   // 2. Correo transaccional al Usuario
   if (lead.email) {
     if (isCorset) {
-      // The Corset Society: Asunto con referencia, cuerpo en español para evitar banner de traducción de Gmail
+      // La Sociedad del Corset: Identidad formal, estética noir, cero 'The Corset Society' en headers
       const corsetHtml = `
-        <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
+        <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
           <div style="margin-bottom: 25px;">
-            <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 96px; width: auto; margin: 0 auto; display: block;" />
+            <img src="${CORSET_LOGO_URL}" alt="La Sociedad del Corset" width="96" height="auto" style="height: 96px; width: auto; max-width: 96px; margin: 0 auto; display: block; border: 0;" />
           </div>
           <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 3px; font-size: 18px; margin: 0 0 10px 0;">La Sociedad del Corset</h1>
           <div style="width: 40px; height: 1px; background-color: #c5a059; margin: 0 auto 25px auto;"></div>
@@ -266,16 +295,30 @@ export async function notifyNewLead(
               «El acceso se concede, no se anuncia.»
             </p>
 
-            <!-- Invitación de Embajador (ANTES del botón final) -->
-            <div style="background-color: #140816; border: 1px solid rgba(197, 160, 89, 0.3); padding: 16px; border-radius: 8px; margin: 25px 0; text-align: center;">
-              <p style="font-size: 12px; color: #ead397; margin: 0 0 8px 0; font-weight: bold;">¿Deseas compartir este círculo con personas de tu confianza?</p>
-              <p style="font-size: 11px; color: rgba(247, 244, 238, 0.7); margin: 0 0 10px 0;">Como miembro ya eres Embajador: comparte tu enlace y gana entradas gratuitas.</p>
+            <!-- Invitación de Embajador con botones de compartir directo -->
+            <div style="background-color: #140816; border: 1px solid rgba(197, 160, 89, 0.4); padding: 22px 18px; border-radius: 10px; margin: 25px 0; text-align: center;">
+              <p style="font-size: 13px; color: #ead397; margin: 0 0 6px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🎁 Tu Enlace Exclusivo de Embajador</p>
+              <p style="font-size: 12px; color: rgba(247, 244, 238, 0.75); margin: 0 0 12px 0; line-height: 1.5;">Comparte este círculo con personas de confianza. Por cada 3 compras acreditadas con tu enlace, recibes 1 pase de honor gratuito:</p>
+              <div style="background-color: #0a040b; border: 1px dashed #c5a059; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; color: #ead397; margin-bottom: 16px; word-break: break-all;">
+                ${ownAffLink}
+              </div>
+
+              <!-- Botones de Compartir Directo (WhatsApp & X) -->
+              <div style="margin-bottom: 16px;">
+                <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+                  📲 Compartir por WhatsApp
+                </a>
+                <a href="${xShareUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #000000; border: 1px solid #c5a059; color: #ead397; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+                  𝕏 Compartir en X
+                </a>
+              </div>
+
               <a href="https://elplacerdecompartir.com/dashboard" style="display: inline-block; font-size: 11px; color: #c5a059; border: 1px solid #c5a059; padding: 6px 14px; border-radius: 20px; text-decoration: none; text-transform: uppercase; font-weight: bold;">Acceder a mi Panel de Embajador →</a>
             </div>
 
             <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
             <div style="text-align: center; margin: 30px 0 10px 0;">
-              <a href="https://elplacerdecompartir.com/corset-vip/?ref=segisw" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP Online →</a>
+              <a href="https://elplacerdecompartir.com/the-corset-society/" style="background: linear-gradient(135deg, #c5a059, #ead397); color: #050505; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;">Activar Credencial VIP →</a>
             </div>
 
           </div>
@@ -287,14 +330,14 @@ export async function notifyNewLead(
       sendTransactionalEmail({
         to: lead.email,
         name: lead.alias_nombre || undefined,
-        fromName: "La Sociedad del Corset (The Corset Society)",
-        subject: "La Sociedad del Corset (The Corset Society) — Solicitud de Membresía Anual VIP",
+        fromName: "La Sociedad del Corset",
+        subject: "La Sociedad del Corset — Solicitud de Membresía Anual VIP",
         html: wrapSpanishEmail(corsetHtml, "La Sociedad del Corset"),
       }).catch((e) => console.error("[NotifyLead Corset Email Err]:", e));
     } else {
       // El Placer de Compartir: Identidad Centro Cultural (no bar swinger, no zonas húmedas, eventos)
       const placerHtml = `
-        <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #591f26; text-align: center;">
+        <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #591f26; text-align: center;">
           <div style="margin-bottom: 20px;">
             <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 96px; width: 96px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
           </div>
@@ -317,16 +360,30 @@ export async function notifyNewLead(
               <li>Privacidad recíproca: Lo que se comparte en nuestras veladas permanece en la intimidad del grupo.</li>
             </ul>
 
-            <!-- Invitación de Embajador (ANTES del botón final) -->
-            <div style="background-color: #250f22; border: 1px solid rgba(197, 160, 89, 0.3); padding: 16px; border-radius: 8px; margin: 25px 0; text-align: center;">
-              <p style="font-size: 12px; color: #ead397; margin: 0 0 8px 0; font-weight: bold;">Gana Entradas como Embajador</p>
-              <p style="font-size: 11px; color: rgba(247, 244, 238, 0.7); margin: 0 0 10px 0;">Invita a personas de mente abierta y obtén entradas gratuitas a todos nuestros eventos.</p>
+            <!-- Invitación de Embajador con botones de compartir directo -->
+            <div style="background-color: #250f22; border: 1px solid rgba(197, 160, 89, 0.4); padding: 22px 18px; border-radius: 10px; margin: 25px 0; text-align: center;">
+              <p style="font-size: 13px; color: #ead397; margin: 0 0 6px 0; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🎁 Tu Enlace Exclusivo de Embajador</p>
+              <p style="font-size: 12px; color: rgba(247, 244, 238, 0.75); margin: 0 0 12px 0; line-height: 1.5;">Invita a personas de mente abierta y gana entradas de honor gratuitas a nuestros eventos:</p>
+              <div style="background-color: #140816; border: 1px dashed #c5a059; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; color: #ead397; margin-bottom: 16px; word-break: break-all;">
+                ${ownAffLink}
+              </div>
+
+              <!-- Botones de Compartir Directo (WhatsApp & X) -->
+              <div style="margin-bottom: 16px;">
+                <a href="${waShareUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+                  📲 Compartir por WhatsApp
+                </a>
+                <a href="${xShareUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #000000; border: 1px solid #c5a059; color: #ead397; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+                  𝕏 Compartir en X
+                </a>
+              </div>
+
               <a href="https://elplacerdecompartir.com/dashboard" style="display: inline-block; font-size: 11px; color: #ead397; border: 1px solid #c5a059; padding: 6px 14px; border-radius: 20px; text-decoration: none; text-transform: uppercase;">Ir al Panel de Embajadores →</a>
             </div>
 
             <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
             <div style="text-align: center; margin: 30px 0 10px 0;">
-              <a href="https://elplacerdecompartir.com/galeria-centro-cultural/?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Explorar Centro Cultural & Galería 🏛️ →</a>
+              <a href="https://elplacerdecompartir.com/galeria-centro-cultural/" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Explorar Centro Cultural & Galería 🏛️ →</a>
             </div>
 
           </div>
@@ -347,7 +404,7 @@ export async function notifyNewLead(
 
   // 3. Correo transaccional a la Marca (Admin)
   const brandSubject = isCorset
-    ? `[Nuevo Lead VIP] ${lead.alias_nombre || "Anónimo"} (${lead.rol || "General"}) - La Sociedad del Corset (The Corset Society)`
+    ? `[Nuevo Lead VIP] ${lead.alias_nombre || "Anónimo"} (${lead.rol || "General"}) - La Sociedad del Corset`
     : `[Nuevo Registro Comunidad] ${lead.alias_nombre || "Anónimo"} (${lead.rol || "General"}) - El Placer de Compartir`;
 
   const brandHtml = `
@@ -368,8 +425,8 @@ export async function notifyNewLead(
 
   sendTransactionalEmail({
     to: BRAND_NOTIFICATION_EMAIL,
-    name: isCorset ? "La Sociedad del Corset (The Corset Society) Admin" : "El Placer de Compartir Admin",
-    fromName: isCorset ? "La Sociedad del Corset (The Corset Society)" : "El Placer de Compartir",
+    name: isCorset ? "La Sociedad del Corset Admin" : "El Placer de Compartir Admin",
+    fromName: isCorset ? "La Sociedad del Corset" : "El Placer de Compartir",
     subject: brandSubject,
     html: wrapSpanishEmail(brandHtml, "Notificación Nuevo Registro"),
   }).catch((e) => console.error("[NotifyLead BrandEmail Err]:", e));
@@ -505,7 +562,7 @@ export async function notifyNewTicket(
       `🔐 *Tu credencial con QR:*\n${ticketUrl}\n\n` +
       `💎 *${gram.dontGoAlone}. ${gram.shareWithFriends} (3 compras = 1 pase gratis):*\n🔗 ${eventShareUrl}\n\n` +
       `_«Sensualidad & Heels en total libertad y consentimiento lúcido.»_`
-    : `🌕 *CREDENCIAL CONFIRMADA — THE CORSET SOCIETY*\n\n` +
+    : `🌕 *CREDENCIAL CONFIRMADA — LA SOCIEDAD DEL CORSET*\n\n` +
       `${gram.greeting} *${lead.alias_nombre || "Invitado"}*, ${gram.possessive} acceso para la *Noche de Luna Llena* (31 Oct) está confirmado.\n\n` +
       `🎟️ *Pase:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago === "reserva_40" ? "Separación 40%" : "Pago Total 100%"})\n` +
       `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
@@ -520,11 +577,21 @@ export async function notifyNewTicket(
 
   // 2. Correo al Usuario con Credencial Oficial
   if (lead.email) {
-    const userSubject = "La Sociedad del Corset (The Corset Society) — Tu Credencial Digital Sellada (Noche de Luna Llena)";
+    const waShareTicketMsg = isTaller
+      ? `¡Acompáñame al Taller de Baile Erótico en Bogotá! Puedes reservar aquí: ${eventShareUrl}`
+      : `«El acceso se concede, no se anuncia.» Acompáñame a la Noche de Luna Llena de La Sociedad del Corset: ${eventShareUrl}`;
+    const xShareTicketMsg = isTaller
+      ? `Acompáñame al Taller de Baile Erótico en Bogotá con @elplacerdc:`
+      : `«El acceso se concede, no se anuncia.» Noche de Luna Llena en La Sociedad del Corset:`;
+
+    const waShareTicketUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waShareTicketMsg)}`;
+    const xShareTicketUrl = `https://x.com/intent/post?text=${encodeURIComponent(xShareTicketMsg)}&url=${encodeURIComponent(eventShareUrl)}`;
+
+    const userSubject = "La Sociedad del Corset — Tu Credencial Digital Sellada (Noche de Luna Llena)";
     const userHtml = `
-      <div style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', serif, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
+      <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" style="background-color: #050505; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', serif, sans-serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center;">
         <div style="margin-bottom: 25px;">
-          <img src="${CORSET_LOGO_URL}" alt="The Corset Society" style="height: 96px; width: auto; margin: 0 auto; display: block;" />
+          <img src="${CORSET_LOGO_URL}" alt="La Sociedad del Corset" width="96" height="auto" style="height: 96px; width: auto; max-width: 96px; margin: 0 auto; display: block; border: 0;" />
         </div>
         <h1 style="color: #c5a059; text-transform: uppercase; letter-spacing: 2px; font-size: 20px; margin: 0 0 10px 0;">La Sociedad del Corset</h1>
         <h2 style="color: #ead397; font-size: 15px; margin: 0 0 20px 0; letter-spacing: 1px;">Noche de Luna Llena 🌕</h2>
@@ -542,7 +609,7 @@ export async function notifyNewTicket(
             <p style="margin: 0; font-size: 11px; color: #ead397;">🛡️ <strong>Seguridad Transaccional:</strong> Pagos y transacciones procesadas con seguridad a nombre de <strong>Baiosfera</strong>.</p>
           </div>
 
-          <!-- Invitación de Embajador con enlace del evento (ANTES del botón final) -->
+          <!-- Invitación de Embajador con enlace del evento y botones directos -->
           <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
             <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; font-weight: bold; display: block; margin-bottom: 6px;">Programa de Embajadores</span>
             <h3 style="color: #ead397; font-size: 15px; margin: 0 0 8px 0;">Gana Entradas Gratuitas por Recomendar</h3>
@@ -552,6 +619,17 @@ export async function notifyNewTicket(
             <div style="padding: 10px; background-color: #0a0608; border-radius: 6px; font-family: monospace; font-size: 13px; color: #ead397; margin-bottom: 14px; word-break: break-all;">
               ${eventShareUrl}
             </div>
+
+            <!-- Botones de Compartir Directo -->
+            <div style="margin-bottom: 16px;">
+              <a href="${waShareTicketUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+                📲 Compartir por WhatsApp
+              </a>
+              <a href="${xShareTicketUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #000000; border: 1px solid #c5a059; color: #ead397; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+                𝕏 Compartir en X
+              </a>
+            </div>
+
             <a href="https://elplacerdecompartir.com/dashboard" style="background-color: transparent; color: #c5a059; border: 1px solid #c5a059; padding: 8px 18px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; text-transform: uppercase; font-size: 10px; letter-spacing: 1px;">
               Entrar a mi Panel de Embajador →
             </a>
@@ -570,7 +648,7 @@ export async function notifyNewTicket(
     sendTransactionalEmail({
       to: lead.email,
       name: lead.alias_nombre || undefined,
-      fromName: "La Sociedad del Corset (The Corset Society)",
+      fromName: "La Sociedad del Corset",
       subject: userSubject,
       html: wrapSpanishEmail(userHtml, "La Sociedad del Corset — Credencial Digital"),
     }).catch((e) => console.error("[NotifyTicket UserEmail Err]:", e));
@@ -595,15 +673,15 @@ export async function notifyNewTicket(
 
   sendTransactionalEmail({
     to: BRAND_NOTIFICATION_EMAIL,
-    name: "La Sociedad del Corset (The Corset Society) Admin",
-    fromName: "La Sociedad del Corset (The Corset Society)",
+    name: "La Sociedad del Corset Admin",
+    fromName: "La Sociedad del Corset",
     subject: brandSubject,
     html: wrapSpanishEmail(brandHtml, brandSubject),
   }).catch((e) => console.error("[NotifyTicket BrandEmail Err]:", e));
 
   // 4. WhatsApp al Evolution Inicial (Admin Telemetría)
   const adminWaText = 
-    `🌕 *RESERVA CONFIRMADA — CORSET SOCIETY*\n\n` +
+    `🌕 *RESERVA CONFIRMADA — LA SOCIEDAD DEL CORSET*\n\n` +
     `🎟️ *Entrada:* ${ticket.tipo_entrada.toUpperCase()} (${ticket.tipo_pago})\n` +
     `💵 *Monto:* $${Number(ticket.monto_pagado).toLocaleString("es-CO")} COP\n` +
     `👤 *Invitado:* ${lead.alias_nombre}\n` +
@@ -651,13 +729,13 @@ export async function notifyEventReservation(
   } else if (isTaller) {
     eventTitle = "Taller de Baile Erótico — Sensualidad & Heels (Viernes 16 de Octubre)";
   } else if (isLuna) {
-    eventTitle = "The Corset Society — Noche de Luna Llena (Gala Mascarada Noir de Halloween)";
+    eventTitle = "La Sociedad del Corset — Noche de Luna Llena (Gala Mascarada Noir de Halloween)";
   } else if (isSitio) {
     eventTitle = "Evento Oficial ElPlacerDC (Viernes 9 de Octubre)";
   } else if (isImpacto) {
     eventTitle = "Evento Aliado: Impacto Producciones (Sábado 10 de Octubre)";
   } else if (isCorsetVip) {
-    eventTitle = "The Corset Society — Credencial VIP Anual";
+    eventTitle = "La Sociedad del Corset — Credencial VIP Anual";
   }
 
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=ELPLACERDC-EVENT-${ticket.ticket_hash}`;
@@ -739,6 +817,11 @@ export async function notifyEventReservation(
 
   // 2. Correo con QR de asistencia adjunto al asistente
   if (lead.email) {
+    const waShareEventMsg = `¡Nos vemos en este evento exclusivo! Puedes reservar aquí: ${affLink}`;
+    const xShareEventMsg = `Acompáñame a este evento exclusivo en @elplacerdc:`;
+    const waShareEventUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(waShareEventMsg)}`;
+    const xShareEventUrl = `https://x.com/intent/post?text=${encodeURIComponent(xShareEventMsg)}&url=${encodeURIComponent(affLink)}`;
+
     const ambassadorEmailSnippet = `
       <div style="background-color: #250F22; border: 1px solid #c5a059; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
         <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #c5a059; font-weight: bold; display: block; margin-bottom: 6px;">Programa de Embajadores</span>
@@ -749,6 +832,17 @@ export async function notifyEventReservation(
         <div style="padding: 10px; background-color: #0a0608; border-radius: 6px; font-family: monospace; font-size: 13px; color: #ead397; margin-bottom: 14px; word-break: break-all;">
           ${affLink}
         </div>
+
+        <!-- Botones de Compartir Directo -->
+        <div style="margin-bottom: 14px;">
+          <a href="${waShareEventUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #25D366; color: #ffffff; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+            📲 Compartir por WhatsApp
+          </a>
+          <a href="${xShareEventUrl}" target="_blank" rel="noopener noreferrer" style="background-color: #000000; border: 1px solid #c5a059; color: #ead397; padding: 10px 18px; border-radius: 24px; text-decoration: none; font-size: 12px; font-weight: bold; display: inline-block; margin: 4px; font-family: sans-serif;">
+            𝕏 Compartir en X
+          </a>
+        </div>
+
         <a href="https://elplacerdecompartir.com/dashboard" style="background-color: transparent; color: #c5a059; border: 1px solid #c5a059; padding: 8px 18px; text-decoration: none; font-weight: bold; border-radius: 20px; display: inline-block; text-transform: uppercase; font-size: 10px; letter-spacing: 1px;">
           Entrar a mi Panel y Personalizar Código →
         </a>
@@ -756,7 +850,7 @@ export async function notifyEventReservation(
     `;
 
     const emailHtml = `
-      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
+      <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
         <div style="margin-bottom: 20px;">
           <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
         </div>
@@ -841,6 +935,7 @@ export async function notifyNewAlliance(
     whatsapp: string | null;
     email?: string | null;
     ciudad?: string | null;
+    afiliado_id?: string | null;
   },
   details: {
     tipo_alianza: string;
@@ -893,7 +988,7 @@ export async function notifyNewAlliance(
 
           <!-- Botón de llamado a la acción correspondiente SIEMPRE AL FINAL -->
           <div style="text-align: center; margin: 30px 0 10px 0;">
-            <a href="https://elplacerdecompartir.com/galeria-centro-cultural/?ref=segisw" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería de Espacios del Centro Cultural 🏛️ →</a>
+            <a href="https://elplacerdecompartir.com/galeria-centro-cultural/" style="background-color: #c5a059; color: #180a1a; padding: 14px 28px; text-decoration: none; font-weight: bold; border-radius: 50px; display: inline-block; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Ver Galería de Espacios del Centro Cultural 🏛️ →</a>
           </div>
         </div>
         <hr style="border: 0; border-top: 1px solid rgba(197, 160, 89, 0.25); margin: 30px 0;" />
@@ -971,7 +1066,7 @@ export async function notifyAmbassadorNewReferral(
 
   if (ambassador.email) {
     const emailHtml = `
-      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
+      <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
         <div style="margin-bottom: 20px;">
           <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
         </div>
@@ -1038,7 +1133,7 @@ export async function notifyAmbassadorSaleAcredited(
 
   if (ambassador.email) {
     const emailHtml = `
-      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
+      <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
         <div style="margin-bottom: 20px;">
           <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
         </div>
@@ -1088,7 +1183,7 @@ export async function notifyAmbassadorFreeTicketWon(
       `🎟️ *¡FELICIDADES! HAS GANADO 1 ENTRADA GRATUITA* 🎟️\n\n` +
       `Hola *${ambassador.nombre || ambassador.alias}*,\n\n` +
       `¡Has completado 3 compras acreditadas con tu enlace! El sistema te ha asignado *1 ENTRADA 100% GRATUITA* para redimir en nuestros eventos.\n\n` +
-      `📌 *Nota:* Para redimir en veladas de The Corset Society, recuerda contar con tu credencial VIP activa.\n\n` +
+      `📌 *Nota:* Para redimir en veladas de La Sociedad del Corset, recuerda contar con tu credencial VIP activa.\n\n` +
       `👉 Ingresa a tu panel para ver tus entradas disponibles: ${dashUrl}\n\n` +
       `🍷 *El Placer de Compartir*`;
     sendEvolutionWhatsApp(ambassador.whatsapp, waText).catch((e) =>
@@ -1098,7 +1193,7 @@ export async function notifyAmbassadorFreeTicketWon(
 
   if (ambassador.email) {
     const emailHtml = `
-      <div style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
+      <div lang="es" xml:lang="es" dir="ltr" class="notranslate" translate="no" style="background-color: #1a0a18; color: #f7f4ee; padding: 40px; font-family: 'Cinzel', Georgia, serif; max-width: 600px; margin: 0 auto; border: 2px solid #c5a059; text-align: center; border-radius: 12px;">
         <div style="margin-bottom: 20px;">
           <img src="${PLACER_LOGO_URL}" alt="El Placer de Compartir" style="height: 80px; width: 80px; border-radius: 50%; border: 2px solid #c5a059; margin: 0 auto; display: block; object-fit: cover;" />
         </div>
@@ -1113,7 +1208,7 @@ export async function notifyAmbassadorFreeTicketWon(
           <div style="background-color: #140816; border: 1px solid rgba(197, 160, 89, 0.4); padding: 14px; margin: 15px 0; border-radius: 6px;">
             <p style="margin: 0 0 6px 0; font-size: 12px; color: #ead397; font-weight: bold;">Condiciones de Redención:</p>
             <p style="margin: 0; font-size: 11px; color: rgba(247, 244, 238, 0.8);">
-              Válido para eventos oficiales del Centro Cultural El Placer de Compartir. Para veladas privadas de gala de <strong>The Corset Society</strong>, es indispensable contar con credencial VIP activa.
+              Válido para eventos oficiales del Centro Cultural El Placer de Compartir. Para veladas privadas de gala de <strong>La Sociedad del Corset</strong>, es indispensable contar con credencial VIP activa.
             </p>
           </div>
         </div>

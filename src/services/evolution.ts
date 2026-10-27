@@ -4,11 +4,51 @@ import { normalizePhone } from "../db";
 import { sendTransactionalEmail } from "./email";
 import { isTestExecution, isTestOrMockPhone } from "./notifications";
 
-const rawKey = process.env.EVOLUTION_API_KEY || "";
-const EVOLUTION_API_KEY = (rawKey && !rawKey.startsWith("${")) ? rawKey : "481c8c43-0023-4028-bad5-9d1355a3674c";
-
 const rawUrl = process.env.EVOLUTION_URL || process.env.EVOLUTION_API_URL || "";
 const EVOLUTION_API_URL = (rawUrl && !rawUrl.startsWith("${")) ? rawUrl : "http://evolution:8085";
+
+let cachedActiveToken: string | null = null;
+let tokenExpiresAt = 0;
+
+export async function getEvolutionApiKey(): Promise<string> {
+  const now = Date.now();
+  if (cachedActiveToken && now < tokenExpiresAt) {
+    return cachedActiveToken;
+  }
+
+  // 1. Dynamic discovery from Evolution Go engine
+  try {
+    const globalKey = process.env.GLOBAL_API_KEY || "429683C4C977415CAAFCCE10F7D57E11";
+    const resp = await fetch(`${EVOLUTION_API_URL.replace(/\/$/, "")}/instance/all`, {
+      headers: { apikey: globalKey },
+    });
+    if (resp.ok) {
+      const json: any = await resp.json();
+      const instances: any[] = json?.data || [];
+      const targetInstance = process.env.EVOLUTION_INSTANCE || "segisw";
+      const active =
+        (targetInstance ? instances.find((i) => i.name === targetInstance && i.connected) : null) ||
+        instances.find((i) => i.connected) ||
+        (targetInstance ? instances.find((i) => i.name === targetInstance) : null) ||
+        instances[0];
+
+      if (active?.token) {
+        cachedActiveToken = active.token;
+        tokenExpiresAt = now + 60_000;
+        return cachedActiveToken;
+      }
+    }
+  } catch (err: any) {
+    console.warn("[Evolution] Dynamic token discovery failed:", err.message);
+  }
+
+  // 2. Fallback to env or default
+  const rawKey = process.env.EVOLUTION_API_KEY || "";
+  if (rawKey && !rawKey.startsWith("${") && rawKey !== "481c8c43-0023-4028-bad5-9d1355a3674c") {
+    return rawKey;
+  }
+  return "50f0cd48-4f34-452e-99b7-db1fd927e844";
+}
 
 // Redis / Valkey Client with In-Memory Map Fallback
 let redisClient: Redis | null = null;
@@ -52,12 +92,13 @@ export function formatEvolutionNumber(phone: string): string {
 
 export async function deleteWhatsAppMessage(chat: string, messageId: string): Promise<boolean> {
   try {
+    const apiKey = await getEvolutionApiKey();
     const endpoint = `${EVOLUTION_API_URL.replace(/\/$/, "")}/message/delete`;
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: EVOLUTION_API_KEY,
+        apikey: apiKey,
       },
       body: JSON.stringify({
         chat,
@@ -87,18 +128,23 @@ export async function sendWhatsAppMessage(
       return { success: true, messageId: `mock-msg-${Date.now()}`, chat: `${cleanNumber}@s.whatsapp.net` };
     }
 
+    const apiKey = await getEvolutionApiKey();
     const endpoint = `${EVOLUTION_API_URL.replace(/\/$/, "")}/send/text`;
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: EVOLUTION_API_KEY,
+        apikey: apiKey,
       },
       body: JSON.stringify({
         number: cleanNumber,
         text,
       }),
     });
+
+    if (response.status === 401) {
+      cachedActiveToken = null;
+    }
 
     if (response.ok) {
       const data = await response.json();
