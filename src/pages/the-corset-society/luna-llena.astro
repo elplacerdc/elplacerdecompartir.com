@@ -453,9 +453,9 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
                   </button>
                 </div>
 
-                <!-- Inline WA OTP Box para no logueados -->
+                <!-- Inline WA/Email OTP Box para no logueados -->
                 <div id="wa-otp-box" class="hidden mt-2 p-3 rounded-xl bg-[#140816] border border-[#c5a059]/40 space-y-2">
-                  <p class="text-[11px] text-[#f7f4ee]/80">Ingresa el código de 6 dígitos enviado a tu WhatsApp:</p>
+                  <p class="text-[11px] text-[#f7f4ee]/80" id="otp-instruction-text">Ingresa el código de 6 dígitos enviado:</p>
                   <div class="flex items-center gap-2">
                     <input
                       type="text"
@@ -472,7 +472,12 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
                       Confirmar
                     </button>
                   </div>
-                  <span id="wa-otp-status" class="text-[11px] text-[#ead397] block min-h-[14px]"></span>
+                  <div class="flex flex-col gap-1">
+                    <span id="wa-otp-status" class="text-[11px] text-[#ead397] block min-h-[14px]"></span>
+                    <button type="button" id="btnResendEmailOtp" class="text-[11px] text-[#c5a059] hover:text-[#ead397] underline text-left cursor-pointer transition-colors">
+                      ✉️ ¿Prefieres recibir el código por correo? Enviar a mi correo
+                    </button>
+                  </div>
                 </div>
                 <div id="wa-verified-badge" class="hidden text-[11px] text-[#81c784] font-medium mt-1">
                   <span>✓ WhatsApp verificado</span>
@@ -861,6 +866,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
 
     async function triggerSendWaOtp() {
       const whatsapp = document.getElementById('whatsapp')?.value.trim();
+      const email = document.getElementById('email')?.value.trim();
       const statusEl = document.getElementById('wa-otp-status');
       const otpBox = document.getElementById('wa-otp-box');
       const btnSend = document.getElementById('btnSendWaOtp');
@@ -874,18 +880,24 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         btnSend.disabled = true;
         btnSend.textContent = 'Enviando...';
       }
-      if (statusEl) statusEl.textContent = 'Enviando código de 6 dígitos a tu WhatsApp...';
+      if (statusEl) statusEl.textContent = 'Enviando código de verificación...';
       if (otpBox) otpBox.classList.remove('hidden');
 
       try {
         const res = await fetch('/api/otp/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ destination: whatsapp, channel: 'whatsapp' }),
+          body: JSON.stringify({ destination: whatsapp, channel: 'whatsapp', email: email }),
         });
         const data = await res.json();
         if (data.success) {
-          if (statusEl) statusEl.textContent = '✓ Código enviado a tu WhatsApp. Ingrésalo a continuación:';
+          if (statusEl) {
+            if (data.fallback || data.channel === 'email') {
+              statusEl.textContent = `✓ Código enviado a tu correo (${email || 'registrado'}). Ingrésalo a continuación:`;
+            } else {
+              statusEl.textContent = '✓ Código enviado a tu WhatsApp. Ingrésalo a continuación:';
+            }
+          }
           if (btnSend) {
             btnSend.textContent = 'Reenviar';
             btnSend.disabled = false;
@@ -909,6 +921,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
 
     async function triggerVerifyWaOtp() {
       const whatsapp = document.getElementById('whatsapp')?.value.trim();
+      const email = document.getElementById('email')?.value.trim();
       const otpCode = document.getElementById('input-wa-otp')?.value.trim();
       const statusEl = document.getElementById('wa-otp-status');
       const otpBox = document.getElementById('wa-otp-box');
@@ -926,7 +939,7 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         const res = await fetch('/api/otp/verify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ destination: whatsapp, code: otpCode, channel: 'whatsapp' }),
+          body: JSON.stringify({ destination: whatsapp, code: otpCode, email: email, linkedEmail: email }),
         });
         const data = await res.json();
         if (data.success) {
@@ -934,7 +947,10 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
           localStorage.setItem('wa_verified_phone', whatsapp);
           if (otpBox) otpBox.classList.add('hidden');
           if (btnSend) btnSend.classList.add('hidden');
-          if (verifiedBadge) verifiedBadge.classList.remove('hidden');
+          if (verifiedBadge) {
+            verifiedBadge.classList.remove('hidden');
+            verifiedBadge.innerHTML = '<span>✓ Verificación confirmada</span>';
+          }
           if (statusEl) statusEl.textContent = '';
         } else {
           if (statusEl) statusEl.textContent = 'Código incorrecto o vencido. Intenta de nuevo.';
@@ -943,6 +959,33 @@ const separaUnicornioSsr = Math.round(10000 * (1 - discPercentSsr));
         if (statusEl) statusEl.textContent = 'Error al validar el código';
       }
     }
+
+    document.getElementById('btnResendEmailOtp')?.addEventListener('click', async () => {
+      const email = document.getElementById('email')?.value.trim();
+      const whatsapp = document.getElementById('whatsapp')?.value.trim();
+      const statusEl = document.getElementById('wa-otp-status');
+      if (!email || !email.includes('@')) {
+        if (statusEl) statusEl.textContent = 'Por favor ingresa un correo electrónico válido arriba para enviarte el código.';
+        return;
+      }
+      if (statusEl) statusEl.textContent = 'Enviando código de 6 dígitos a tu correo...';
+      try {
+        const res = await fetch('/api/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ destination: email, channel: 'email', whatsapp: whatsapp }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (statusEl) statusEl.textContent = `✓ Código enviado a ${email}. Revisa tu bandeja de entrada o spam:`;
+          document.getElementById('input-wa-otp')?.focus();
+        } else {
+          if (statusEl) statusEl.textContent = 'Error: ' + (data.error || 'No se pudo enviar al correo');
+        }
+      } catch (e) {
+        if (statusEl) statusEl.textContent = 'Error de conexión enviando al correo';
+      }
+    });
 
     async function handleCheckout(metodo) {
       const alias = document.getElementById('alias_nombre')?.value.trim();

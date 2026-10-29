@@ -164,41 +164,65 @@ export async function sendWhatsAppMessage(
 
 export async function sendChannelOTP(
   destination: string,
-  channel: "whatsapp" | "email" = "whatsapp"
-): Promise<{ success: boolean; code?: string; error?: string }> {
+  channel: "whatsapp" | "email" = "whatsapp",
+  emailFallback?: string,
+  phoneFallback?: string
+): Promise<{ success: boolean; code?: string; error?: string; channelUsed?: "whatsapp" | "email"; fallback?: boolean }> {
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const key = normalizeDestinationKey(destination, channel);
   const ttlSeconds = 600; // 10 minutes
 
   let messageId: string | undefined;
   let chat: string | undefined;
+  let channelUsed: "whatsapp" | "email" = channel;
+  let fallback = false;
+
+  const emailHtml = `
+    <div style="background-color: #180A1A; color: #F7F4EE; padding: 35px; font-family: 'Cinzel', Georgia, serif; max-width: 500px; margin: 0 auto; border: 2px solid #C5A059; text-align: center; border-radius: 12px;">
+      <h2 style="color: #EAD397; letter-spacing: 2px; text-transform: uppercase; font-size: 20px; margin-bottom: 10px;">El Placer de Compartir</h2>
+      <p style="font-family: sans-serif; font-size: 14px; color: rgba(247, 244, 238, 0.8); line-height: 1.6;">
+        Has solicitado un código de verificación para completar tu reserva o registro en nuestra plataforma.
+      </p>
+      <div style="background-color: #250F22; border: 1px solid #C5A059; border-radius: 8px; padding: 18px; margin: 25px 0;">
+        <span style="font-family: monospace; font-size: 32px; letter-spacing: 8px; font-weight: bold; color: #C5A059;">${code}</span>
+      </div>
+      <p style="font-family: sans-serif; font-size: 11px; color: rgba(247, 244, 238, 0.5);">
+        Válido por 10 minutos. Si no solicitaste este código, por favor ignora este mensaje.
+      </p>
+    </div>
+  `;
 
   if (channel === "whatsapp") {
     const waText = `✨ *El Placer de Compartir*\n\nTu código de verificación es: *${code}*\n\nEste código expira en 10 minutos. Úsalo para confirmar tu solicitud.`;
     const res = await sendWhatsAppMessage(destination, waText);
-    if (!res.success) {
-      return { success: false, error: res.error };
+    if (res.success) {
+      messageId = res.messageId;
+      chat = res.chat;
+    } else {
+      // WhatsApp dispatch failed (e.g. gateway unlinked, reachout timelock, network error)
+      if (emailFallback && emailFallback.includes("@")) {
+        console.warn(`[Evolution OTP] WhatsApp dispatch failed (${res.error}), executing automatic fallback to email: ${emailFallback}`);
+        const emailRes = await sendTransactionalEmail({
+          to: emailFallback.trim().toLowerCase(),
+          subject: `Tu código de verificación: ${code} — El Placer de Compartir`,
+          fromName: "El Placer de Compartir",
+          html: emailHtml,
+        });
+        if (!emailRes.success) {
+          return { success: false, error: `WhatsApp no disponible (${res.error}) y fallo en correo (${emailRes.error})` };
+        }
+        channelUsed = "email";
+        fallback = true;
+      } else {
+        return { success: false, error: res.error };
+      }
     }
-    messageId = res.messageId;
-    chat = res.chat;
   } else {
-    const emailHtml = `
-      <div style="background-color: #180A1A; color: #F7F4EE; padding: 35px; font-family: 'Cinzel', Georgia, serif; max-width: 500px; margin: 0 auto; border: 2px solid #C5A059; text-align: center; border-radius: 12px;">
-        <h2 style="color: #EAD397; letter-spacing: 2px; text-transform: uppercase; font-size: 20px; margin-bottom: 10px;">El Placer de Compartir</h2>
-        <p style="font-family: sans-serif; font-size: 14px; color: rgba(247, 244, 238, 0.8); line-height: 1.6;">
-          Has solicitado un código de verificación para completar tu registro en nuestra plataforma.
-        </p>
-        <div style="background-color: #250F22; border: 1px solid #C5A059; border-radius: 8px; padding: 18px; margin: 25px 0;">
-          <span style="font-family: monospace; font-size: 32px; letter-spacing: 8px; font-weight: bold; color: #C5A059;">${code}</span>
-        </div>
-        <p style="font-family: sans-serif; font-size: 11px; color: rgba(247, 244, 238, 0.5);">
-          Válido por 10 minutos. Si no solicitaste este código, por favor ignora este mensaje.
-        </p>
-      </div>
-    `;
-
+    const targetEmail = destination.includes("@") ? destination : (emailFallback || "");
+    if (!targetEmail.includes("@")) {
+      return { success: false, error: "Correo electrónico no válido para el envío de código" };
+    }
     const res = await sendTransactionalEmail({
-      to: destination.trim().toLowerCase(),
+      to: targetEmail.trim().toLowerCase(),
       subject: `Tu código de verificación: ${code} — El Placer de Compartir`,
       fromName: "El Placer de Compartir",
       html: emailHtml,
@@ -206,46 +230,66 @@ export async function sendChannelOTP(
     if (!res.success) {
       return { success: false, error: res.error };
     }
+    channelUsed = "email";
   }
 
-  // Store OTP with metadata
+  // Store OTP with metadata in Redis/Memory across all relevant target keys
   const payload = JSON.stringify({ code, messageId, chat });
-  if (redisClient) {
-    try {
-      await redisClient.set(key, payload, "EX", ttlSeconds);
-    } catch (e) {
-      memoryOtpStore.set(key, { code, expiresAt: Date.now() + ttlSeconds * 1000, messageId, chat });
-    }
-  } else {
-    memoryOtpStore.set(key, { code, expiresAt: Date.now() + ttlSeconds * 1000, messageId, chat });
+  const keysToStore = new Set<string>();
+  keysToStore.add(normalizeDestinationKey(destination, channel));
+  if (emailFallback && emailFallback.includes("@")) {
+    keysToStore.add(normalizeDestinationKey(emailFallback, "email"));
+  }
+  if (phoneFallback) {
+    keysToStore.add(normalizeDestinationKey(phoneFallback, "whatsapp"));
   }
 
-  return { success: true, code };
+  for (const k of keysToStore) {
+    if (redisClient) {
+      try {
+        await redisClient.set(k, payload, "EX", ttlSeconds);
+      } catch (e) {
+        memoryOtpStore.set(k, { code, expiresAt: Date.now() + ttlSeconds * 1000, messageId, chat });
+      }
+    } else {
+      memoryOtpStore.set(k, { code, expiresAt: Date.now() + ttlSeconds * 1000, messageId, chat });
+    }
+  }
+
+  return { success: true, code, channelUsed, fallback };
 }
 
 export async function verifyChannelOTP(
   destination: string,
   code: string,
-  channel?: "whatsapp" | "email"
+  channel?: "whatsapp" | "email",
+  emailFallback?: string
 ): Promise<boolean> {
   const cleanCode = code.trim();
   if (!cleanCode) return false;
 
-  // If channel is specified, check that specific key
+  // 1. If channel is specified, check that specific key
   if (channel) {
     const key = normalizeDestinationKey(destination, channel);
-    return await verifyKey(key, cleanCode);
+    if (await verifyKey(key, cleanCode)) return true;
   }
 
-  // Otherwise, auto-deduce or check both (whatsapp and email)
+  // 2. Auto-deduce or check both (whatsapp and email)
   const isEmail = destination.includes("@");
   const primaryKey = normalizeDestinationKey(destination, isEmail ? "email" : "whatsapp");
-  const verifiedPrimary = await verifyKey(primaryKey, cleanCode);
-  if (verifiedPrimary) return true;
+  if (await verifyKey(primaryKey, cleanCode)) return true;
 
-  // Fallback check the other format just in case
+  // 3. Fallback check the other format
   const secondaryKey = normalizeDestinationKey(destination, isEmail ? "whatsapp" : "email");
-  return await verifyKey(secondaryKey, cleanCode);
+  if (await verifyKey(secondaryKey, cleanCode)) return true;
+
+  // 4. Fallback check emailFallback if provided
+  if (emailFallback && emailFallback.includes("@")) {
+    const emailKey = normalizeDestinationKey(emailFallback, "email");
+    if (await verifyKey(emailKey, cleanCode)) return true;
+  }
+
+  return false;
 }
 
 async function verifyKey(key: string, code: string): Promise<boolean> {

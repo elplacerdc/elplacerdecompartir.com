@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    const isValid = await verifyChannelOTP(destination, code, channel);
+    const isValid = await verifyChannelOTP(destination, code, channel, linkedEmail);
 
     if (isValid) {
       const isEmail = destination.includes("@") || channel === "email";
