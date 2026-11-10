@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
           const ticket = ticketRes.rows[0];
           await client.query(
             `UPDATE event_tickets 
-             SET estado = 'confirmado', transaccion_id = $1, updated_at = NOW() 
+             SET estado = 'confirmado', referencia_transaccion = $1, metodo_pago = COALESCE(metodo_pago, 'dlocal_go') 
              WHERE id = $2`,
             [paymentId, ticket.id]
           );
@@ -88,6 +88,7 @@ export const POST: APIRoute = async ({ request }) => {
                 `UPDATE leads 
                  SET corset_vip = true, 
                      vip_until = NOW() + INTERVAL '1 year', 
+                     primer_pago_acreditado = true,
                      metadata = jsonb_set(
                        jsonb_set(
                          COALESCE(metadata, '{}'::jsonb),
@@ -95,7 +96,7 @@ export const POST: APIRoute = async ({ request }) => {
                          to_jsonb((NOW() + INTERVAL '1 year')::text)
                        ),
                        '{tags}',
-                       COALESCE(metadata->'tags', '[]'::jsonb) || '["vip_activo", "corset_vip"]'::jsonb
+                       COALESCE(metadata->'tags', '[]'::jsonb) || '["vip_activo", "corset_vip", "luna_llena_pago_total"]'::jsonb
                      ),
                      updated_at = NOW() 
                  WHERE id = $1`,
@@ -163,6 +164,20 @@ export const POST: APIRoute = async ({ request }) => {
         }
       } finally {
         client.release();
+      }
+    } else if (payment.status === "REJECTED" || payment.status === "CANCELLED" || payment.status === "EXPIRED") {
+      const orderId = payment.order_id;
+      if (orderId && !orderId.startsWith("CORSET_VIP_") && !orderId.startsWith("VIP_")) {
+        try {
+          await pool.query(
+            `UPDATE event_tickets 
+             SET estado = 'cancelado', referencia_transaccion = COALESCE(referencia_transaccion, $1) 
+             WHERE (id::text = $2 OR ticket_hash = $2) AND estado = 'pendiente'`,
+            [paymentId, orderId]
+          );
+        } catch (rejErr) {
+          console.error("[dLocal Go Webhook] Error updating cancelled/expired ticket:", rejErr);
+        }
       }
     }
 

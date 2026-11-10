@@ -151,4 +151,19 @@ describe("Luna Llena Checkout Revamp (BAI-362 to BAI-369)", () => {
     expect(content).toContain("¡Con tu entrada a Halloween Luna Llena se te activa");
     expect(content).toContain("y tu enlace exclusivo de embajador VIP.");
   });
+
+  test("9. dLocal Go webhook uses valid schema columns (referencia_transaccion, zero transaccion_id / updated_at on event_tickets)", () => {
+    const webhookPath = join(__dirname, "../src/pages/api/webhooks/dlocal.ts");
+    const content = readFileSync(webhookPath, "utf-8");
+
+    expect(content).toContain("referencia_transaccion = $1");
+    expect(content).not.toContain("transaccion_id");
+
+    const ticketUpdates = content.match(/UPDATE\s+event_tickets[\s\S]*?WHERE/g) || [];
+    expect(ticketUpdates.length).toBeGreaterThan(0);
+    for (const updateSql of ticketUpdates) {
+      expect(updateSql).not.toContain("updated_at");
+      expect(updateSql).not.toContain("transaccion_id");
+    }
+  });
 });
