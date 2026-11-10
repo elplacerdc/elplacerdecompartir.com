@@ -142,10 +142,19 @@ export const POST: APIRoute = async ({ request }) => {
           // Caso 2: Membresía VIP Corset
           console.log(`[Gateway Webhook] Activando membresía VIP para orden ${orderId}`);
           if (payment.payer?.email) {
-            const leadRes = await client.query(
-              `UPDATE leads SET corset_vip = true, vip_until = NOW() + INTERVAL '1 year', updated_at = NOW() WHERE email = $1 RETURNING id, afiliado_id`,
+            let leadRes = await client.query(
+              `UPDATE leads SET corset_vip = true, vip_until = NOW() + INTERVAL '1 year', primer_pago_acreditado = true, updated_at = NOW() WHERE email = $1 RETURNING id, afiliado_id`,
               [payment.payer.email]
             );
+            if (leadRes.rows.length === 0) {
+              leadRes = await client.query(
+                `INSERT INTO leads (alias_nombre, email, whatsapp, rol, ciudad, origen, corset_vip, vip_until, primer_pago_acreditado, created_at, updated_at)
+                 VALUES ($1, $2, $3, 'otro', 'Bogotá', 'web_corset_vip', true, NOW() + INTERVAL '1 year', true, NOW(), NOW())
+                 ON CONFLICT (email) DO UPDATE SET corset_vip = true, vip_until = NOW() + INTERVAL '1 year', primer_pago_acreditado = true, updated_at = NOW()
+                 RETURNING id, afiliado_id`,
+                [payment.payer?.name || "Miembro VIP", payment.payer.email, payment.payer?.phone || null]
+              );
+            }
             if (leadRes.rows.length > 0 && leadRes.rows[0].afiliado_id) {
               try {
                 const { recordAffiliatePayment } = await import("../../../db");

@@ -165,5 +165,8 @@ describe("Luna Llena Checkout Revamp (BAI-362 to BAI-369)", () => {
       expect(updateSql).not.toContain("updated_at");
       expect(updateSql).not.toContain("transaccion_id");
     }
+
+    expect(content).toContain("primer_pago_acreditado = true");
+    expect(content).toContain("ON CONFLICT (email) DO UPDATE");
   });
 });
