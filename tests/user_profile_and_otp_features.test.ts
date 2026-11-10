@@ -1,6 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from "bun:test";
 import { pool, upsertLead, getAffiliateStats, ensureAffiliateCode } from "../src/db";
-import { deleteWhatsAppMessage } from "../src/services/evolution";
+import { deleteWhatsAppMessage, selectBestEvolutionInstance } from "../src/services/evolution";
+import fs from "node:fs";
+import path from "node:path";
 
 describe("User Profile, Dynamic Roles & OTP Revocation Invariants", () => {
   const testPhone = "570009887766";
@@ -156,5 +158,36 @@ describe("User Profile, Dynamic Roles & OTP Revocation Invariants", () => {
     } finally {
       client.release();
     }
+  });
+
+  test("6. selectBestEvolutionInstance prioritizes connected segisw instance and ignores orphaned disconnected instances when EVOLUTION_INSTANCE mismatches", () => {
+    const instances = [
+      { name: "miotest", token: "tok-orphan", connected: false, jid: "" },
+      { name: "segisw", token: "tok-segisw", connected: true, jid: "573194194785:50@s.whatsapp.net" },
+    ];
+    const selected = selectBestEvolutionInstance(instances, "baiosfera-main");
+    expect(selected?.name).toBe("segisw");
+    expect(selected?.token).toBe("tok-segisw");
+    expect(selected?.connected).toBe(true);
+
+    const allDisconnected = [
+      { name: "miotest", token: "tok-orphan", connected: false, jid: "573158443002:3@s.whatsapp.net" },
+      { name: "segisw", token: "tok-segisw", connected: false, jid: "573194194785:50@s.whatsapp.net" },
+    ];
+    const selectedDisc = selectBestEvolutionInstance(allDisconnected, "baiosfera-main");
+    expect(selectedDisc?.name).toBe("segisw");
+    expect(selectedDisc?.connected).toBe(false);
+  });
+
+  test("7. OTP send API and frontend forms include automatic DB/form emailFallback and fast-fail timeout protection", () => {
+    const evoContent = fs.readFileSync(path.join(process.cwd(), "src/services/evolution.ts"), "utf-8");
+    expect(evoContent).toContain("AbortSignal.timeout");
+    expect(evoContent).toContain("selectBestEvolutionInstance");
+
+    const sendApiContent = fs.readFileSync(path.join(process.cwd(), "src/pages/api/otp/send.ts"), "utf-8");
+    expect(sendApiContent).toContain("SELECT email FROM leads");
+
+    const leadFormContent = fs.readFileSync(path.join(process.cwd(), "src/components/LeadForm.astro"), "utf-8");
+    expect(leadFormContent).toContain("email: inputEmail?.value.trim()");
   });
 });

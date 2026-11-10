@@ -1,12 +1,13 @@
 import type { APIRoute } from "astro";
 import { sendChannelOTP } from "../../../services/evolution";
+import { pool, normalizePhone } from "../../../db";
 
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     const destination = body.destination || body.whatsapp || body.email;
     const channel = body.channel || (body.email && !body.whatsapp ? "email" : "whatsapp");
-    const emailFallback = body.email || (destination && destination.includes("@") ? destination : undefined);
+    let emailFallback = body.email || (destination && destination.includes("@") ? destination : undefined);
     const phoneFallback = body.whatsapp || (!destination?.includes("@") ? destination : undefined);
 
     if (!destination && !emailFallback) {
@@ -17,6 +18,37 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const targetDest = destination || emailFallback;
+
+    // Resolve registered email from PostgreSQL if only phone was supplied
+    if (channel === "whatsapp" && (!emailFallback || !emailFallback.includes("@")) && targetDest && !targetDest.includes("@")) {
+      try {
+        const norm = normalizePhone(targetDest);
+        const variants = norm ? norm.variants : [targetDest];
+        const client = await pool.connect();
+        try {
+          const leadRes = await client.query(
+            `SELECT email FROM leads WHERE whatsapp = ANY($1) AND email IS NOT NULL AND email LIKE '%@%' ORDER BY updated_at DESC NULLS LAST LIMIT 1`,
+            [variants]
+          );
+          if (leadRes.rows[0]?.email) {
+            emailFallback = leadRes.rows[0].email;
+          } else {
+            const affRes = await client.query(
+              `SELECT email FROM afiliados WHERE whatsapp = ANY($1) AND email IS NOT NULL AND email LIKE '%@%' LIMIT 1`,
+              [variants]
+            );
+            if (affRes.rows[0]?.email) {
+              emailFallback = affRes.rows[0].email;
+            }
+          }
+        } finally {
+          client.release();
+        }
+      } catch (dbErr: any) {
+        console.warn("[API OTP Send] DB emailFallback lookup warn:", dbErr.message);
+      }
+    }
+
     const result = await sendChannelOTP(targetDest, channel, emailFallback, phoneFallback);
 
     if (result.success) {

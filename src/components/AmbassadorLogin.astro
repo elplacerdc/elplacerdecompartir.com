@@ -226,7 +226,7 @@
         stepRegister?.classList.add('hidden');
         if (authMessage) {
           authMessage.className = 'mt-4 text-xs text-center text-[#81c784]';
-          authMessage.textContent = 'Código enviado a tu WhatsApp';
+          authMessage.textContent = data.fallback && data.message ? data.message : 'Código enviado a tu WhatsApp';
         }
         codeInput?.focus();
       }

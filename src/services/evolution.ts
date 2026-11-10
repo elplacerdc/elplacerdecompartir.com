@@ -10,10 +10,32 @@ const EVOLUTION_API_URL = (rawUrl && !rawUrl.startsWith("${")) ? rawUrl : "http:
 let cachedActiveToken: string | null = null;
 let tokenExpiresAt = 0;
 
-export async function getEvolutionApiKey(): Promise<string> {
+export function selectBestEvolutionInstance(instances: any[], targetInstance = "segisw"): any | null {
+  if (!Array.isArray(instances) || instances.length === 0) return null;
+  const preferred = targetInstance || "segisw";
+  return (
+    instances.find((i) => i.name === preferred && i.connected && i.jid) ||
+    instances.find((i) => i.name === "segisw" && i.connected && i.jid) ||
+    instances.find((i) => i.connected && i.jid) ||
+    instances.find((i) => i.connected) ||
+    instances.find((i) => i.name === preferred && i.jid) ||
+    instances.find((i) => i.name === "segisw" && i.jid) ||
+    instances.find((i) => i.name === preferred) ||
+    instances.find((i) => i.name === "segisw") ||
+    instances.find((i) => i.jid) ||
+    instances[0]
+  );
+}
+
+export async function resolveEvolutionInstance(): Promise<{
+  token: string;
+  connected: boolean;
+  discovered: boolean;
+  name?: string;
+}> {
   const now = Date.now();
   if (cachedActiveToken && now < tokenExpiresAt) {
-    return cachedActiveToken;
+    return { token: cachedActiveToken, connected: true, discovered: true };
   }
 
   // 1. Dynamic discovery from Evolution Go engine
@@ -21,21 +43,29 @@ export async function getEvolutionApiKey(): Promise<string> {
     const globalKey = process.env.GLOBAL_API_KEY || "429683C4C977415CAAFCCE10F7D57E11";
     const resp = await fetch(`${EVOLUTION_API_URL.replace(/\/$/, "")}/instance/all`, {
       headers: { apikey: globalKey },
+      signal: AbortSignal.timeout(3000),
     });
     if (resp.ok) {
       const json: any = await resp.json();
       const instances: any[] = json?.data || [];
       const targetInstance = process.env.EVOLUTION_INSTANCE || "segisw";
-      const active =
-        (targetInstance ? instances.find((i) => i.name === targetInstance && i.connected) : null) ||
-        instances.find((i) => i.connected) ||
-        (targetInstance ? instances.find((i) => i.name === targetInstance) : null) ||
-        instances[0];
+      const active = selectBestEvolutionInstance(instances, targetInstance);
 
       if (active?.token) {
-        cachedActiveToken = active.token;
-        tokenExpiresAt = now + 60_000;
-        return cachedActiveToken;
+        const isConnected = Boolean(active.connected);
+        if (isConnected) {
+          cachedActiveToken = active.token;
+          tokenExpiresAt = now + 60_000;
+        } else {
+          cachedActiveToken = null;
+          tokenExpiresAt = 0;
+        }
+        return {
+          token: active.token,
+          connected: isConnected,
+          discovered: true,
+          name: active.name,
+        };
       }
     }
   } catch (err: any) {
@@ -44,10 +74,20 @@ export async function getEvolutionApiKey(): Promise<string> {
 
   // 2. Fallback to env or default
   const rawKey = process.env.EVOLUTION_API_KEY || "";
-  if (rawKey && !rawKey.startsWith("${") && rawKey !== "481c8c43-0023-4028-bad5-9d1355a3674c") {
-    return rawKey;
-  }
-  return "50f0cd48-4f34-452e-99b7-db1fd927e844";
+  const fallbackToken =
+    rawKey &&
+    !rawKey.startsWith("${") &&
+    rawKey !== "481c8c43-0023-4028-bad5-9d1355a3674c" &&
+    rawKey !== "50f0cd48-4f34-452e-99b7-db1fd927e844"
+      ? rawKey
+      : "c595d9e3-1be2-43d3-83ea-fa8e91e3f0da";
+
+  return { token: fallbackToken, connected: true, discovered: false };
+}
+
+export async function getEvolutionApiKey(): Promise<string> {
+  const resolved = await resolveEvolutionInstance();
+  return resolved.token;
 }
 
 // Redis / Valkey Client with In-Memory Map Fallback
@@ -104,6 +144,7 @@ export async function deleteWhatsAppMessage(chat: string, messageId: string): Pr
         chat,
         messageId,
       }),
+      signal: AbortSignal.timeout(4000),
     });
     return response.ok;
   } catch (error: any) {
@@ -128,18 +169,24 @@ export async function sendWhatsAppMessage(
       return { success: true, messageId: `mock-msg-${Date.now()}`, chat: `${cleanNumber}@s.whatsapp.net` };
     }
 
-    const apiKey = await getEvolutionApiKey();
+    const resolved = await resolveEvolutionInstance();
+    if (resolved.discovered && !resolved.connected) {
+      console.warn(`[Evolution WhatsApp] Instance '${resolved.name || "default"}' is disconnected; failing fast for fallback.`);
+      return { success: false, error: "Pasarela de WhatsApp reconectando temporalmente" };
+    }
+
     const endpoint = `${EVOLUTION_API_URL.replace(/\/$/, "")}/send/text`;
     const response = await fetch(endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        apikey: apiKey,
+        apikey: resolved.token,
       },
       body: JSON.stringify({
         number: cleanNumber,
         text,
       }),
+      signal: AbortSignal.timeout(6000),
     });
 
     if (response.status === 401) {

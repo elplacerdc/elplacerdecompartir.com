@@ -301,7 +301,7 @@ const {
       const res = await fetch("/api/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ destination: whatsapp, channel: "whatsapp" }),
+        body: JSON.stringify({ destination: whatsapp, channel: "whatsapp", email: inputEmail?.value.trim() }),
       });
       const data = await res.json();
 
@@ -309,7 +309,9 @@ const {
         stepWaPhone?.classList.add("hidden");
         stepWaVerify?.classList.remove("hidden");
         inputWaOtp?.focus();
-        if (waOtpStatus) waOtpStatus.textContent = "";
+        if (waOtpStatus) {
+          waOtpStatus.textContent = data.fallback && data.message ? data.message : "";
+        }
       } else {
         alert(data.error || "No se pudo enviar el código a WhatsApp");
       }

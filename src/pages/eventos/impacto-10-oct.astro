@@ -268,7 +268,7 @@ import Layout from "../../layouts/Layout.astro";
       const res = await fetch("/api/otp/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ destination: whatsapp, channel: "whatsapp" }),
+        body: JSON.stringify({ destination: whatsapp, channel: "whatsapp", email: inputEmail?.value.trim() }),
       });
       const data = await res.json();
 
@@ -277,7 +277,7 @@ import Layout from "../../layouts/Layout.astro";
         stepOtpVerify.classList.remove("hidden");
         inputWaOtp.value = "";
         inputWaOtp.focus();
-        if (waOtpStatus) waOtpStatus.textContent = "";
+        if (waOtpStatus) waOtpStatus.textContent = data.fallback && data.message ? data.message : "";
       } else {
         alert(data.error || "No se pudo enviar el código");
       }
